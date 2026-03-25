@@ -11,7 +11,7 @@
                         <p class="text-muted">Review and manage field executive check-in/out records.</p>
                     </div>
                 </div>
-                
+
                 
                 <?php if(isset($_SESSION['flash_success'])): ?>
                     <div class="alert alert-success border-0 shadow-sm"><?php echo $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
@@ -31,6 +31,7 @@
                                         <th class="text-right pr-4">Action</th>
                                     </tr>
                                 </thead>
+                                
                                 <tbody>
                                     <?php foreach($records as $r): ?>
                                     <tr>
