@@ -1,4 +1,4 @@
-name: Deploy to GoDaddy (Field Tracking)
+name: 🚀 Deploy to GoDaddy
 
 on:
   push:
@@ -10,17 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # OPTIONAL (only if using composer)
-      - name: Install PHP Dependencies
-        run: |
-          if [ -f composer.json ]; then
-            composer install --no-dev --optimize-autoloader
-          fi
-
-      - name: Upload to GoDaddy via FTP
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -30,4 +23,3 @@ jobs:
           protocol: ftps
           local-dir: ./
           server-dir: /public_html/app.redeemertechnologies.com/
-          dangerous-clean-slate: false
