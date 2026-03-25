@@ -1,0 +1,219 @@
+<?php
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\Attendance;
+
+class AttendanceController extends Controller {
+    public function index() {
+        // If Admin is visiting, show the management list, else show personal attendance
+        if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
+            return $this->manage();
+        }
+
+        $attendanceModel = new Attendance();
+        $todayAttendance = $attendanceModel->getTodayAttendance($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Attendance - Sales Tracking',
+            'attendance' => $todayAttendance
+        ];
+        $this->view('attendance', $data);
+    }
+
+    public function manage() {
+        $this->checkRole('Admin');
+        $attendanceModel = new Attendance();
+        $records = $attendanceModel->getAllLatest();
+        
+        $data = [
+            'title' => 'Attendance Management - Admin',
+            'records' => $records
+        ];
+        $this->view('attendance_manage', $data);
+    }
+
+    public function edit() {
+        $this->checkRole('Admin');
+        if (isset($_GET['id'])) {
+            $attendanceModel = new Attendance();
+            $record = $attendanceModel->getById($_GET['id']);
+            
+            $data = [
+                'title' => 'Edit Attendance Record - Admin',
+                'record' => $record
+            ];
+            $this->view('attendance_edit', $data);
+        } else {
+            $this->redirect('attendance');
+        }
+    }
+
+    public function update() {
+        $this->checkRole('Admin');
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id'])) {
+            $attendanceModel = new Attendance();
+            $result = $attendanceModel->update($_POST['id'], $_POST);
+            if ($result) {
+                $_SESSION['flash_success'] = "Attendance record updated successfully!";
+            } else {
+                $_SESSION['flash_error'] = "Failed to update record.";
+            }
+        }
+        $this->redirect('attendance');
+    }
+
+    public function delete() {
+        $this->checkRole('Admin');
+        if (isset($_GET['id'])) {
+            $attendanceModel = new Attendance();
+            $result = $attendanceModel->delete($_GET['id']);
+            if ($result) {
+                $_SESSION['flash_success'] = "Attendance record deleted successfully!";
+            } else {
+                $_SESSION['flash_error'] = "Failed to delete record.";
+            }
+        }
+        $this->redirect('attendance');
+    }
+
+    public function checkIn() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['latitude']) && isset($_POST['longitude'])) {
+            $attendanceModel = new Attendance();
+            $lat = $_POST['latitude'];
+            $lng = $_POST['longitude'];
+            $address = $_POST['address'] ?? 'Unknown location';
+            
+            // 1. Radius Validation (Executive only)
+            if ($_SESSION['role'] == 'Executive') {
+                $officeLat = \App\Core\Config::get('OFFICE_LAT');
+                $officeLng = \App\Core\Config::get('OFFICE_LNG');
+                
+                if ($officeLat && $officeLng) {
+                    $distance = $this->calculateDistance($lat, $lng, $officeLat, $officeLng);
+                    if ($distance > 100) { // 100 meters
+                        $_SESSION['flash_error'] = "Check-in failed: You must be within 100m of the office (Current: " . round($distance) . "m)";
+                        $this->redirect('attendance');
+                        return;
+                    }
+                }
+            }
+
+            // 2. Handle Primary Photo (Selfie)
+            $photoPath = null;
+            if (isset($_POST['photo_data']) && !empty($_POST['photo_data'])) {
+                $photoPath = $this->saveBase64Image($_POST['photo_data'], 'checkin');
+            }
+            
+            // 3. Handle Odometer Photo (Executive only)
+            $odometerPath = null;
+            if (isset($_POST['odometer_data']) && !empty($_POST['odometer_data'])) {
+                $odometerPath = $this->saveBase64Image($_POST['odometer_data'], 'odometer');
+            }
+            
+            // 4. Handle Manual Inputs (Executive only)
+            $odometerReading = $_POST['odometer_reading'] ?? null;
+            $ticketDetails = $_POST['ticket_details'] ?? null;
+            
+            $result = $attendanceModel->checkIn($_SESSION['user_id'], $lat, $lng, $address, $photoPath, $odometerPath, $odometerReading, $ticketDetails);
+            
+            if ($result) {
+                $_SESSION['is_checked_in'] = true;
+                $_SESSION['flash_success'] = "Checked in successfully with photo and location verification!";
+            } else {
+                $_SESSION['flash_error'] = "Check-in failed.";
+            }
+        }
+        $this->redirect('attendance');
+    }
+
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2) {
+        $R = 6371000; // Radius of earth in meters
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat / 2) * sin($dLat / 2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) * sin($dLon / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return $R * $c;
+    }
+
+    public function checkOut() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['attendance_id'])) {
+            $attendanceModel = new Attendance();
+            $id = $_POST['attendance_id'];
+            $lat = $_POST['latitude'];
+            $lng = $_POST['longitude'];
+            $address = $_POST['address'] ?? 'Unknown location';
+            
+            // Handle Photo
+            $photoPath = null;
+            if (isset($_POST['photo_data']) && !empty($_POST['photo_data'])) {
+                $photoPath = $this->saveBase64Image($_POST['photo_data'], 'checkout');
+            }
+            
+            $result = $attendanceModel->checkOut($id, $lat, $lng, $address, $photoPath);
+            if ($result) {
+                // TA Calculation Integration
+                $att = $attendanceModel->getById($id);
+                if ($att && $att['check_in_lat'] && $att['check_out_lat']) {
+                    $distMeters = $this->calculateDistance(
+                        $att['check_in_lat'], $att['check_in_lng'],
+                        $att['check_out_lat'], $att['check_out_lng']
+                    );
+                    $distKm = $distMeters / 1000;
+                    
+                    $travelModel = new \App\Models\Travel();
+                    $rate = $travelModel->getCurrentRate();
+                    $allowance = $distKm * $rate;
+                    
+                    $travelModel->updateTravelSummary($_SESSION['user_id'], date('Y-m-d'), $distKm, $allowance);
+                }
+
+                unset($_SESSION['is_checked_in']);
+                $_SESSION['flash_success'] = "Checked out successfully! Travel allowance updated.";
+            } else {
+                $_SESSION['flash_error'] = "Check-out failed.";
+            }
+        }
+        $this->redirect('attendance');
+    }
+
+    private function saveBase64Image($base64String, $prefix) {
+        $dir = \App\Core\Config::get('UPLOAD_DIR', 'uploads/attendance/');
+        $fullPath = BASE_PATH . '/' . $dir;
+        
+        if (!is_dir($fullPath)) {
+            if (!@mkdir($fullPath, 0777, true)) {
+                $_SESSION['flash_error'] = "Upload directory permission denied: $dir";
+                return null;
+            }
+        }
+
+        if (!is_writable($fullPath)) {
+            $_SESSION['flash_error'] = "Upload directory is not writable. Please check permissions.";
+            return null;
+        }
+
+        $data = explode(',', $base64String);
+        if (count($data) < 2) {
+            $_SESSION['flash_error'] = "Invalid image data format.";
+            return null;
+        }
+        
+        $imageContent = base64_decode($data[1]);
+        if ($imageContent === false) {
+            $_SESSION['flash_error'] = "Failed to decode image data.";
+            return null;
+        }
+
+        $filename = $prefix . '_' . $_SESSION['user_id'] . '_' . time() . '.jpg';
+        $filePath = $dir . $filename;
+        $fileSavePath = BASE_PATH . '/' . $filePath;
+        
+        if (file_put_contents($fileSavePath, $imageContent) === false) {
+            $_SESSION['flash_error'] = "Failed to write image to disk. Disk full or permission error?";
+            return null;
+        }
+
+        return $filePath;
+    }
+}
