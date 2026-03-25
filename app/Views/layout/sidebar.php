@@ -5,14 +5,10 @@
 <nav class="vertnav navbar navbar-light">
   <!-- nav bar -->
   <div class="w-100 mb-4 d-flex">
-    <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="./">
-      <div class="avatar avatar-sm mb-3">
-        <span class="avatar-title rounded-circle shadow-sm">
-          <i class="fe fe-activity fe-24"></i>
-        </span>
-      </div>
-      <h6 class="brand-name font-weight-bold mb-0 text-primary">FieldTrack Pro</h6>
-    </a>
+      <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="./">
+        <img src="assets/images/redeemer-technologies-logo.png" alt="Redeemer Technologies" class="img-fluid px-4 mb-2" style="max-height: 50px;">
+        <h6 class="brand-name font-weight-bold mb-0 text-primary">Redeemer Technologies</h6>
+      </a>
   </div>
   <ul class="navbar-nav flex-fill w-100 mb-2">
     <li class="nav-item w-100">

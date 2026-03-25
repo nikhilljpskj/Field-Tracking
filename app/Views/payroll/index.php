@@ -78,7 +78,12 @@
                                                         <div class="extra-small">(Incl. LOP)</div>
                                                     <?php endif; ?>
                                                 </td>
-                                                <td class="pr-4 text-right"><h5 class="mb-0 font-weight-bold text-primary">₹<?php echo number_format($p['net_salary']); ?></h5></td>
+                                                <td class="pr-4 text-right">
+                                                    <h5 class="mb-1 font-weight-bold text-primary">₹<?php echo number_format($p['net_salary']); ?></h5>
+                                                    <a href="payroll?action=payslip&id=<?php echo $p['id']; ?>" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px;">
+                                                        <i class="fe fe-download fe-12 mr-1"></i> Payslip
+                                                    </a>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php endif; ?>

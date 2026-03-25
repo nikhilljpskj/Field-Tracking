@@ -110,14 +110,18 @@
             </div>
             <form action="leaves?action=apply" method="POST">
                 <div class="modal-body p-4">
-                    <div class="form-group mb-3">
-                        <label class="small text-muted text-uppercase font-weight-bold">Leave Type</label>
-                        <select name="leave_type_id" class="form-control custom-select" required>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="small text-muted text-uppercase font-weight-bold mb-0">Leave Type</label>
+                            <span id="current-balance-display" class="badge badge-soft-success p-1 px-2 d-none">
+                                Balance: <span id="balance-value">0</span> Days
+                            </span>
+                        </div>
+                        <select name="leave_type_id" id="leave_type_select" class="form-control custom-select" onchange="updateBalance(this.value)" required>
+                            <option value="">-- Select Type --</option>
                             <?php foreach($leaveTypes as $lt): ?>
                                 <option value="<?php echo $lt['id']; ?>"><?php echo htmlspecialchars($lt['name']); ?></option>
                             <?php endforeach; ?>
                         </select>
-                    </div>
                     <div class="row">
                         <div class="form-group col-md-6 mb-3">
                             <label class="small text-muted text-uppercase font-weight-bold">Start Date</label>
@@ -150,5 +154,32 @@
 .badge-soft-primary { background-color: rgba(67, 97, 238, 0.1); color: #4361ee; }
 .font-weight-600 { font-weight: 600; }
 </style>
+
+<script>
+function updateBalance(typeId) {
+    const display = document.getElementById('current-balance-display');
+    const valueElem = document.getElementById('balance-value');
+    
+    if (!typeId) {
+        display.classList.add('d-none');
+        return;
+    }
+
+    fetch(`leaves?action=getBalance&type_id=${typeId}`)
+        .then(response => response.json())
+        .then(data => {
+            valueElem.innerText = data.balance;
+            display.classList.remove('d-none');
+            if (parseFloat(data.balance) <= 0) {
+                display.classList.remove('badge-soft-success');
+                display.classList.add('badge-soft-danger');
+            } else {
+                display.classList.add('badge-soft-success');
+                display.classList.remove('badge-soft-danger');
+            }
+        })
+        .catch(err => console.error('Error fetching balance:', err));
+}
+</script>
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>

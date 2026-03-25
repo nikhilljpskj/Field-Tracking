@@ -17,7 +17,10 @@ class DashboardController extends Controller {
 
         $db = \Database::getInstance()->getConnection();
 
-        if ($role == 'Admin' || $role == 'Manager') {
+        // Check if role is Admin, Manager, or HR to show administrative stats
+        $isAdminOrMgr = in_array($role, ['Admin', 'Manager', 'HR']);
+
+        if ($isAdminOrMgr) {
             $userModel = new User();
             if ($role == 'Manager') {
                 $team = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
@@ -46,7 +49,9 @@ class DashboardController extends Controller {
             
             // 4. Total meetings today
             $stmt = $db->query("SELECT COUNT(*) as count FROM client_meetings " . ($coverage ? $coverage . " AND" : "WHERE") . " DATE(meeting_time) = CURDATE()");
-            $data['today_meetings'] = $stmt->fetch()['count'];
+            $count = $stmt->fetch()['count'];
+            $data['today_meetings'] = $count;
+            $data['today_meetings_count'] = $count; // View expects this for some roles
 
             // Performance Trends (last 7 days)
             $trends = [];
@@ -62,10 +67,13 @@ class DashboardController extends Controller {
             $data['trends'] = $trends;
 
         } else {
-            // Executive Dashboard
+            // Executive Dashboard - Provide default values for variables used in common dashboard sections
             $attendanceModel = new Attendance();
             $travelModel = new Travel();
             $meetingModel = new Meeting();
+            
+            $data['total_employees'] = 0; // Not applicable for executive
+            $data['today_attendance'] = 0; // Not applicable for executive
             
             $data['attendance'] = $attendanceModel->getTodayAttendance($_SESSION['user_id']);
             $summary = $travelModel->getTravelSummary($_SESSION['user_id'], date('Y-m-d'));
@@ -75,7 +83,10 @@ class DashboardController extends Controller {
             $todayMeetings = array_filter($meetings, function($m) {
                 return date('Y-m-d', strtotime($m['meeting_time'])) == date('Y-m-d');
             });
-            $data['today_meetings_count'] = count($todayMeetings);
+            $meetingCount = count($todayMeetings);
+            $data['today_meetings'] = $meetingCount;
+            $data['today_meetings_count'] = $meetingCount;
+            $data['trends'] = [];
         }
 
         $this->view('dashboard', $data);

@@ -26,18 +26,18 @@
                     <div class="col-md-4 mb-4">
                         <div class="card shadow-sm border-0 h-100">
                             <div class="card-body text-center p-3">
-                                <div class="p-2 mb-3 bg-light rounded border">
-                                    <div id="camera-container" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; overflow: hidden;" class="rounded">
-                                        <video id="video" width="100%" height="100%" autoplay playsinline style="object-fit: cover;"></video>
-                                        <canvas id="canvas" style="display:none;"></canvas>
-                                        <img id="photo-preview" style="display:none; width: 100%; height: 100%; object-fit: cover;" class="rounded">
-                                        <div id="camera-overlay" class="d-flex align-items-center justify-content-center" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); color: #fff;">
-                                            <span class="small font-weight-bold">Camera Pending...</span>
-                                        </div>
+                                <!-- Selfie Section (Modal-based) -->
+                                <div class="p-3 mb-4 bg-soft-primary rounded border border-primary">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0 font-weight-bold text-primary"><i class="fe fe-user mr-2"></i> Identification</h6>
+                                        <button type="button" id="open-selfie-modal" class="btn btn-sm btn-primary shadow-sm font-weight-bold" data-toggle="modal" data-target="#selfieModal">
+                                            <i class="fe fe-camera mr-1"></i> Capture Selfie
+                                        </button>
                                     </div>
-                                    <button type="button" id="capture-btn" class="btn btn-sm btn-outline-primary btn-block mt-2 font-weight-bold" disabled>
-                                        <i class="fe fe-camera mr-1"></i> Capture Real-time Photo
-                                    </button>
+                                    <div id="selfie-status-box" class="alert alert-light border m-0 p-2 small text-center italic text-muted">
+                                        No selfie captured yet...
+                                    </div>
+                                    <img id="photo-preview" style="display:none; width: 100%; aspect-ratio: 1/1; object-fit: cover;" class="rounded-circle border border-primary mt-2 mx-auto shadow-sm">
                                 </div>
 
                                 <div id="location-status" class="mb-3 p-3 rounded bg-light border text-left">
@@ -192,7 +192,7 @@
         const canvas = document.getElementById('canvas');
         const captureBtn = document.getElementById('capture-btn');
         const photoPreview = document.getElementById('photo-preview');
-        const cameraOverlay = document.getElementById('camera-overlay');
+        const doneSelfieBtn = document.getElementById('done-selfie-btn');
 
         const videoOdo = document.getElementById('video-odo');
         const captureOdoBtn = document.getElementById('capture-odo-btn');
@@ -221,34 +221,36 @@
         window.addEventListener('resize', () => map.getViewPort().resize());
 
         let currentFacingMode = { selfie: "user", odo: "environment" };
-        let selfieStream = null;
-        let odoStream = null;
+        let activeStream = null;
+
+        function stopActiveStream() {
+            if (activeStream) {
+                activeStream.getTracks().forEach(track => track.stop());
+                activeStream = null;
+            }
+        }
 
         function startCamera(type, mode) {
-            const constraints = { video: { facingMode: mode } };
+            stopActiveStream();
+            const constraints = { 
+                video: { 
+                    facingMode: (mode === 'environment') ? { ideal: "environment" } : (mode === 'user' ? "user" : mode)
+                } 
+            };
+            
             const vidElem = (type === 'selfie') ? video : videoOdo;
-
-            if (type === 'selfie' && selfieStream) {
-                selfieStream.getTracks().forEach(track => track.stop());
-            } else if (type === 'odo' && odoStream) {
-                odoStream.getTracks().forEach(track => track.stop());
-            }
 
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
+                    activeStream = stream;
                     vidElem.srcObject = stream;
-                    if (type === 'selfie') {
-                        selfieStream = stream;
-                        cameraOverlay.classList.add('d-none');
-                        captureBtn.disabled = false;
-                    } else {
-                        odoStream = stream;
-                    }
                 })
                 .catch(err => {
                     console.error(`${type} camera error:`, err);
-                    if (type === 'selfie') {
-                        cameraOverlay.innerHTML = '<span class="small text-danger">Camera Access Denied</span>';
+                    if (mode === 'environment') {
+                        navigator.mediaDevices.getUserMedia({ video: true })
+                            .then(stream => { activeStream = stream; vidElem.srcObject = stream; })
+                            .catch(e => console.error("Total camera failure:", e));
                     }
                 });
         }
@@ -258,9 +260,14 @@
             startCamera(type, currentFacingMode[type]);
         };
 
-        // Initial Start
-        startCamera('selfie', currentFacingMode.selfie);
-        if (videoOdo) startCamera('odo', currentFacingMode.odo);
+        // Selfie Modal Logic
+        $('#selfieModal').on('shown.bs.modal', function () {
+            startCamera('selfie', currentFacingMode.selfie);
+            video.style.display = 'block';
+            photoPreview.style.display = 'none';
+        }).on('hidden.bs.modal', function () {
+            stopActiveStream();
+        });
 
         captureBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
@@ -273,7 +280,24 @@
                 photoPreview.src = dataUrl;
                 photoPreview.style.display = 'block';
                 video.style.display = 'none';
+                if (doneSelfieBtn) doneSelfieBtn.style.display = 'block';
+                captureBtn.innerHTML = '<i class="fe fe-refresh-cw mr-1"></i> Retake';
+            }
+        });
+
+        if (doneSelfieBtn) {
+            doneSelfieBtn.addEventListener('click', () => {
                 isPhotoCaptured = true;
+                const mainPreview = document.getElementById('photo-preview');
+                const selfieStatus = document.getElementById('selfie-status-box');
+                if (mainPreview) {
+                    mainPreview.src = photoDataInput.value;
+                    mainPreview.style.display = 'block';
+                }
+                if (selfieStatus) {
+                    selfieStatus.innerHTML = '<i class="fe fe-check-circle mr-1"></i> Selfie Captured';
+                    selfieStatus.classList.replace('alert-light', 'alert-success');
+                }
                 
                 // Unlock Odometer for Executives
                 if (isExecutive) {
@@ -281,15 +305,21 @@
                     const odoStatus = document.getElementById('odo-status-box');
                     if (odoBtn) odoBtn.disabled = false;
                     if (odoStatus) {
-                        odoStatus.textContent = "Selfie verified. Please capture Odometer/Ticket.";
+                        odoStatus.textContent = "Selfie verified. Please capture Odometer.";
                         odoStatus.classList.replace('alert-light', 'alert-success');
                     }
                 }
-
                 validateCheckIn();
-                captureBtn.innerHTML = '<i class="fe fe-refresh-cw mr-1"></i> Retake Selfie';
-                captureBtn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
-            }
+            });
+        }
+
+        // Odometer Modal Logic
+        $('#odometerModal').on('shown.bs.modal', function () {
+            startCamera('odo', currentFacingMode.odo);
+            videoOdo.style.display = 'block';
+            odoPreview.style.display = 'none';
+        }).on('hidden.bs.modal', function () {
+            stopActiveStream();
         });
 
         if (captureOdoBtn) {
@@ -322,20 +352,13 @@
                         odoFinalPreview.style.display = 'block';
                     }
                     if (odoStatus) {
-                        odoStatus.innerHTML = '<i class="fe fe-check-circle mr-1"></i> Odometer/Ticket Captured';
+                        odoStatus.innerHTML = '<i class="fe fe-check-circle mr-1"></i> Vehicle Photo Captured';
                         odoStatus.classList.replace('alert-success', 'alert-info');
                     }
                     validateCheckIn();
                 });
             }
         }
-
-        // Diagnostic: Log payload size before submission
-        document.getElementById('attendance-form').addEventListener('submit', (e) => {
-            const photoSize = photoDataInput.value.length;
-            const odoSize = odometerDataInput.value.length;
-            console.log(`Submitting Attendance. Photo: ${Math.round(photoSize/1024)}KB, Odometer: ${Math.round(odoSize/1024)}KB. Total: ${Math.round((photoSize+odoSize)/1024)}KB`);
-        });
 
         function validateCheckIn() {
             if (isGpsLocked && isPhotoCaptured && isOdoCaptured) {
@@ -402,25 +425,47 @@
             const clock = document.getElementById('live-clock');
             if (clock) clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
         }, 1000);
-
-        // Odometer Modal Camera Logic
-        $('#odometerModal').on('shown.bs.modal', function () {
-            startCamera('odo', currentFacingMode.odo);
-        }).on('hidden.bs.modal', function () {
-            if (odoStream) {
-                odoStream.getTracks().forEach(track => track.stop());
-                odoStream = null;
-            }
-        });
     });
 </script>
+
+<!-- Selfie Modal -->
+<div class="modal fade" id="selfieModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg bg-dark">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title text-white font-weight-bold">Selfie Verification</h6>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-3">
+                <div id="selfie-container" style="position: relative; width: 100%; aspect-ratio: 1/1; background: #000; overflow: hidden;" class="rounded-circle border border-secondary shadow-sm mx-auto">
+                    <video id="video" width="100%" height="100%" autoplay playsinline style="object-fit: cover;"></video>
+                    <canvas id="canvas" style="display:none;"></canvas>
+                    <img id="photo-preview-modal" style="display:none; width: 100%; height: 100%; object-fit: cover;" class="rounded">
+                </div>
+                <div class="d-flex mt-3">
+                    <button type="button" class="btn btn-outline-light btn-sm mr-2" onclick="switchCamera('selfie')">
+                        <i class="fe fe-refresh-cw"></i> Flip
+                    </button>
+                    <button type="button" id="capture-btn" class="btn btn-primary btn-block font-weight-bold">
+                        <i class="fe fe-camera mr-1"></i> Capture Selfie
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-success btn-block font-weight-bold py-2" data-dismiss="modal" id="done-selfie-btn" style="display:none;">
+                    <i class="fe fe-check-circle mr-1"></i> Confirm & Use This Selfie
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Odometer Capture Modal -->
 <div class="modal fade" id="odometerModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg bg-dark">
             <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title text-white font-weight-bold">Capture Odometer / Ticket</h6>
+                <h6 class="modal-title text-white font-weight-bold">Capture Odometer Reading</h6>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body p-3">

@@ -37,7 +37,9 @@ class LeaveController extends Controller {
             $balance = $leaveModel->getBalance($_SESSION['user_id'], $_POST['leave_type_id'], $quarter, $year);
 
             if ($balance < $days) {
-                $_SESSION['flash_error'] = "Insufficient leave balance. This may result in Loss of Pay (LOP) if approved.";
+                $_SESSION['flash_error'] = "Insufficient leave balance. You only have $balance days available for this quarter.";
+                $this->redirect('leaves');
+                exit;
             }
 
             $data = [
@@ -163,6 +165,36 @@ class LeaveController extends Controller {
                 $_SESSION['flash_success'] = "Leave $status successfully!";
             }
         }
-        $this->redirect('leave-manage');
+    }
+
+    public function seedDefaults() {
+        if (!in_array($_SESSION['role'], ['Admin', 'HR'])) {
+            $this->redirect('dashboard');
+        }
+
+        $db = \Database::getInstance()->getConnection();
+        $sql = "INSERT INTO leave_types (name, quarterly_allocation) VALUES 
+                ('Sick Leave', 1.5),
+                ('Casual Leave', 1.5),
+                ('Earned Leave', 3.0)
+                ON DUPLICATE KEY UPDATE quarterly_allocation = VALUES(quarterly_allocation)";
+        
+        if ($db->query($sql)) {
+            $_SESSION['flash_success'] = "Default leave types (SL, CL, EL) seeded successfully!";
+        } else {
+            $_SESSION['flash_error'] = "Failed to seed default leave types.";
+        }
+        $this->redirect('leave-allocate');
+    }
+
+    public function getBalance() {
+        $leaveModel = new Leave();
+        $typeId = $_GET['type_id'] ?? 0;
+        $quarter = ceil(date('n') / 3);
+        $year = date('Y');
+        $balance = $leaveModel->getBalance($_SESSION['user_id'], $typeId, $quarter, $year);
+        header('Content-Type: application/json');
+        echo json_encode(['balance' => $balance]);
+        exit;
     }
 }

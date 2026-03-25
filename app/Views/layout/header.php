@@ -6,7 +6,8 @@
     <meta name="description" content="Sales & Marketing Field Tracking System">
     <meta name="author" content="">
     <link rel="icon" href="favicon.ico">
-    <title><?php echo $title ?? 'Tiny Dashboard'; ?></title>
+    <title><?php echo $title ?? 'Redeemer HRMS'; ?></title>
+    <base href="<?php echo str_replace('index.php', '', $_SERVER['SCRIPT_NAME']); ?>">
     <!-- Simple bar CSS -->
     <link rel="stylesheet" href="css/simplebar.css">
     <!-- Fonts CSS -->
@@ -21,6 +22,8 @@
     <link rel="stylesheet" href="assets/css/modern.css">
     <!-- HERE Maps JS API CSS -->
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+    <link rel="stylesheet" href="css/app-dark.css" id="darkTheme" disabled>
+    <script src="js/jquery.min.js"></script>
   </head>
   <body class="vertical  light  ">
     <div class="wrapper">

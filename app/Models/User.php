@@ -43,13 +43,17 @@ class User extends Model {
     }
 
     public function update($id, $data) {
-        $sql = "UPDATE users SET role_id = ?, name = ?, email = ?, phone = ?, manager_id = ?";
+        $sql = "UPDATE users SET role_id = ?, name = ?, email = ?, phone = ?, manager_id = ?, 
+                        bank_name = ?, account_number = ?, ifsc_code = ?";
         $params = [
             $data['role_id'],
             $data['name'],
             $data['email'],
             $data['phone'],
-            !empty($data['manager_id']) ? $data['manager_id'] : null
+            !empty($data['manager_id']) ? $data['manager_id'] : null,
+            $data['bank_name'] ?? null,
+            $data['account_number'] ?? null,
+            $data['ifsc_code'] ?? null
         ];
 
         if (!empty($data['password'])) {
@@ -65,8 +69,13 @@ class User extends Model {
     }
 
     public function updateProfile($id, $data) {
-        $sql = "UPDATE users SET name = ?, email = ?, phone = ?";
-        $params = [$data['name'], $data['email'], $data['phone']];
+        $sql = "UPDATE users SET name = ?, email = ?, phone = ?, bank_name = ?, account_number = ?, ifsc_code = ?";
+        $params = [
+            $data['name'], $data['email'], $data['phone'],
+            $data['bank_name'] ?? null,
+            $data['account_number'] ?? null,
+            $data['ifsc_code'] ?? null
+        ];
 
         if (!empty($data['profile_pic'])) {
             $sql .= ", profile_pic = ?";

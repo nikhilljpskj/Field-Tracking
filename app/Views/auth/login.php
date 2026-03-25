@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="favicon.ico">
-    <title>Login - Sales Tracking System</title>
+    <title><?php echo $title ?? 'Redeemer HRMS'; ?></title>
     <!-- Simple bar CSS -->
     <link rel="stylesheet" href="css/simplebar.css">
     <!-- Fonts CSS -->
@@ -21,13 +21,7 @@
       <div class="row align-items-center h-100">
         <form class="col-lg-3 col-md-4 col-10 mx-auto text-center" method="POST" action="login">
           <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="./">
-            <svg version="1.1" id="logo" class="navbar-brand-img brand-md" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 120 120" xml:space="preserve">
-              <g>
-                <polygon class="st0" points="78,105 15,105 24,87 87,87 	" />
-                <polygon class="st0" points="96,69 33,69 42,51 105,51 	" />
-                <polygon class="st0" points="78,33 15,33 24,15 87,15 	" />
-              </g>
-            </svg>
+             <img src="assets/images/redeemer-technologies-logo.png" alt="Redeemer Technologies" class="navbar-brand-img brand-md mb-2" style="max-height: 60px;">
           </a>
           <h1 class="h6 mb-3">Sign in</h1>
           <?php if(isset($error)): ?>
@@ -64,7 +58,7 @@
             }
           </script>
           <button class="btn btn-lg btn-primary btn-block" type="submit">Let me in</button>
-          <p class="mt-5 mb-3 text-muted">© 2026 Sales & Marketing Tracking</p>
+          <p class="mt-5 mb-3 text-muted">© 2026 Redeemer Technologies</p>
         </form>
       </div>
     </div>

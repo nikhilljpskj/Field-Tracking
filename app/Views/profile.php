@@ -18,7 +18,10 @@
                         <div class="row mt-5 align-items-center">
                             <div class="col-md-3 text-center mb-5">
                                 <div class="avatar avatar-xl">
-                                    <img src="<?php echo $user['profile_pic'] ? $user['profile_pic'] : 'assets/avatars/default.jpg'; ?>" alt="..." class="avatar-img rounded-circle border border-primary shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
+                                    <?php 
+                                        $pic = (isset($user['profile_pic']) && !empty($user['profile_pic'])) ? $user['profile_pic'] : 'assets/avatars/default.jpg';
+                                    ?>
+                                    <img src="<?php echo $pic; ?>" alt="..." class="avatar-img rounded-circle border border-primary shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
                                 </div>
                                 <div class="mt-3">
                                     <label for="profile_pic" class="btn btn-sm btn-outline-primary mb-0">Change Photo</label>
@@ -56,6 +59,22 @@
                             <div class="form-group col-md-6">
                                 <label for="phone">Phone Number</label>
                                 <input type="text" id="phone" name="phone" class="form-control" value="<?php echo htmlspecialchars($user['phone']); ?>">
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <h5 class="mb-3">Bank Details</h5>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="bank_name">Bank Name</label>
+                                <input type="text" id="bank_name" name="bank_name" class="form-control" value="<?php echo htmlspecialchars($user['bank_name'] ?? ''); ?>" placeholder="e.g. State Bank of India">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="account_number">Account Number</label>
+                                <input type="text" id="account_number" name="account_number" class="form-control" value="<?php echo htmlspecialchars($user['account_number'] ?? ''); ?>" placeholder="Enter account number">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="ifsc_code">IFSC Code</label>
+                                <input type="text" id="ifsc_code" name="ifsc_code" class="form-control" value="<?php echo htmlspecialchars($user['ifsc_code'] ?? ''); ?>" placeholder="e.g. SBIN0001234">
                             </div>
                         </div>
                         <hr class="my-4">

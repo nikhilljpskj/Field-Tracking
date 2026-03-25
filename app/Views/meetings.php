@@ -39,21 +39,17 @@
                                         <input type="hidden" name="selfie_data" id="selfie_data">
                                         
                                         <div class="form-group mb-3">
-                                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <label class="small font-weight-bold text-muted text-uppercase mb-0">Visit Selfie / Photo</label>
-                                                <button type="button" class="btn btn-xs btn-link p-0" onclick="switchMeetingCamera()"><i class="fe fe-refresh-cw"></i> Switch</button>
+                                        <div class="form-group mb-3 text-center">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <label class="small font-weight-bold text-muted text-uppercase mb-0">Visit Verification</label>
+                                                <button type="button" id="open-photo-modal" class="btn btn-sm btn-primary shadow-sm font-weight-bold" data-toggle="modal" data-target="#photoModal">
+                                                    <i class="fe fe-camera mr-1"></i> Capture Photo
+                                                </button>
                                             </div>
-                                            <div id="selfie-container" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; overflow: hidden;" class="rounded border">
-                                                <video id="video-selfie" width="100%" height="100%" autoplay playsinline style="object-fit: cover;"></video>
-                                                <canvas id="canvas-selfie" style="display:none;"></canvas>
-                                                <img id="selfie-preview" style="display:none; width: 100%; height: 100%; object-fit: cover;" class="rounded">
-                                                <div id="camera-overlay" class="d-flex align-items-center justify-content-center" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); color: #fff;">
-                                                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                                                </div>
+                                            <div id="photo-status-box" class="alert alert-light border m-0 p-2 small text-center italic text-muted mb-2">
+                                                No photo captured yet...
                                             </div>
-                                            <button type="button" id="capture-selfie-btn" class="btn btn-sm btn-outline-primary btn-block mt-2 font-weight-bold" disabled>
-                                                <i class="fe fe-camera mr-1"></i> Capture Selfie
-                                            </button>
+                                            <img id="selfie-preview" style="display:none; width: 100%; aspect-ratio: 4/3; object-fit: cover;" class="rounded border shadow-sm">
                                         </div>
                                         
                                         <div class="form-group mb-3">
@@ -153,7 +149,9 @@
         const canvas = document.getElementById('canvas-selfie');
         const captureBtn = document.getElementById('capture-selfie-btn');
         const selfiePreview = document.getElementById('selfie-preview');
-        const cameraOverlay = document.getElementById('camera-overlay');
+        const photoModalPreview = document.getElementById('photo-modal-preview');
+        const donePhotoBtn = document.getElementById('done-photo-btn');
+        
         const gpsProgress = document.getElementById('gps-progress');
         const gpsLabel = document.getElementById('gps-label');
         const accuracyInfo = document.getElementById('accuracy-info');
@@ -167,24 +165,35 @@
         let map, marker, platform;
         let isGpsLocked = false;
         let isPhotoCaptured = false;
-        let currentFacingMode = "user";
+        let currentFacingMode = "environment";
         let stream = null;
         const REQUIRED_ACCURACY = 100;
 
         function startCamera(mode) {
+            currentFacingMode = mode;
+            const constraints = { 
+                video: { 
+                    facingMode: (mode === 'environment') ? { ideal: "environment" } : (mode === 'user' ? "user" : mode)
+                } 
+            };
+
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } })
+
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then(s => {
                     stream = s;
                     video.srcObject = stream;
-                    cameraOverlay.classList.add('d-none');
                     captureBtn.disabled = false;
                 })
                 .catch(err => {
                     console.error("Camera error:", err);
-                    cameraOverlay.innerHTML = '<span class="small text-danger">Camera Access Denied/Unavailable</span>';
+                    if (mode === 'environment') {
+                        navigator.mediaDevices.getUserMedia({ video: true })
+                            .then(s => { stream = s; video.srcObject = s; })
+                            .catch(e => console.error("Total camera failure:", e));
+                    }
                 });
         }
 
@@ -193,7 +202,17 @@
             startCamera(currentFacingMode);
         };
 
-        startCamera(currentFacingMode);
+        // Modal Camera Control
+        $('#photoModal').on('shown.bs.modal', function () {
+            startCamera(currentFacingMode);
+            video.style.display = 'block';
+            photoModalPreview.style.display = 'none';
+        }).on('hidden.bs.modal', function () {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        });
 
         captureBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
@@ -202,16 +221,30 @@
             context.drawImage(video, 0, 0);
             const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
             if (dataUrl && dataUrl.length > 1000) {
+                photoModalPreview.src = dataUrl;
+                photoModalPreview.style.display = 'block';
+                video.style.display = 'none';
+                if (donePhotoBtn) donePhotoBtn.style.display = 'block';
+                captureBtn.innerHTML = '<i class="fe fe-refresh-cw mr-1"></i> Retake';
+            }
+        });
+
+        if (donePhotoBtn) {
+            donePhotoBtn.addEventListener('click', () => {
+                const dataUrl = photoModalPreview.src;
                 selfieDataInput.value = dataUrl;
                 selfiePreview.src = dataUrl;
                 selfiePreview.style.display = 'block';
-                video.style.display = 'none';
                 isPhotoCaptured = true;
+                
+                const statusBox = document.getElementById('photo-status-box');
+                if (statusBox) {
+                    statusBox.innerHTML = '<i class="fe fe-check-circle mr-1"></i> Visit Photo Captured';
+                    statusBox.classList.replace('alert-light', 'alert-success');
+                }
                 validateForm();
-                captureBtn.innerHTML = '<i class="fe fe-refresh-cw mr-1"></i> Retake Photo';
-                captureBtn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
-            }
-        });
+            });
+        }
 
         function validateForm() {
             if (isGpsLocked && isPhotoCaptured) {
@@ -295,10 +328,44 @@
     });
 </script>
 
+<!-- Photo Capture Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg bg-dark">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title text-white font-weight-bold">Capture Visit Photo</h6>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-3">
+                <div id="selfie-container-modal" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; overflow: hidden;" class="rounded border border-secondary shadow-sm">
+                    <video id="video-selfie" width="100%" height="100%" autoplay playsinline style="object-fit: cover;"></video>
+                    <canvas id="canvas-selfie" style="display:none;"></canvas>
+                    <img id="photo-modal-preview" style="display:none; width: 100%; height: 100%; object-fit: cover;" class="rounded">
+                </div>
+                <div class="d-flex mt-3">
+                    <button type="button" class="btn btn-outline-light btn-sm mr-2" onclick="switchMeetingCamera()">
+                        <i class="fe fe-refresh-cw"></i> Flip
+                    </button>
+                    <button type="button" id="capture-selfie-btn" class="btn btn-primary btn-block font-weight-bold">
+                        <i class="fe fe-camera mr-1"></i> Take Picture
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-success btn-block font-weight-bold py-2" data-dismiss="modal" id="done-photo-btn" style="display:none;">
+                    <i class="fe fe-check-circle mr-1"></i> Confirm & Use Photo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .badge-soft-primary { background-color: rgba(67, 97, 238, 0.1); color: #4361ee; }
 .font-weight-600 { font-weight: 600; }
 .progress-bar { transition: width 0.5s ease; }
+.btn-xs { padding: 0.1rem 0.4rem; font-size: 0.7rem; }
+.italic { font-style: italic; }
 </style>
 
 <?php include 'layout/footer.php'; ?>
