@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Core\Model;
 
+
 class User extends Model {
     public function findByEmail($email) {
         $stmt = $this->db->prepare("SELECT u.*, r.name as role_name 
