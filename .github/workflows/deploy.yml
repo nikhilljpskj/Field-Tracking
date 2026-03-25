@@ -1,4 +1,4 @@
-name: 🚀 Deploy to GoDaddy
+name: Deploy to GoDaddy
 
 on:
   push:
@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Upload via FTP
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          server: ftp.redeemertechnologies.com
+          username: sales_tracking_user@app.redeemertechnologies.com
+          password: sales_tracking_ftp_pass
           port: 21
           protocol: ftps
           local-dir: ./
