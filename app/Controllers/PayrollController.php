@@ -27,16 +27,20 @@ class PayrollController extends Controller {
         $userModel = new User();
         $payrollModel = new Payroll();
         
-        $stmt = \Database::getInstance()->getConnection()->query("SELECT u.*, r.name as role_name, s.basic, s.hra, s.ta_da, s.other_allowances, s.pf_deduction, s.tax_deduction, s.total_ctc 
+        $stmt = \Database::getInstance()->getConnection()->query("SELECT u.*, r.name as role_name, s.* 
                                                                   FROM users u 
                                                                   JOIN roles r ON u.role_id = r.id 
                                                                   LEFT JOIN salary_structures s ON u.id = s.user_id 
                                                                   ORDER BY u.name ASC");
         $users = $stmt->fetchAll();
+
+        $stmt = \Database::getInstance()->getConnection()->query("SELECT * FROM salary_templates ORDER BY name ASC");
+        $templates = $stmt->fetchAll();
         
         $data = [
-            'title' => 'Payroll Management - Admin/HR',
-            'users' => $users
+            'title' => 'Enterprise Payroll - Calculator',
+            'users' => $users,
+            'templates' => $templates
         ];
         $this->view('payroll/manage', $data);
     }
@@ -51,33 +55,37 @@ class PayrollController extends Controller {
         $this->redirect('payroll-manage');
     }
 
-    public function process() {
+    public function saveDraft() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && in_array($_SESSION['role'], ['Admin', 'HR'])) {
             $payrollModel = new Payroll();
-            $month = $_POST['month'];
-            $year = $_POST['year'];
-            $userId = $_POST['user_id'] ?? null;
-            
-            if ($userId) {
-                // Single User
-                if ($payrollModel->generatePayroll($userId, $month, $year, $_SESSION['user_id'])) {
-                    $_SESSION['flash_success'] = "Payroll processed successfully!";
-                } else {
-                    $_SESSION['flash_error'] = "Failed to process payroll. Ensure salary structure is set.";
-                }
+            if ($payrollModel->saveSalaryStructure($_POST)) {
+                echo json_encode(['status' => 'success', 'message' => 'Draft saved successfully!']);
             } else {
-                // Bulk Process (All Executives/Managers)
-                $userModel = new User();
-                $users = $userModel->getAll();
-                $count = 0;
-                foreach ($users as $u) {
-                    if ($payrollModel->generatePayroll($u['id'], $month, $year, $_SESSION['user_id'])) {
-                        $count++;
-                    }
-                }
-                $_SESSION['flash_success'] = "Processed payroll for $count employees.";
+                echo json_encode(['status' => 'error', 'message' => 'Failed to save draft.']);
             }
         }
-        $this->redirect('payroll-manage');
+        exit;
+    }
+
+    public function exportCSV() {
+        if (!in_array($_SESSION['role'], ['Admin', 'HR'])) exit;
+        
+        $filename = "payroll_export_" . date('Y-m-d') . ".csv";
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['Employee Name', 'Basic', 'HRA', 'DA', 'Gross', 'Deductions', 'Net Salary', 'Monthly CTC']);
+        
+        $userModel = new User();
+        $payrollModel = new Payroll();
+        $stmt = \Database::getInstance()->getConnection()->query("SELECT u.name, s.* FROM users u JOIN salary_structures s ON u.id = s.user_id");
+        while ($row = $stmt->fetch()) {
+            // Re-calculate basic totals for CSV
+            $gross = $row['basic'] + $row['hra'] + $row['da'] + $row['special_allowance']; // simplified for CSV
+            fputcsv($output, [$row['name'], $row['basic'], $row['hra'], $row['da'], $gross, $row['pf_deduction'], $row['total_ctc'] / 12, $row['total_ctc'] / 12]);
+        }
+        fclose($output);
+        exit;
     }
 }

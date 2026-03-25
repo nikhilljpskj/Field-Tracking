@@ -11,13 +11,27 @@ class Payroll extends Model {
     }
 
     public function saveSalaryStructure($data) {
-        $stmt = $this->db->prepare("INSERT INTO salary_structures (user_id, basic, hra, ta_da, other_allowances, pf_deduction, tax_deduction, total_ctc) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
-                                    ON DUPLICATE KEY UPDATE basic = ?, hra = ?, ta_da = ?, other_allowances = ?, pf_deduction = ?, tax_deduction = ?, total_ctc = ?");
-        return $stmt->execute([
-            $data['user_id'], $data['basic'], $data['hra'], $data['ta_da'], $data['other'], $data['pf'], $data['tax'], $data['ctc'],
-            $data['basic'], $data['hra'], $data['ta_da'], $data['other'], $data['pf'], $data['tax'], $data['ctc']
-        ]);
+        $fields = [
+            'user_id', 'basic', 'hra', 'da', 'special_allowance', 'conveyance_allowance', 
+            'medical_allowance', 'education_allowance', 'uniform_allowance', 'food_allowance', 
+            'telephone_allowance', 'books_allowance', 'research_allowance', 'cca', 
+            'transport_allowance', 'pf_deduction', 'tax_deduction', 'total_ctc',
+            'pf_employer_contribution', 'eps_contribution', 'esi_employer_contribution',
+            'gratuity_provision', 'bonus_provision', 'lwf_employee', 'lwf_employer',
+            'surcharge', 'advance_recovery', 'loan_emi', 'tds_monthly', 'professional_tax',
+            'deduction_80c', 'deduction_80d', 'prev_employer_tds', 'total_working_days'
+        ];
+        
+        $placeholders = implode(', ', array_fill(0, count($fields), '?'));
+        $updates = implode(', ', array_map(fn($f) => "$f = VALUES($f)", array_slice($fields, 1)));
+
+        $sql = "INSERT INTO salary_structures (" . implode(', ', $fields) . ") 
+                VALUES ($placeholders) 
+                ON DUPLICATE KEY UPDATE $updates";
+        
+        $stmt = $this->db->prepare($sql);
+        $values = array_map(fn($f) => $data[$f] ?? 0, $fields);
+        return $stmt->execute($values);
     }
 
     public function generatePayroll($user_id, $month, $year, $processed_by) {
@@ -48,24 +62,25 @@ class Payroll extends Model {
 
         // 4. Get Salary Structure
         $structure = $this->getSalaryStructure($user_id);
-        if (!$structure) {
-            // If no structure, skip this user but return true (so bulk processing doesn't stop)
-            return false;
-        }
+        if (!$structure) return false;
 
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        $perDaySalary = $structure['basic'] / $daysInMonth;
+        $calc = $this->calculate($structure);
+        $daysInMonth = $structure['total_working_days'] ?? cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $perDaySalary = $calc['gross'] / $daysInMonth;
         
-        $grossSalary = $structure['basic'] + $structure['hra'] + $structure['other_allowances'] + $structure['ta_da'] + $totalTada;
         $lopAmount = $lopDays * $perDaySalary;
-        
-        $netSalary = $grossSalary - $lopAmount - $structure['pf_deduction'] - $structure['tax_deduction'];
+        $netSalary = $calc['net'] - $lopAmount; // net of statutory + lop
 
-        $stmt = $this->db->prepare("INSERT INTO payroll_history (user_id, month, year, gross_salary, lop_deductions, net_salary, processed_by) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?) 
-                                    ON DUPLICATE KEY UPDATE gross_salary = VALUES(gross_salary), lop_deductions = VALUES(lop_deductions), net_salary = VALUES(net_salary), processed_by = VALUES(processed_by)");
+        $breakdown = $calc;
+        $breakdown['lop_days'] = $lopDays;
+        $breakdown['lop_amount'] = $lopAmount;
+        $breakdown['total_tada'] = (float)$totalTada;
+        
+        $stmt = $this->db->prepare("INSERT INTO payroll_history (user_id, month, year, gross_salary, lop_deductions, net_salary, processed_by, breakdown_json, monthly_ctc, annual_ctc) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                                    ON DUPLICATE KEY UPDATE gross_salary = VALUES(gross_salary), lop_deductions = VALUES(lop_deductions), net_salary = VALUES(net_salary), processed_by = VALUES(processed_by), breakdown_json = VALUES(breakdown_json)");
         return $stmt->execute([
-            $user_id, $month, $year, $grossSalary, $lopAmount, $netSalary, $processed_by
+            $user_id, $month, $year, $calc['gross'], $lopAmount, $netSalary, $processed_by, json_encode($breakdown), $calc['monthly_ctc'], $calc['annual_ctc']
         ]);
     }
 
