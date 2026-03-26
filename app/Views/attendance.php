@@ -62,6 +62,11 @@
                                     <input type="hidden" name="odometer_data" id="odometer_data">
                                     
                                     <?php if(!$attendance): ?>
+                                        <!-- CHECK-IN STATE -->
+                                        <div class="alert alert-info border-0 shadow-sm small italic mb-4 text-left">
+                                            <i class="fe fe-info mr-1 d-block mb-1 h5 text-info"></i> You are currently <b>Off-Duty</b>. Please capture your selfie and GPS lock to start your shift.
+                                        </div>
+
                                         <?php if($_SESSION['role'] == 'Executive'): ?>
                                         <div class="p-3 mb-4 bg-soft-info rounded border border-info">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -95,18 +100,47 @@
                                         <button type="submit" id="check-in-btn" class="btn btn-lg btn-primary btn-block py-3 shadow-sm font-weight-bold" disabled>
                                             <i class="fe fe-lock mr-2"></i> Verify GPS & Photo
                                         </button>
+
                                     <?php elseif(!$attendance['check_out_time']): ?>
+                                        <!-- CHECK-OUT STATE -->
+                                        <div class="alert alert-success border-0 shadow-sm mb-4 text-left">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-0 font-weight-bold text-success">Logged In (IST)</h6>
+                                                    <small class="text-success font-weight-bold"><?php echo date('h:i A', strtotime($attendance['check_in_time'])); ?></small>
+                                                </div>
+                                                <div class="text-right">
+                                                    <h6 class="mb-0 font-weight-bold text-success">Shift Duration</h6>
+                                                    <small id="work-duration-ticker" class="font-weight-bold text-dark" data-start="<?php echo $attendance['check_in_time']; ?>">Calculating...</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <input type="hidden" name="attendance_id" value="<?php echo $attendance['id']; ?>">
                                         <button type="submit" id="check-out-btn" class="btn btn-lg btn-danger btn-block py-3 shadow-sm font-weight-bold" formaction="attendance?action=checkOut" disabled>
-                                            <i class="fe fe-lock mr-2"></i> Verify GPS & Photo
+                                            <i class="fe fe-lock mr-2"></i> Verify & Check-Out
                                         </button>
+                                        
+                                        <p class="text-muted small italic text-center mt-3">
+                                            <i class="fe fe-alert-circle mr-1 text-warning"></i> Photo verification is REQUIRED for checkout.
+                                        </p>
+
                                     <?php else: ?>
-                                        <div class="p-3 bg-soft-success rounded-lg border border-success">
-                                            <i class="fe fe-check-circle fe-20 text-success mb-1 d-block"></i>
-                                            <h6 class="text-success font-weight-bold mb-0 small">Shift Completed</h6>
+                                        <div class="p-4 bg-soft-success rounded-lg border border-success text-center">
+                                            <i class="fe fe-check-circle fe-24 text-success mb-2 d-block"></i>
+                                            <h5 class="text-success font-weight-bold mb-1">Shift Successfully Closed</h5>
+                                            <p class="text-muted small mb-0">Total Hours: 
+                                            <?php 
+                                                $start = strtotime($attendance['check_in_time']);
+                                                $end = strtotime($attendance['check_out_time']);
+                                                $diff = $end - $start;
+                                                echo floor($diff/3600) . 'h ' . floor(($diff/60)%60) . 'm';
+                                            ?>
+                                            </p>
                                         </div>
                                     <?php endif; ?>
                                 </form>
+
                             </div>
                         </div>
                     </div>
@@ -420,10 +454,24 @@
 
         monitorPrecision();
 
-        // Clock
+        // Clock & Work Duration Ticker
         setInterval(() => {
             const clock = document.getElementById('live-clock');
             if (clock) clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+            const durationTicker = document.getElementById('work-duration-ticker');
+            if (durationTicker && durationTicker.dataset.start) {
+                const startTime = new Date(durationTicker.dataset.start).getTime();
+                const now = new Date().getTime();
+                const diff = now - startTime;
+
+                if (diff > 0) {
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                    durationTicker.textContent = `${hours}h ${mins}m ${secs}s`;
+                }
+            }
         }, 1000);
     });
 </script>

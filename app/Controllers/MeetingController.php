@@ -15,9 +15,30 @@ class MeetingController extends Controller {
             $meetings = $meetingModel->getUserMeetings($_SESSION['user_id']);
         }
         
+        // Calculate Dashboard Stats
+        $todayStr = date('Y-m-d');
+        $total_today = 0;
+        $approved_today = 0;
+        $clients_seen = [];
+        
+        foreach($meetings as $m) {
+            $mDate = date('Y-m-d', strtotime($m['meeting_time']));
+            if($mDate == $todayStr) {
+                $total_today++;
+                if(($m['status'] ?? '') == 'Approved') $approved_today++;
+                $clients_seen[] = $m['client_name'];
+            }
+        }
+        $unique_clients = count(array_unique($clients_seen));
+        
         $data = [
-            'title' => 'Client Meetings - Sales Tracking',
-            'meetings' => $meetings
+            'title' => 'Intelligence Hub - Client Interactions',
+            'meetings' => $meetings,
+            'stats' => [
+                'total_today' => $total_today,
+                'approved_today' => $approved_today,
+                'unique_clients' => $unique_clients
+            ]
         ];
         $this->view('meetings', $data);
     }
