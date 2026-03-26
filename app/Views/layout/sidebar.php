@@ -27,7 +27,13 @@
     <li class="nav-item w-100">
       <a class="nav-link" href="attendance">
         <i class="fe fe-user-check fe-16"></i>
-        <span class="ml-3 item-text">Attendance</span>
+        <span class="ml-3 item-text">Daily Attendance</span>
+      </a>
+    </li>
+    <li class="nav-item w-100">
+      <a class="nav-link" href="attendance-history">
+        <i class="fe fe-calendar fe-16"></i>
+        <span class="ml-3 item-text">Attendance History</span>
       </a>
     </li>
     <li class="nav-item w-100">
