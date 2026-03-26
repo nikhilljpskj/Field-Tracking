@@ -18,6 +18,31 @@ class Tracking extends Model {
         return $stmt->fetchAll();
     }
 
+    public function getDailyDistance($user_id, $date) {
+        $logs = $this->getRoute($user_id, $date);
+        if (count($logs) < 2) return 0;
+
+        $totalDistance = 0;
+        for ($i = 0; $i < count($logs) - 1; $i++) {
+            $totalDistance += $this->calculateHaversine(
+                $logs[$i]['latitude'], $logs[$i]['longitude'],
+                $logs[$i+1]['latitude'], $logs[$i+1]['longitude']
+            );
+        }
+        return $totalDistance / 1000; // Return in KM
+    }
+
+    private function calculateHaversine($lat1, $lon1, $lat2, $lon2) {
+        $earth_radius = 6371000; // meters
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat/2) * sin($dLat/2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon/2) * sin($dLon/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        return $earth_radius * $c;
+    }
+
     public function getTeamLastLocations($team_ids) {
         if (empty($team_ids)) return [];
         $in = implode(',', array_fill(0, count($team_ids), '?'));

@@ -7,8 +7,8 @@
             <div class="col-12 col-lg-10 col-xl-8">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 class="h3 mb-0 page-title">Global Settings</h2>
-                        <p class="text-muted">Configure system-wide parameters and travel compensation rates.</p>
+                        <h2 class="h3 mb-0 page-title">Intelligence & Global Settings</h2>
+                        <p class="text-muted">Configure system-wide parameters, performance thresholds, and travel compensation rates.</p>
                     </div>
                 </div>
 
@@ -69,15 +69,47 @@
                     </div>
                 </div>
 
+                <!-- Performance Thresholds Section -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white p-4">
+                        <h5 class="card-title mb-0"><i class="fe fe-cpu mr-2 text-primary"></i> Intelligence Audit Thresholds</h5>
+                    </div>
+                    <form action="settings?action=update_thresholds" method="POST">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="font-weight-600">Low Performance (< 4)</label>
+                                    <input type="number" name="low" class="form-control bg-light border-0" value="<?php echo $thresholds['value_low']; ?>" required>
+                                    <small class="text-danger small">Triggers critical alerts & notifications.</small>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="font-weight-600">Average Performance (7-10)</label>
+                                    <input type="number" name="avg" class="form-control bg-light border-0" value="<?php echo $thresholds['value_avg']; ?>" required>
+                                    <small class="text-muted small">Standard operational level.</small>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="font-weight-600">Excellence Target (10+)</label>
+                                    <input type="number" name="exc" class="form-control bg-light border-0" value="<?php echo $thresholds['value_exc']; ?>" required>
+                                    <small class="text-success small">Triggers achievement markers.</small>
+                                </div>
+                            </div>
+                            <div class="alert alert-soft-info border-0 mt-3 small">
+                                <i class="fe fe-info mr-2"></i> These values define the daily visit targets for all field staff. Changes apply immediately to all dashboards.
+                            </div>
+                            <button type="submit" class="btn btn-dark px-4 shadow-sm mt-3">Save Audit Configuration</button>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white p-4">
-                        <h5 class="card-title mb-0"><i class="fe fe-settings mr-2 text-primary"></i> System Parameters</h5>
+                        <h5 class="card-title mb-0"><i class="fe fe-settings mr-2 text-primary"></i> System Infrastructure</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <label class="font-weight-600">Site Title</label>
-                                <input type="text" class="form-control bg-light border-0" value="FieldTrack Pro" readonly>
+                                <input type="text" class="form-control bg-light border-0" value="Field Intelligence Suite" readonly>
                             </div>
                             <div class="col-md-6 form-group">
                                 <label class="font-weight-600">Tracking Frequency</label>
@@ -87,9 +119,6 @@
                                     <option>Every 30 Minutes</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="alert alert-info border-0 small mt-3">
-                            <i class="fe fe-info mr-2"></i> Some parameters are currently locked and can be modified in the source configuration.
                         </div>
                     </div>
                 </div>

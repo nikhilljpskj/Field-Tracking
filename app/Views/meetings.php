@@ -160,6 +160,13 @@
                     <input type="text" name="hospital_name" id="hospital_name" class="form-control bg-white" placeholder="Facility Title" required>
                 </div>
                 <div class="form-group mb-3">
+                    <label class="small font-weight-bold text-muted text-uppercase">Visit Category</label>
+                    <select name="visit_category" class="form-control custom-select bg-white">
+                        <option value="Meeting">Standard Meeting</option>
+                        <option value="Home Enrollment">Home Enrollment</option>
+                    </select>
+                </div>
+                <div class="form-group mb-3">
                     <label class="small font-weight-bold text-muted text-uppercase">Meeting Nature</label>
                     <select name="meeting_type" class="form-control custom-select bg-white">
                         <option>Introductory</option>
@@ -299,6 +306,12 @@
                 </div>
             </div>
             <div class="modal-footer bg-light p-3">
+                <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
+                    <div class="mr-auto">
+                        <button type="button" class="btn btn-success px-4 font-weight-bold rounded-pill audit-btn" id="modal-approve-btn">Approve</button>
+                        <button type="button" class="btn btn-danger px-4 font-weight-bold rounded-pill audit-btn" id="modal-reject-btn">Reject</button>
+                    </div>
+                <?php endif; ?>
                 <button type="button" class="btn btn-primary px-4 font-weight-bold rounded-pill" id="modal-map-link">View GPS Trace</button>
                 <button type="button" class="btn btn-outline-secondary px-4 font-weight-bold rounded-pill" data-dismiss="modal">Close</button>
             </div>
@@ -492,8 +505,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.getElementById('modal-map-link').onclick = () => {
              $('#meetingDetailModal').modal('hide');
-             focusMeeting(parseFloat(data.latitude), parseFloat(data.longitude));
+             window.focusMeeting(parseFloat(data.latitude), parseFloat(data.longitude));
         };
+
+        if(document.getElementById('modal-approve-btn')) {
+            document.getElementById('modal-approve-btn').onclick = () => {
+                window.location.href = `meetings?action=update_status&id=${data.id}&status=Approved`;
+            };
+            document.getElementById('modal-reject-btn').onclick = () => {
+                window.location.href = `meetings?action=update_status&id=${data.id}&status=Rejected`;
+            };
+        }
         $('#meetingDetailModal').modal('show');
     };
 });

@@ -49,7 +49,8 @@ $routes = [
     'leave-manage' => 'LeaveController',
     'leave-allocate' => 'LeaveController',
     'payroll' => 'PayrollController',
-    'payroll-manage' => 'PayrollController'
+    'payroll-manage' => 'PayrollController',
+    'travel-history' => 'TravelController'
 ];
 
 if (array_key_exists($url, $routes)) {

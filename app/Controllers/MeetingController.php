@@ -55,6 +55,7 @@ class MeetingController extends Controller {
                 'user_id' => $_SESSION['user_id'],
                 'client_name' => $_POST['client_name'],
                 'hospital_name' => $_POST['hospital_name'],
+                'visit_category' => $_POST['visit_category'] ?? 'Meeting',
                 'meeting_type' => $_POST['meeting_type'],
                 'notes' => $_POST['notes'],
                 'outcome' => $_POST['outcome'],
@@ -70,6 +71,20 @@ class MeetingController extends Controller {
                 $_SESSION['flash_success'] = "Meeting & Selfie logged successfully!";
             } else {
                 $_SESSION['flash_error'] = "Failed to log meeting.";
+            }
+        }
+        $this->redirect('meetings');
+    }
+
+    public function update_status() {
+        $this->checkRole(['Admin', 'Manager']);
+        if (isset($_GET['id']) && isset($_GET['status'])) {
+            $meetingModel = new Meeting();
+            $result = $meetingModel->updateStatus($_GET['id'], $_GET['status'], $_SESSION['user_id']);
+            if ($result) {
+                $_SESSION['flash_success'] = "Intelligence report " . $_GET['status'] . " successfully.";
+            } else {
+                $_SESSION['flash_error'] = "Failed to update report status.";
             }
         }
         $this->redirect('meetings');

@@ -45,10 +45,17 @@
               <span class="fe fe-grid fe-16"></span>
             </a>
           </li>
+          <?php 
+            $notifModel = new \App\Models\Notification();
+            $unreadCount = $notifModel->getCount($_SESSION['user_id']);
+            $unreadList = $notifModel->getUnread($_SESSION['user_id']);
+          ?>
           <li class="nav-item nav-notif">
             <a class="nav-link text-muted my-2" href="./#" data-toggle="modal" data-target=".modal-notif">
               <span class="fe fe-bell fe-16"></span>
-              <span class="dot dot-md bg-success"></span>
+              <?php if($unreadCount > 0): ?>
+                <span class="dot dot-md bg-danger"></span>
+              <?php endif; ?>
             </a>
           </li>
           <li class="nav-item dropdown">
@@ -68,3 +75,47 @@
           </li>
         </ul>
       </nav>
+
+<!-- Notification Modal -->
+<div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="defaultModalLabel">Intelligence Alerts (<?php echo $unreadCount; ?>)</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="list-group list-group-flush my-n3">
+          <?php if(empty($unreadList)): ?>
+            <div class="list-group-item bg-transparent text-center py-4">
+              <p class="text-muted mb-0">No new notifications</p>
+            </div>
+          <?php else: ?>
+            <?php foreach($unreadList as $n): ?>
+              <div class="list-group-item bg-transparent">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <span class="fe <?php 
+                        echo ($n['type'] == 'Target') ? 'fe-target text-primary' : 
+                             (($n['type'] == 'Performance') ? 'fe-alert-circle text-danger' : 'fe-bell text-secondary'); 
+                    ?> fe-24"></span>
+                  </div>
+                  <div class="col">
+                    <small><strong><?php echo htmlspecialchars($n['type']); ?></strong></small>
+                    <div class="my-0 text-muted small"><?php echo htmlspecialchars($n['message']); ?></div>
+                    <small class="badge badge-pill badge-light text-muted"><?php echo date('h:i A', strtotime($n['created_at'])); ?></small>
+                  </div>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </div> <!-- / .list-group -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

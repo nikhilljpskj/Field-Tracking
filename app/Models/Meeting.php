@@ -5,12 +5,13 @@ use App\Core\Model;
 
 class Meeting extends Model {
     public function logMeeting($data) {
-        $stmt = $this->db->prepare("INSERT INTO client_meetings (user_id, client_name, hospital_office_name, meeting_type, notes, outcome, meeting_time, latitude, longitude, address, selfie_path) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO client_meetings (user_id, client_name, hospital_office_name, visit_category, meeting_type, notes, outcome, meeting_time, latitude, longitude, address, selfie_path) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         return $stmt->execute([
             $data['user_id'],
             $data['client_name'],
             $data['hospital_name'],
+            $data['visit_category'] ?? 'Meeting',
             $data['meeting_type'],
             $data['notes'],
             $data['outcome'],
@@ -44,9 +45,9 @@ class Meeting extends Model {
         return $stmt->fetchAll();
     }
 
-    public function updateStatus($id, $status) {
-        $stmt = $this->db->prepare("UPDATE client_meetings SET status = ? WHERE id = ?");
-        return $stmt->execute([$status, $id]);
+    public function updateStatus($id, $status, $auditor_id = null) {
+        $stmt = $this->db->prepare("UPDATE client_meetings SET status = ?, approved_by = ? WHERE id = ?");
+        return $stmt->execute([$status, $auditor_id, $id]);
     }
 
     public function getTeamMeetings($team_ids) {
@@ -71,10 +72,11 @@ class Meeting extends Model {
     }
 
     public function update($id, $data) {
-        $stmt = $this->db->prepare("UPDATE client_meetings SET client_name = ?, hospital_office_name = ?, meeting_type = ?, notes = ?, outcome = ?, meeting_time = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE client_meetings SET client_name = ?, hospital_office_name = ?, visit_category = ?, meeting_type = ?, notes = ?, outcome = ?, meeting_time = ? WHERE id = ?");
         return $stmt->execute([
             $data['client_name'],
             $data['hospital_name'],
+            $data['visit_category'] ?? 'Meeting',
             $data['meeting_type'],
             $data['notes'],
             $data['outcome'],
