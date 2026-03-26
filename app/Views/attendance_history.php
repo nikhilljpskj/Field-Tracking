@@ -1,124 +1,163 @@
-<?php include_once 'includes/header.php'; ?>
+<?php include 'layout/header.php'; ?>
+<?php include 'layout/sidebar.php'; ?>
 
 <!-- Calendar Dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-<div class="main-content" style="padding: 20px; background: #f8f9fa; min-height: 100vh;">
+<main role="main" class="main-content">
     <div class="container-fluid">
-        
-        <!-- Header & Filters -->
-        <div class="row mb-4 align-items-center">
-            <div class="col-md-6">
-                <h3 class="mb-0 font-weight-bold" style="color: #2D3748;">Attendance Tracking</h3>
-                <p class="text-muted small mb-0">Monthly shift & leave audit logs</p>
-            </div>
-            
-            <div class="col-md-6 text-right d-flex justify-content-end align-items-center">
-                <?php if(!empty($users)): ?>
-                <div class="mr-3">
-                    <select id="user-selector" class="form-control form-control-sm border-0 shadow-sm" style="min-width: 200px; border-radius: 8px;">
-                        <?php foreach($users as $u): ?>
-                            <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $selectedUser) ? 'selected' : ''; ?>>
-                                <?php echo $u['name']; ?> (<?php echo $u['role']; ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
+        <div class="row justify-content-center">
+            <div class="col-12">
                 
-                <div class="btn-group shadow-sm bg-white p-1" style="border-radius: 10px;">
-                    <button class="btn btn-sm btn-light active px-3" id="btn-calendar" style="border-radius: 8px;"><i class="fe fe-calendar mr-2"></i>Calendar</button>
-                    <button class="btn btn-sm btn-light px-3" id="btn-list" style="border-radius: 8px;"><i class="fe fe-list mr-2"></i>List</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Calendar Section -->
-            <div class="col-12" id="calendar-wrapper">
-                <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
-                    <div id="attendance-calendar"></div>
+                <!-- Page Header with Breadcrumbs & Standard Actions -->
+                <div class="row align-items-center mb-4">
+                    <div class="col">
+                        <h2 class="h3 mb-0 page-title">Attendance Tracking</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb bg-transparent p-0 mb-0">
+                                <li class="breadcrumb-item"><a href="dashboard">Home</a></li>
+                                <li class="breadcrumb-item"><a href="attendance">Attendance</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">History</li>
+                            </ol>
+                        </nav>
+                    </div>
                     
-                    <!-- Legend -->
-                    <div class="d-flex mt-4 pt-3 border-top justify-content-center">
-                        <div class="d-flex align-items-center mr-4">
-                            <span style="width: 12px; height: 12px; border-radius: 2px; background: #28a745; display: inline-block; margin-right: 8px;"></span>
-                            <small class="font-weight-bold text-muted">Present</small>
-                        </div>
-                        <div class="d-flex align-items-center mr-4">
-                            <span style="width: 12px; height: 12px; border-radius: 2px; background: #ffc107; display: inline-block; margin-right: 8px;"></span>
-                            <small class="font-weight-bold text-muted">On Leave</small>
-                        </div>
+                    <div class="col-auto">
                         <div class="d-flex align-items-center">
-                            <span style="width: 12px; height: 12px; border-radius: 2px; background: #dc3545; display: inline-block; margin-right: 8px;"></span>
-                            <small class="font-weight-bold text-muted">Absent</small>
+                            <?php if(!empty($users)): ?>
+                                <div class="form-group mb-0 mr-3">
+                                    <select id="user-selector" class="form-control form-control-sm border-0 shadow-sm px-3" style="min-width: 200px; border-radius: 20px; height: 38px;">
+                                        <?php foreach($users as $u): ?>
+                                            <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $selectedUser) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($u['name']); ?> (<?php echo $u['role']; ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <div class="btn-group btn-group-toggle shadow-sm" data-toggle="buttons">
+                                <label class="btn btn-white active" id="btn-calendar">
+                                    <input type="radio" name="options" id="option1" checked> <i class="fe fe-calendar mr-1"></i> Calendar
+                                </label>
+                                <label class="btn btn-white" id="btn-list">
+                                    <input type="radio" name="options" id="option2"> <i class="fe fe-list mr-1"></i> List
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- List Section (Hidden by Default) -->
-            <div class="col-12 d-none" id="list-wrapper">
-                <div class="card shadow-sm border-0" style="border-radius: 15px;">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="bg-light small text-uppercase font-weight-bold">
-                                <tr>
-                                    <th class="pl-4">Date</th>
-                                    <th>Shift ID</th>
-                                    <th>In Time</th>
-                                    <th>Out Time</th>
-                                    <th>Duration</th>
-                                    <th class="pr-4 text-right">Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if(!empty($records)): ?>
-                                    <?php foreach($records as $r): ?>
-                                    <tr>
-                                        <td class="pl-4 font-weight-bold"><?php echo date('D, d M y', strtotime($r['check_in_time'])); ?></td>
-                                        <td><span class="badge badge-light">#<?php echo $r['id']; ?></span></td>
-                                        <td><span class="text-success"><?php echo date('h:i A', strtotime($r['check_in_time'])); ?></span></td>
-                                        <td><span class="<?php echo $r['check_out_time'] ? 'text-danger' : 'text-muted italic'; ?>"><?php echo $r['check_out_time'] ? date('h:i A', strtotime($r['check_out_time'])) : 'Open'; ?></span></td>
-                                        <td>
-                                            <?php if($r['check_out_time']): 
-                                                $d = (strtotime($r['check_out_time']) - strtotime($r['check_in_time'])) / 3600;
-                                                echo round($d, 1) . ' hrs';
-                                            endif; ?>
-                                        </td>
-                                        <td class="text-right pr-4">
-                                            <a href="attendance-edit?id=<?php echo $r['id']; ?>" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="fe fe-eye"></i></a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr><td colspan="6" class="text-center py-5 text-muted">No attendance sessions recorded for this month.</td></tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                <!-- Main Content Row -->
+                <div class="row">
+                    <!-- Calendar Container -->
+                    <div class="col-12" id="calendar-wrapper">
+                        <div class="card shadow-sm border-0 mb-4 p-4" style="border-radius: 12px;">
+                            <div id="attendance-calendar"></div>
+                            
+                            <!-- Custom Legend for Professionalism -->
+                            <div class="d-flex mt-4 pt-3 border-top justify-content-center flex-wrap">
+                                <div class="d-flex align-items-center mx-3 mb-2">
+                                    <span class="dot dot-md bg-success mr-2"></span>
+                                    <small class="text-muted font-weight-bold">Present (Deployment Logged)</small>
+                                </div>
+                                <div class="d-flex align-items-center mx-3 mb-2">
+                                    <span class="dot dot-md bg-warning mr-2"></span>
+                                    <small class="text-muted font-weight-bold">On Leave (Approved)</small>
+                                </div>
+                                <div class="d-flex align-items-center mx-3 mb-2">
+                                    <span class="dot dot-md bg-danger mr-2"></span>
+                                    <small class="text-muted font-weight-bold">Absent (No Activity Record)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- List Container (Hidden) -->
+                    <div class="col-12 d-none" id="list-wrapper">
+                        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+                            <div class="card-header bg-white py-3 border-0">
+                                <h5 class="card-title mb-0">Detailed Session Log</h5>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 datatables" id="historyTable">
+                                    <thead class="bg-light text-muted small text-uppercase">
+                                        <tr>
+                                            <th class="pl-4">Date & Day</th>
+                                            <th>Location Tag</th>
+                                            <th>In Time</th>
+                                            <th>Out Time</th>
+                                            <th>Shift Duration</th>
+                                            <th class="pr-4 text-right">Audit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if(!empty($records)): ?>
+                                            <?php foreach($records as $r): ?>
+                                            <tr>
+                                                <td class="pl-4">
+                                                    <span class="d-block font-weight-bold"><?php echo date('d M Y', strtotime($r['check_in_time'])); ?></span>
+                                                    <small class="text-muted"><?php echo date('l', strtotime($r['check_in_time'])); ?></small>
+                                                </td>
+                                                <td>
+                                                    <span class="small text-muted d-block" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                        <i class="fe fe-map-pin mr-1"></i> <?php echo $r['check_in_address']; ?>
+                                                    </span>
+                                                </td>
+                                                <td><span class="badge badge-soft-success px-2"><?php echo date('h:i A', strtotime($r['check_in_time'])); ?></span></td>
+                                                <td><span class="badge <?php echo $r['check_out_time'] ? 'badge-soft-danger' : 'badge-soft-secondary'; ?> px-2"><?php echo $r['check_out_time'] ? date('h:i A', strtotime($r['check_out_time'])) : 'Active'; ?></span></td>
+                                                <td>
+                                                    <?php if($r['check_out_time']): 
+                                                        $diff = strtotime($r['check_out_time']) - strtotime($r['check_in_time']);
+                                                        echo floor($diff/3600) . 'h ' . floor(($diff/60)%60) . 'm';
+                                                    else: ?>
+                                                        <span class="text-muted italic small">Calculating...</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="pr-4 text-right">
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='attendance-edit?id=<?php echo $r['id']; ?>'">
+                                                        <i class="fe fe-eye"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="6" class="text-center py-5 text-muted small">No session records found for selected period.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
-</div>
+</main>
 
 <style>
+    /* FullCalendar Professional Styling */
     :root {
-        --fc-border-color: #EDF2F7;
-        --fc-daygrid-dot-event-width: 8px;
+        --fc-border-color: #f1f4f8;
+        --fc-daygrid-dot-event-width: 10px;
     }
-    .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #EDF2F7 !important; }
-    .fc .fc-toolbar-title { font-size: 1.1rem !important; color: #4A5568 !important; font-weight: 700 !important; }
-    .fc .fc-button-primary { background-color: #fff !important; color: #718096 !important; border: 1px solid #E2E8F0 !important; font-size: 0.8rem; font-weight: 600; padding: 5px 10px; border-radius: 8px !important; }
-    .fc .fc-button-primary:hover { background-color: #F7FAFC !important; color: #2D3748 !important; }
     
-    .fc-daygrid-day-number { font-size: 0.85rem; color: #718096; padding: 10px !important; text-decoration: none !important; }
-    .fc-daygrid-day.fc-day-today { background-color: #EBF8FF !important; }
+    .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #f1f4f8 !important; }
+    .fc .fc-toolbar-title { font-size: 1.1rem !important; color: #32325d !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.5px; }
+    .fc .fc-button-primary { background-color: #ffffff !important; color: #4a5568 !important; border: 1px solid #e2e8f0 !important; font-size: 0.75rem; font-weight: 700; border-radius: 8px !important; text-transform: uppercase; }
+    .fc .fc-button-primary:hover { background-color: #f7fafc !important; color: #2d3748 !important; }
+    .fc .fc-today-button { font-size: 0.75rem; text-transform: uppercase; }
     
-    .status-badge-present { background-color: #C6F6D5 !important; border-radius: 4px; padding: 2px 8px; color: #22543D !important; font-weight: 700; font-size: 10px; border: none; }
-    .status-badge-leave { background-color: #FEFCBF !important; border-radius: 4px; padding: 2px 8px; color: #744210 !important; font-weight: 700; font-size: 10px; border: none; }
-    .absent-mark { display: flex; align-items: center; justify-content: center; height: 100%; width: 100%; color: #E53E3E; font-weight: 700; font-size: 10px; opacity: 0.6; }
+    .fc-daygrid-day-number { font-size: 0.8rem; color: #adb5bd; padding: 12px !important; text-decoration: none !important; font-weight: 600; }
+    .fc-daygrid-day.fc-day-today { background-color: #f4f6f9 !important; border: 2px solid #5d87ff !important; }
+    
+    /* Event Badges */
+    .status-badge-present { background-color: #dcfce7 !important; border-radius: 4px; border: none; padding: 4px 10px; color: #166534 !important; font-weight: 800; font-size: 10px; text-transform: uppercase; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .status-badge-leave { background-color: #fef9c3 !important; border-radius: 4px; border: none; padding: 4px 10px; color: #854d0e !important; font-weight: 800; font-size: 10px; text-transform: uppercase; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    
+    /* Absent Overrides */
+    .absent-mark { display: flex; align-items: center; justify-content: center; height: 100%; width: 100%; color: #ef4444; font-weight: 800; font-size: 9px; opacity: 0.6; letter-spacing: 0.5px; }
 </style>
 
 <script>
@@ -126,23 +165,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('attendance-calendar');
     const events = [];
 
-    // Map Attendance to Events
+    // Map Backend Attendance to Calendar Events
     <?php foreach($records as $r): ?>
     events.push({
-        title: 'PRESENT',
+        title: 'Present',
         start: '<?php echo date('Y-m-d', strtotime($r['check_in_time'])); ?>',
         classNames: ['status-badge-present'],
         display: 'block'
     });
     <?php endforeach; ?>
 
-    // Map Leaves to Events
+    // Map Approved Leaves to Calendar Events
     <?php foreach($leaves as $l): ?>
     let eDate = new Date('<?php echo $l['end_date']; ?>');
-    eDate.setDate(eDate.getDate() + 1); 
+    eDate.setDate(eDate.getDate() + 1); // FullCalendar is exclusive on end date
     
     events.push({
-        title: 'ON LEAVE (<?php echo $l['type_name']; ?>)',
+        title: 'On Leave',
         start: '<?php echo $l['start_date']; ?>',
         end: eDate.toISOString().split('T')[0],
         classNames: ['status-badge-leave'],
@@ -158,22 +197,29 @@ document.addEventListener('DOMContentLoaded', function() {
         dayCellDidMount: function(arg) {
             const today = new Date().setHours(0,0,0,0);
             const cellDate = arg.date.setHours(0,0,0,0);
-            const dateStr = arg.date.toISOString().split('T')[0];
-
+            
+            // Check if date is in past
             if (cellDate < today) {
+                // Check for weekends (Sundays)
+                if (arg.date.getDay() === 0) {
+                    arg.el.style.backgroundColor = '#f9fafb';
+                    return;
+                }
+
+                const dateStr = arg.date.toISOString().split('T')[0];
                 const hasSession = events.some(e => {
-                    const s = new Date(e.start).setHours(0,0,0,0);
-                    const end = e.end ? new Date(e.end).setHours(0,0,0,0) : s;
-                    return cellDate >= s && cellDate < (e.end ? end : s + 86400000);
+                    const start = new Date(e.start).setHours(0,0,0,0);
+                    const end = e.end ? new Date(e.end).setHours(0,0,0,0) : start;
+                    return cellDate >= start && cellDate < (e.end ? end : start + 86400000);
                 });
 
-                if (!hasSession && arg.date.getDay() !== 0) { // All skip Sundays for absent marking
+                if (!hasSession) {
                     const frame = arg.el.querySelector('.fc-daygrid-day-frame');
                     const mark = document.createElement('div');
                     mark.className = 'absent-mark';
-                    mark.innerHTML = '<i class="fe fe-slash mr-1"></i>ABSENT';
+                    mark.innerHTML = '<i class="fe fe-user-x mr-1"></i> Absent';
                     frame.appendChild(mark);
-                    arg.el.style.backgroundColor = '#FFF5F5';
+                    arg.el.style.backgroundColor = '#fff5f5';
                 }
             }
         }
@@ -181,30 +227,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     calendar.render();
 
-    // View Switching Logic
+    // View Toggles
     document.getElementById('btn-calendar').addEventListener('click', function() {
         document.getElementById('calendar-wrapper').classList.remove('d-none');
         document.getElementById('list-wrapper').classList.add('d-none');
-        this.classList.add('active');
-        document.getElementById('btn-list').classList.remove('active');
         calendar.render();
     });
 
     document.getElementById('btn-list').addEventListener('click', function() {
         document.getElementById('calendar-wrapper').classList.add('d-none');
         document.getElementById('list-wrapper').classList.remove('d-none');
-        this.classList.add('active');
-        document.getElementById('btn-calendar').classList.remove('active');
     });
 
-    // User Selection Redirect
-    const sel = document.getElementById('user-selector');
-    if(sel) {
-        sel.addEventListener('change', function() {
+    // Auditor/Manager User Selector
+    const userSel = document.getElementById('user-selector');
+    if(userSel) {
+        userSel.addEventListener('change', function() {
             window.location.href = `attendance-history?user_id=${this.value}`;
         });
     }
 });
 </script>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include 'layout/footer.php'; ?>
