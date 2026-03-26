@@ -10,20 +10,33 @@
                         <h2 class="h3 mb-0 page-title">Welcome Back, <?php echo $_SESSION['user_name']; ?></h2>
                         <p class="text-muted">Here's what's happening today in the field.</p>
                     </div>
-                    <div class="btn-group shadow-sm">
-                        <?php if($_SESSION['role'] == 'Executive'): ?>
-                            <a href="attendance" class="btn btn-outline-primary px-4">
-                                <i class="fe fe-clock mr-1"></i> My Attendance
-                            </a>
-                            <a href="meetings" class="btn btn-primary px-4 ml-2">
-                                <i class="fe fe-users mr-1"></i> Intelligence Hub
-                            </a>
-                        <?php endif; ?>
-                        <a href="logout" class="btn btn-outline-danger px-4 ml-2">
-                            <i class="fe fe-log-out mr-1"></i> Logout
+                    <?php if($_SESSION['role'] == 'Executive'): ?>
+                    <div class="btn-group shadow-sm d-none d-md-flex">
+                        <a href="attendance" class="btn btn-outline-primary px-4">
+                            <i class="fe fe-clock mr-1"></i> My Attendance
+                        </a>
+                        <a href="meetings" class="btn btn-primary px-4 ml-2">
+                            <i class="fe fe-users mr-1"></i> Intelligence Hub
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Mobile Quick Actions (Full Width) -->
+                <?php if($_SESSION['role'] == 'Executive'): ?>
+                <div class="row d-md-none mb-4">
+                    <div class="col-12 mb-2">
+                        <a href="attendance" class="btn btn-primary btn-block py-3 shadow-sm font-weight-bold">
+                            <i class="fe fe-clock mr-2"></i> My Attendance
+                        </a>
+                    </div>
+                    <div class="col-12">
+                        <a href="meetings" class="btn btn-dark btn-block py-3 shadow-sm font-weight-bold">
+                            <i class="fe fe-users mr-2"></i> Intelligence Hub
                         </a>
                     </div>
                 </div>
+                <?php endif; ?>
 
                 <?php if($_SESSION['role'] == 'Executive'): ?>
                 <!-- Performance Intelligence Alerts (Daily) -->

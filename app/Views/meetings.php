@@ -2,78 +2,91 @@
 <?php include 'layout/sidebar.php'; ?>
 
 <style>
-    /* Global Overrides for Full Width Intelligence Hub */
+    /* Mobile First - Stacking Layout */
     .main-content {
-        max-width: none !important;
-        width: calc(100% - 250px) !important; /* Dynamic width if sidebar is open */
-        padding: 0 !important;
-        margin-left: 16rem !important; /* Matches standard sidebar width */
-        transition: all 0.3s ease;
-    }
-    .vertical.collapsed .main-content {
-        width: calc(100% - 80px) !important;
-        margin-left: 5rem !important;
-    }
-    .container-fluid {
-        max-width: none !important;
+        max-width: 100% !important;
         width: 100% !important;
         padding: 0 !important;
+        margin-left: 0 !important;
+        transition: all 0.3s ease;
     }
+    
     .hub-header {
         background: #fff;
         border-bottom: 1px solid #e9ecef;
-        padding: 1.5rem 2rem;
+        padding: 1rem;
         margin-bottom: 0;
     }
+    
     .hub-content {
-        display: flex;
-        height: calc(100vh - 160px);
-        overflow: hidden;
+        display: block; /* Stack on mobile */
+        height: auto;
+        overflow: visible;
     }
+    
     .command-center {
-        width: 380px;
-        min-width: 380px;
+        width: 100%;
         background: #f8f9fa;
-        border-right: 1px solid #e9ecef;
+        border-bottom: 1px solid #e9ecef;
         padding: 1.5rem;
-        overflow-y: auto;
     }
+    
     .intelligence-feed {
-        flex-grow: 1;
-        padding: 2rem;
+        padding: 1rem;
         background: #fff;
-        overflow-y: auto;
     }
+
+    .interaction-strip {
+        display: block; /* Stack strip elements on mobile */
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .strip-photo-wrap { margin-bottom: 1rem; text-align: center; }
+    .strip-photo { width: 100%; max-width: 120px; height: 120px; border-radius: 10px; object-fit: cover; }
+    .strip-status { margin-bottom: 0.5rem; text-align: left; }
+    .strip-meta { padding: 0.5rem 0; border: none; margin: 0; }
+    .strip-content { padding-top: 0.5rem; border-top: 1px solid #eee; margin-top: 0.5rem; }
+
+    /* Desktop/Laptop - Lateral Intelligence Hub */
+    @media (min-width: 992px) {
+        .main-content {
+            width: calc(100% - 280px) !important;
+            margin-left: 280px !important;
+        }
+        .vertical.collapsed .main-content {
+            width: calc(100% - 70px) !important;
+            margin-left: 70px !important;
+        }
+        .hub-header { padding: 1.5rem 2rem; }
+        .hub-content { display: flex; height: calc(100vh - 160px); overflow: hidden; }
+        .command-center { width: 400px; min-width: 400px; border-right: 1px solid #e9ecef; border-bottom: none; overflow-y: auto; }
+        .intelligence-feed { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+        .interaction-strip { display: flex; align-items: center; padding: 1.25rem; }
+        .strip-photo-wrap { margin-bottom: 0; }
+        .strip-photo { width: 80px; height: 80px; }
+        .strip-status { min-width: 100px; text-align: center; }
+        .strip-meta { flex-grow: 1; padding: 0 1.5rem; border-right: 1px solid #eee; border-left: 1px solid #eee; margin: 0 1.5rem; }
+        .strip-content { border-top: none; margin-top: 0; padding-top: 0; }
+    }
+    
     .stat-card-hub {
         background: #fff;
         border: 1px solid #e9ecef;
         border-radius: 12px;
         padding: 1rem;
         transition: all 0.2s;
+        margin-bottom: 0.5rem;
     }
     .stat-card-hub:hover {
         border-color: #4361ee;
         box-shadow: 0 4px 12px rgba(67, 97, 238, 0.08);
     }
-    .interaction-strip {
-        display: flex;
-        align-items: center;
-        background: #fff;
-        border: 1px solid #e9ecef;
-        border-radius: 12px;
-        padding: 1.25rem;
-        margin-bottom: 1rem;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-    .interaction-strip:hover {
-        border-color: #4361ee;
-        background: #fcfdfe;
-        transform: translateX(4px);
-    }
-    .strip-photo { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; }
-    .strip-status { min-width: 100px; text-align: center; }
-    .strip-meta { flex-grow: 1; padding: 0 1.5rem; border-right: 1px solid #eee; border-left: 1px solid #eee; margin: 0 1.5rem; }
 </style>
 
 <main role="main" class="main-content">
