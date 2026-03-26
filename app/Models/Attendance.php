@@ -16,9 +16,9 @@ class Attendance extends Model {
         return $stmt->execute([$user_id, $lat, $lng, $address, $photo_path, $odometer_path, $odometer_reading, $ticket_details]);
     }
 
-    public function checkOut($id, $lat, $lng, $address, $photo_path = null) {
-        $stmt = $this->db->prepare("UPDATE attendance SET check_out_time = NOW(), check_out_lat = ?, check_out_lng = ?, check_out_address = ?, check_out_photo = ? WHERE id = ?");
-        return $stmt->execute([$lat, $lng, $address, $photo_path, $id]);
+    public function checkOut($id, $lat, $lng, $address, $photo_path = null, $odometer_path = null, $odometer_reading = null) {
+        $stmt = $this->db->prepare("UPDATE attendance SET check_out_time = NOW(), check_out_lat = ?, check_out_lng = ?, check_out_address = ?, check_out_photo = ?, check_out_odometer_photo = ?, check_out_odometer_reading = ? WHERE id = ?");
+        return $stmt->execute([$lat, $lng, $address, $photo_path, $odometer_path, $odometer_reading, $id]);
     }
 
     public function getAllLatest($limit = 50) {

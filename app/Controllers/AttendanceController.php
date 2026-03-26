@@ -136,8 +136,15 @@ class AttendanceController extends Controller {
             if (isset($_POST['photo_data']) && !empty($_POST['photo_data'])) {
                 $photoPath = $this->saveBase64Image($_POST['photo_data'], 'checkout');
             }
+
+            // Handle Odometer (Closing)
+            $odometerPath = null;
+            if (isset($_POST['odometer_data']) && !empty($_POST['odometer_data'])) {
+                $odometerPath = $this->saveBase64Image($_POST['odometer_data'], 'odometer_out');
+            }
+            $odometerReading = $_POST['odometer_reading'] ?? null;
             
-            $result = $attendanceModel->checkOut($id, $lat, $lng, $address, $photoPath);
+            $result = $attendanceModel->checkOut($id, $lat, $lng, $address, $photoPath, $odometerPath, $odometerReading);
             if ($result) {
                 // TA Calculation Integration
                 $att = $attendanceModel->getById($id);

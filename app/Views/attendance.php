@@ -26,19 +26,45 @@
                     <div class="col-md-4 mb-4">
                         <div class="card shadow-sm border-0 h-100">
                             <div class="card-body text-center p-3">
-                                <!-- Selfie Section (Modal-based) -->
-                                <div class="p-3 mb-4 bg-soft-primary rounded border border-primary">
+                                <!-- SHARED VERIFICATION SECTION -->
+                                <div class="p-3 mb-4 bg-soft-primary rounded border border-primary text-left">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="mb-0 font-weight-bold text-primary"><i class="fe fe-user mr-2"></i> Identification</h6>
+                                        <h6 class="mb-0 font-weight-bold text-primary"><i class="fe fe-user mr-2"></i> Verification Selfie</h6>
                                         <button type="button" id="open-selfie-modal" class="btn btn-sm btn-primary shadow-sm font-weight-bold" data-toggle="modal" data-target="#selfieModal">
-                                            <i class="fe fe-camera mr-1"></i> Capture Selfie
+                                            <i class="fe fe-camera mr-1"></i> <?php echo (!$attendance) ? 'Start Shift' : 'Close Shift'; ?>
                                         </button>
                                     </div>
                                     <div id="selfie-status-box" class="alert alert-light border m-0 p-2 small text-center italic text-muted">
-                                        No selfie captured yet...
+                                        <?php echo (!$attendance) ? 'Capture check-in photo' : 'Capture check-out photo'; ?>
                                     </div>
                                     <img id="photo-preview" style="display:none; width: 100%; aspect-ratio: 1/1; object-fit: cover;" class="rounded-circle border border-primary mt-2 mx-auto shadow-sm">
                                 </div>
+
+                                <?php if($_SESSION['role'] == 'Executive'): ?>
+                                <div class="p-3 mb-4 bg-soft-info rounded border border-info text-left">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0 font-weight-bold text-info"><i class="fe fe-truck mr-2"></i> Odometer Detail</h6>
+                                        <button type="button" id="open-odo-modal" class="btn btn-sm btn-info shadow-sm font-weight-bold" data-toggle="modal" data-target="#odometerModal" disabled>
+                                            <i class="fe fe-maximize mr-1"></i> Take Photo
+                                        </button>
+                                    </div>
+                                    <div id="odo-status-box" class="alert alert-light border m-0 p-2 small text-center italic text-muted">
+                                        Capture selfie first to unlock...
+                                    </div>
+                                    <img id="odo-final-preview" style="display:none; width: 100%; aspect-ratio: 16/9; object-fit: cover;" class="rounded border mt-2">
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-6">
+                                            <label class="small text-muted mb-1 font-weight-bold">Reading (4 digits)</label>
+                                            <input type="text" name="odometer_reading" class="form-control form-control-sm border-info" placeholder="e.g. 1234" maxlength="4">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="small text-muted mb-1 font-weight-bold">Vehicle Type</label>
+                                            <input type="text" name="ticket_details" class="form-control form-control-sm border-info" placeholder="Bike/Car">
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
 
                                 <div id="location-status" class="mb-3 p-3 rounded bg-light border text-left">
                                     <div class="d-flex align-items-center mb-2">
@@ -62,45 +88,9 @@
                                     <input type="hidden" name="odometer_data" id="odometer_data">
                                     
                                     <?php if(!$attendance): ?>
-                                        <!-- CHECK-IN STATE -->
-                                        <div class="alert alert-info border-0 shadow-sm small italic mb-4 text-left">
-                                            <i class="fe fe-info mr-1 d-block mb-1 h5 text-info"></i> You are currently <b>Off-Duty</b>. Please capture your selfie and GPS lock to start your shift.
-                                        </div>
-
-                                        <?php if($_SESSION['role'] == 'Executive'): ?>
-                                        <div class="p-3 mb-4 bg-soft-info rounded border border-info">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <h6 class="mb-0 font-weight-bold"><i class="fe fe-truck mr-2"></i> Vehicle Details</h6>
-                                                <button type="button" id="open-odo-modal" class="btn btn-sm btn-info shadow-sm font-weight-bold" data-toggle="modal" data-target="#odometerModal" disabled>
-                                                    <i class="fe fe-maximize mr-1"></i> Open Camera
-                                                </button>
-                                            </div>
-                                            <div id="odo-status-box" class="alert alert-light border m-0 p-2 small text-center italic text-muted">
-                                                Capture selfie first to unlock odometer...
-                                            </div>
-                                            <img id="odo-final-preview" style="display:none; width: 100%; aspect-ratio: 16/9; object-fit: cover;" class="rounded border mt-2">
-                                            
-                                            <div class="row mt-3">
-                                                <div class="col-6">
-                                                    <div class="form-group mb-0">
-                                                        <label class="small text-muted mb-1 font-weight-bold">Reading (Last 4 digits)</label>
-                                                        <input type="text" name="odometer_reading" class="form-control form-control-sm border-info" placeholder="e.g. 1234" maxlength="4">
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="form-group mb-0">
-                                                        <label class="small text-muted mb-1 font-weight-bold">Other Details</label>
-                                                        <input type="text" name="ticket_details" class="form-control form-control-sm border-info" placeholder="e.g. Bike / Mall">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <?php endif; ?>
-
                                         <button type="submit" id="check-in-btn" class="btn btn-lg btn-primary btn-block py-3 shadow-sm font-weight-bold" disabled>
                                             <i class="fe fe-lock mr-2"></i> Verify GPS & Photo
                                         </button>
-
                                     <?php elseif(!$attendance['check_out_time']): ?>
                                         <!-- CHECK-OUT STATE -->
                                         <div class="alert alert-success border-0 shadow-sm mb-4 text-left">
@@ -235,10 +225,18 @@
 
         let map, marker, platform;
         const isExecutive = <?php echo ($_SESSION['role'] == 'Executive') ? 'true' : 'false'; ?>;
+        const isAlreadyCheckedIn = <?php echo ($attendance && !$attendance['check_out_time']) ? 'true' : 'false'; ?>;
+        
         let isGpsLocked = false;
         let isPhotoCaptured = false;
         let isOdoCaptured = !isExecutive; 
         const REQUIRED_ACCURACY = 100;
+
+        // Reset verification for Checkout
+        if (isAlreadyCheckedIn) {
+            isPhotoCaptured = false;
+            if (isExecutive) isOdoCaptured = false;
+        }
 
         // Initialize HERE Platform
         platform = new H.service.Platform({
@@ -329,7 +327,7 @@
                     mainPreview.style.display = 'block';
                 }
                 if (selfieStatus) {
-                    selfieStatus.innerHTML = '<i class="fe fe-check-circle mr-1"></i> Selfie Captured';
+                    selfieStatus.innerHTML = '<i class="fe fe-check-circle mr-1"></i> ' + (isAlreadyCheckedIn ? 'Checkout Selfie Captured' : 'Selfie Captured');
                     selfieStatus.classList.replace('alert-light', 'alert-success');
                 }
                 
@@ -339,11 +337,11 @@
                     const odoStatus = document.getElementById('odo-status-box');
                     if (odoBtn) odoBtn.disabled = false;
                     if (odoStatus) {
-                        odoStatus.textContent = "Selfie verified. Please capture Odometer.";
+                        odoStatus.textContent = "Selfie verified. Capture odometer reading.";
                         odoStatus.classList.replace('alert-light', 'alert-success');
                     }
                 }
-                validateCheckIn();
+                validateAttendance();
             });
         }
 
@@ -389,12 +387,12 @@
                         odoStatus.innerHTML = '<i class="fe fe-check-circle mr-1"></i> Vehicle Photo Captured';
                         odoStatus.classList.replace('alert-success', 'alert-info');
                     }
-                    validateCheckIn();
+                    validateAttendance();
                 });
             }
         }
 
-        function validateCheckIn() {
+        function validateAttendance() {
             if (isGpsLocked && isPhotoCaptured && isOdoCaptured) {
                 if (checkInBtn) {
                     checkInBtn.disabled = false;
@@ -416,17 +414,17 @@
                 const acc = pos.coords.accuracy;
 
                 let progress = acc < 100 ? 100 : (acc < 300 ? 80 : (acc < 1000 ? 50 : 20));
-                accuracyProgress.style.width = progress + "%";
-                accuracyText.textContent = `Accuracy: ±${Math.round(acc)}m`;
+                if (accuracyProgress) accuracyProgress.style.width = progress + "%";
+                if (accuracyText) accuracyText.textContent = `Accuracy: ±${Math.round(acc)}m`;
 
                 if (acc <= REQUIRED_ACCURACY) {
                     latInput.value = lat;
                     lngInput.value = lng;
                     isGpsLocked = true;
-                    gpsText.innerHTML = '<i class="fe fe-check-circle text-success mr-2"></i>Pinpoint Lock Confirmed';
-                    accuracyProgress.classList.replace('bg-warning', 'bg-success');
-                    gpsSpinner.classList.add('d-none');
-                    validateCheckIn();
+                    if (gpsText) gpsText.innerHTML = '<i class="fe fe-check-circle text-success mr-2"></i>Pinpoint Lock Confirmed';
+                    if (accuracyProgress) accuracyProgress.classList.replace('bg-warning', 'bg-success');
+                    if (gpsSpinner) gpsSpinner.classList.add('d-none');
+                    validateAttendance();
 
                     // Update Map
                     map.setCenter({ lat, lng });
@@ -446,18 +444,24 @@
                             });
                     }
                 } else {
-                    gpsText.textContent = "Refining Satellite Signal...";
-                    accuracyProgress.classList.replace('bg-success', 'bg-warning');
+                    if (gpsText) gpsText.textContent = "Refining Satellite Signal...";
+                    if (accuracyProgress) accuracyProgress.classList.replace('bg-success', 'bg-warning');
                 }
             }, null, { enableHighAccuracy: true, maximumAge: 0 });
         }
 
         monitorPrecision();
 
-        // Clock & Work Duration Ticker
+        // Clock & Work Duration Ticker (Absolute IST)
         setInterval(() => {
             const clock = document.getElementById('live-clock');
-            if (clock) clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            if (clock) {
+                // Get IST Time
+                const istOffset = 5.5 * 60 * 60 * 1000;
+                const nowUtc = new Date().getTime();
+                const nowIst = new Date(nowUtc); 
+                clock.textContent = nowIst.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            }
 
             const durationTicker = document.getElementById('work-duration-ticker');
             if (durationTicker && durationTicker.dataset.start) {
