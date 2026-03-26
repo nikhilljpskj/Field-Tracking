@@ -87,20 +87,28 @@
                                     <input type="hidden" name="photo_data" id="photo_data">
                                     <input type="hidden" name="odometer_data" id="odometer_data">
                                     
-                                    <?php if(!$attendance): ?>
+                                    <?php if(!$attendance || $attendance['check_out_time']): ?>
+                                        <!-- NEW SESSION ENTRY -->
+                                        <?php if($attendance && $attendance['check_out_time']): ?>
+                                            <div class="alert alert-info border-0 shadow-sm small italic mb-3 text-left">
+                                                <i class="fe fe-info mr-1 text-info"></i> Previous shift closed. You can start a <b>New Shift</b> for today by verifying again.
+                                            </div>
+                                        <?php endif; ?>
+
                                         <button type="submit" id="check-in-btn" class="btn btn-lg btn-primary btn-block py-3 shadow-sm font-weight-bold" disabled>
                                             <i class="fe fe-lock mr-2"></i> Verify GPS & Photo
                                         </button>
+
                                     <?php elseif(!$attendance['check_out_time']): ?>
-                                        <!-- CHECK-OUT STATE -->
+                                        <!-- ACTIVE SESSION (CHECK-OUT) -->
                                         <div class="alert alert-success border-0 shadow-sm mb-4 text-left">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h6 class="mb-0 font-weight-bold text-success">Logged In (IST)</h6>
+                                                    <h6 class="mb-0 font-weight-bold text-success">Active Session (IST)</h6>
                                                     <small class="text-success font-weight-bold"><?php echo date('h:i A', strtotime($attendance['check_in_time'])); ?></small>
                                                 </div>
                                                 <div class="text-right">
-                                                    <h6 class="mb-0 font-weight-bold text-success">Shift Duration</h6>
+                                                    <h6 class="mb-0 font-weight-bold text-success">Duration</h6>
                                                     <small id="work-duration-ticker" class="font-weight-bold text-dark" data-start="<?php echo $attendance['check_in_time']; ?>">Calculating...</small>
                                                 </div>
                                             </div>
@@ -110,24 +118,6 @@
                                         <button type="submit" id="check-out-btn" class="btn btn-lg btn-danger btn-block py-3 shadow-sm font-weight-bold" formaction="attendance?action=checkOut" disabled>
                                             <i class="fe fe-lock mr-2"></i> Verify & Check-Out
                                         </button>
-                                        
-                                        <p class="text-muted small italic text-center mt-3">
-                                            <i class="fe fe-alert-circle mr-1 text-warning"></i> Photo verification is REQUIRED for checkout.
-                                        </p>
-
-                                    <?php else: ?>
-                                        <div class="p-4 bg-soft-success rounded-lg border border-success text-center">
-                                            <i class="fe fe-check-circle fe-24 text-success mb-2 d-block"></i>
-                                            <h5 class="text-success font-weight-bold mb-1">Shift Successfully Closed</h5>
-                                            <p class="text-muted small mb-0">Total Hours: 
-                                            <?php 
-                                                $start = strtotime($attendance['check_in_time']);
-                                                $end = strtotime($attendance['check_out_time']);
-                                                $diff = $end - $start;
-                                                echo floor($diff/3600) . 'h ' . floor(($diff/60)%60) . 'm';
-                                            ?>
-                                            </p>
-                                        </div>
                                     <?php endif; ?>
                                 </form>
 
@@ -142,52 +132,53 @@
                     </div>
                 </div>
 
-                <!-- Recent Activity -->
+                <!-- Session Log -->
                 <div class="card shadow-sm border-0 overflow-hidden mt-2">
                     <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Attendance Log</h5>
-                        <span class="badge badge-pill badge-light"><?php echo date('F Y'); ?></span>
+                        <h5 class="card-title mb-0">Daily Deployment Log</h5>
+                        <span class="badge badge-pill badge-light"><?php echo date('M d, Y'); ?></span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="bg-light text-muted small text-uppercase font-weight-bold">
                                     <tr>
-                                        <th class="pl-4">Session Info</th>
+                                        <th class="pl-4">Session</th>
                                         <th>Check-In</th>
                                         <th>Check-Out</th>
-                                        <th class="pr-4 text-right">Verification</th>
+                                        <th class="pr-4 text-right">Odometer Reading</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if($attendance): ?>
-                                    <tr>
-                                        <td class="pl-4">
-                                            <div class="font-weight-600"><?php echo date('d M Y'); ?></div>
-                                            <small class="text-muted italic"><?php echo $attendance['check_in_address']; ?></small>
-                                        </td>
-                                        <td>
-                                            <div class="text-success font-weight-bold"><?php echo date('h:i A', strtotime($attendance['check_in_time'])); ?></div>
-                                            <?php if($attendance['check_in_photo']): ?>
-                                                <a href="<?php echo $attendance['check_in_photo']; ?>" target="_blank" class="small text-primary"><i class="fe fe-image mr-1"></i>View Photo</a>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <div class="<?php echo $attendance['check_out_time'] ? 'text-danger font-weight-bold' : 'text-muted italic'; ?>">
-                                                <?php echo $attendance['check_out_time'] ? date('h:i A', strtotime($attendance['check_out_time'])) : 'Active Session'; ?>
-                                            </div>
-                                            <?php if($attendance['check_out_photo']): ?>
-                                                <a href="<?php echo $attendance['check_out_photo']; ?>" target="_blank" class="small text-primary"><i class="fe fe-image mr-1"></i>View Photo</a>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="pr-4 text-right">
-                                            <span class="badge <?php echo $attendance['check_out_time'] ? 'badge-success' : 'badge-primary'; ?> px-3 py-1">
-                                                <?php echo $attendance['check_out_time'] ? 'Verified & Closed' : 'GPS Active'; ?>
-                                            </span>
-                                        </td>
-                                    </tr>
+                                    <?php if(!empty($sessions)): ?>
+                                        <?php foreach($sessions as $s): ?>
+                                        <tr>
+                                            <td class="pl-4">
+                                                <div class="font-weight-600">Session #<?php echo $s['id']; ?></div>
+                                                <small class="text-muted italic"><?php echo $s['check_in_address']; ?></small>
+                                            </td>
+                                            <td>
+                                                <div class="text-success font-weight-bold"><?php echo date('h:i A', strtotime($s['check_in_time'])); ?></div>
+                                                <?php if($s['check_in_photo']): ?>
+                                                    <a href="<?php echo $s['check_in_photo']; ?>" target="_blank" class="small text-primary"><i class="fe fe-image mr-1"></i>In Photo</a>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <div class="<?php echo $s['check_out_time'] ? 'text-danger font-weight-bold' : 'text-muted italic'; ?>">
+                                                    <?php echo $s['check_out_time'] ? date('h:i A', strtotime($s['check_out_time'])) : 'Active Now'; ?>
+                                                </div>
+                                                <?php if($s['check_out_photo']): ?>
+                                                    <a href="<?php echo $s['check_out_photo']; ?>" target="_blank" class="small text-primary"><i class="fe fe-image mr-1"></i>Out Photo</a>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="pr-4 text-right">
+                                                <span class="text-dark font-weight-bold small d-block">Start: <?php echo $s['odometer_reading'] ?? 'N/A'; ?></span>
+                                                <span class="text-muted small d-block">End: <?php echo $s['check_out_odometer_reading'] ?? '--'; ?></span>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr><td colspan="4" class="text-center py-5 text-muted small">No attendance logs found for today. Get started by capturing your photo and GPS lock.</td></tr>
+                                        <tr><td colspan="4" class="text-center py-5 text-muted small">No logs found for today.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>

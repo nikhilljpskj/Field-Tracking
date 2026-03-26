@@ -98,6 +98,8 @@ if (array_key_exists($url, $routes)) {
         $action = $action === 'index' ? 'manage' : $action;
     } elseif ($url == 'leave-allocate') {
         $action = $action === 'index' ? 'allocate' : $action;
+    } elseif ($url == 'attendance-history') {
+        $action = 'history';
     } elseif ($url == 'payroll-manage') {
         $action = $action === 'index' ? 'manage' : $action;
     }

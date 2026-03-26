@@ -29,6 +29,25 @@ class Leave extends Model {
         return $stmt->fetchAll();
     }
 
+    public function getApprovedLeavesForMonth($user_id, $month = null, $year = null) {
+        $month = $month ?: date('n');
+        $year = $year ?: date('Y');
+        
+        // Find leaves that overlap with the targeted month
+        $stmt = $this->db->prepare("SELECT la.*, lt.name as type_name 
+                                    FROM leave_applications la 
+                                    JOIN leave_types lt ON la.leave_type_id = lt.id 
+                                    WHERE la.user_id = ? 
+                                    AND la.status = 'Approved' 
+                                    AND (
+                                        (MONTH(la.start_date) = ? AND YEAR(la.start_date) = ?) OR 
+                                        (MONTH(la.end_date) = ? AND YEAR(la.end_date) = ?)
+                                    )
+                                    ORDER BY la.start_date ASC");
+        $stmt->execute([$user_id, $month, $year, $month, $year]);
+        return $stmt->fetchAll();
+    }
+
     public function apply($data) {
         $stmt = $this->db->prepare("INSERT INTO leave_applications (user_id, leave_type_id, start_date, end_date, is_half_day, reason, status) 
                                     VALUES (?, ?, ?, ?, ?, ?, 'Pending')");

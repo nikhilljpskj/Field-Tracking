@@ -13,10 +13,12 @@ class AttendanceController extends Controller {
 
         $attendanceModel = new Attendance();
         $todayAttendance = $attendanceModel->getTodayAttendance($_SESSION['user_id']);
+        $todaySessions = $attendanceModel->getSessionsForToday($_SESSION['user_id']);
         
         $data = [
             'title' => 'Attendance - Sales Tracking',
-            'attendance' => $todayAttendance
+            'attendance' => $todayAttendance,
+            'sessions' => $todaySessions
         ];
         $this->view('attendance', $data);
     }
@@ -169,6 +171,40 @@ class AttendanceController extends Controller {
             }
         }
         $this->redirect('attendance');
+    }
+
+    public function history() {
+        $attendanceModel = new Attendance();
+        $leaveModel = new \App\Models\Leave();
+        $userModel = new \App\Models\User();
+
+        $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
+        $month = $_GET['month'] ?? date('n');
+        $year = $_GET['year'] ?? date('Y');
+
+        // RBAC: Non-admin/manager can only view their own history
+        if (!in_array($_SESSION['role'], ['Admin', 'Manager', 'HR']) && $userId != $_SESSION['user_id']) {
+            $userId = $_SESSION['user_id'];
+        }
+
+        $records = $attendanceModel->getMonthlyHistory($userId, $month, $year);
+        $leaves = $leaveModel->getApprovedLeavesForMonth($userId, $month, $year);
+        
+        $users = [];
+        if (in_array($_SESSION['role'], ['Admin', 'Manager', 'HR'])) {
+            $users = $userModel->getAll();
+        }
+
+        $data = [
+            'title' => 'Attendance History - Sales Tracking',
+            'records' => $records,
+            'leaves' => $leaves,
+            'users' => $users,
+            'selectedUser' => $userId,
+            'month' => $month,
+            'year' => $year
+        ];
+        $this->view('attendance_history', $data);
     }
 
     private function saveBase64Image($base64String, $prefix) {
