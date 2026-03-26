@@ -27,6 +27,7 @@
   </head>
   <body class="vertical  light  ">
     <div class="wrapper">
+      <div class="sidebar-overlay"></div>
       <nav class="topnav navbar navbar-light">
         <button type="button" class="navbar-toggler text-muted mt-2 p-0 mr-3 collapseSidebar">
           <i class="fe fe-menu navbar-toggler-icon"></i>
