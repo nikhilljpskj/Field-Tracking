@@ -84,20 +84,7 @@ class AttendanceController extends Controller {
             $lng = $_POST['longitude'];
             $address = $_POST['address'] ?? 'Unknown location';
             
-            // 1. Radius Validation (Executive only)
-            if ($_SESSION['role'] == 'Executive') {
-                $officeLat = \App\Core\Config::get('OFFICE_LAT');
-                $officeLng = \App\Core\Config::get('OFFICE_LNG');
-                
-                if ($officeLat && $officeLng) {
-                    $distance = $this->calculateDistance($lat, $lng, $officeLat, $officeLng);
-                    if ($distance > 100) { // 100 meters
-                        $_SESSION['flash_error'] = "Check-in failed: You must be within 100m of the office (Current: " . round($distance) . "m)";
-                        $this->redirect('attendance');
-                        return;
-                    }
-                }
-            }
+            // Radius Validation removed as requested - can be marked from anywhere
 
             // 2. Handle Primary Photo (Selfie)
             $photoPath = null;
