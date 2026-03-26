@@ -7,7 +7,13 @@ use App\Models\Meeting;
 class MeetingController extends Controller {
     public function index() {
         $meetingModel = new Meeting();
-        $meetings = $meetingModel->getUserMeetings($_SESSION['user_id']);
+        
+        // Show all meetings for Admin/Manager, else only user's meetings
+        if (isset($_SESSION['role']) && ($_SESSION['role'] == 'Admin' || $_SESSION['role'] == 'Manager')) {
+            $meetings = $meetingModel->getAllMeetings();
+        } else {
+            $meetings = $meetingModel->getUserMeetings($_SESSION['user_id']);
+        }
         
         $data = [
             'title' => 'Client Meetings - Sales Tracking',

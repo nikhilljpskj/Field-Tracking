@@ -25,8 +25,9 @@
                                     <tr>
                                         <th class="pl-4">Employee</th>
                                         <th>Date</th>
-                                        <th>Check-In</th>
-                                        <th>Check-Out</th>
+                                        <th>Check-In (IST)</th>
+                                        <th>Check-Out (IST)</th>
+                                        <th>Verification</th>
                                         <th>Duration</th>
                                         <th class="text-right pr-4">Action</th>
                                     </tr>
@@ -67,6 +68,28 @@
                                             <?php endif; ?>
                                         </td>
                                         <td>
+                                            <div class="d-flex align-items-center">
+                                                <?php if($r['check_in_photo']): ?>
+                                                    <a href="<?php echo $r['check_in_photo']; ?>" target="_blank" class="mr-2" title="Check-In Selfie">
+                                                        <img src="<?php echo $r['check_in_photo']; ?>" class="rounded shadow-sm" style="width: 35px; height: 35px; object-fit: cover; border: 2px solid #fff;">
+                                                    </a>
+                                                <?php endif; ?>
+                                                <?php if($r['odometer_photo']): ?>
+                                                    <a href="<?php echo $r['odometer_photo']; ?>" target="_blank" class="mr-2" title="Odometer Image">
+                                                        <i class="fe fe-truck text-info" style="font-size: 1.2rem;"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                                <?php if($r['check_out_photo']): ?>
+                                                    <a href="<?php echo $r['check_out_photo']; ?>" target="_blank" title="Check-Out Photo">
+                                                        <img src="<?php echo $r['check_out_photo']; ?>" class="rounded shadow-sm" style="width: 35px; height: 35px; object-fit: cover; border: 2px solid #fff;">
+                                                    </a>
+                                                <?php endif; ?>
+                                                <?php if(!$r['check_in_photo'] && !$r['odometer_photo'] && !$r['check_out_photo']): ?>
+                                                    <span class="text-muted small italic">No media</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <td>
                                             <?php 
                                             if($r['check_out_time']) {
                                                 $start = strtotime($r['check_in_time']);
@@ -95,6 +118,7 @@
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
+
                             </table>
                         </div>
                     </div>

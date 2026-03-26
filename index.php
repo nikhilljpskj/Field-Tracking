@@ -2,6 +2,8 @@
 define('BASE_PATH', __DIR__);
 require_once BASE_PATH . '/app/Core/Config.php';
 \App\Core\Config::load(BASE_PATH . '/.env');
+date_default_timezone_set('Asia/Kolkata');
+
 
 require_once BASE_PATH . '/config/database.php';
 session_start();

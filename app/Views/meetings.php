@@ -97,8 +97,8 @@
                                     <table class="table table-hover mb-0">
                                         <thead class="bg-light text-muted small text-uppercase font-weight-bold">
                                             <tr>
-                                                <th class="pl-4">Client</th>
-                                                <th>Result</th>
+                                                <th class="pl-4">Staff / Client</th>
+                                                <th>Result & Verification</th>
                                                 <th class="pr-4 text-right">Location</th>
                                             </tr>
                                         </thead>
@@ -109,27 +109,43 @@
                                                 <?php foreach($meetings as $m): ?>
                                                     <tr>
                                                         <td class="pl-4">
+                                                            <?php if(isset($m['user_name'])): ?>
+                                                                <div class="small text-primary font-weight-bold mb-1"><?php echo htmlspecialchars($m['user_name']); ?></div>
+                                                            <?php endif; ?>
                                                             <div class="font-weight-600"><?php echo htmlspecialchars($m['client_name']); ?></div>
                                                             <small class="text-muted d-block"><?php echo htmlspecialchars($m['hospital_office_name']); ?></small>
-                                                            <small class="text-muted" style="font-size: 10px;"><?php echo date('d M, h:i A', strtotime($m['meeting_time'])); ?></small>
+                                                            <small class="text-muted" style="font-size: 10px;"><?php echo date('d M Y, h:i A', strtotime($m['meeting_time'])); ?> IST</small>
                                                         </td>
                                                         <td>
-                                                            <div class="small text-dark"><?php echo htmlspecialchars($m['outcome']); ?></div>
-                                                            <span class="badge <?php echo ($m['status'] == 'Approved') ? 'text-success' : (($m['status'] == 'Rejected') ? 'text-danger' : 'text-warning'); ?> p-0 mt-1 small">
-                                                                <i class="fe fe-circle fe-10 mr-1"></i><?php echo $m['status']; ?>
-                                                            </span>
+                                                            <div class="d-flex align-items-center">
+                                                                <?php if(isset($m['selfie_path']) && $m['selfie_path']): ?>
+                                                                    <a href="<?php echo $m['selfie_path']; ?>" target="_blank" class="mr-3" title="Meeting Photo">
+                                                                        <img src="<?php echo $m['selfie_path']; ?>" class="rounded shadow-sm" style="width: 45px; height: 45px; object-fit: cover; border: 2px solid #fff;">
+                                                                    </a>
+                                                                <?php endif; ?>
+                                                                <div>
+                                                                    <div class="small text-dark font-weight-bold"><?php echo htmlspecialchars($m['outcome']); ?></div>
+                                                                    <span class="badge <?php echo ($m['status'] == 'Approved') ? 'text-success' : (($m['status'] == 'Rejected') ? 'text-danger' : 'text-warning'); ?> p-0 mt-1 small">
+                                                                        <i class="fe fe-circle fe-10 mr-1"></i><?php echo $m['status']; ?>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                         </td>
                                                         <td class="pr-4 text-right">
-                                                            <?php if($m['latitude']): ?>
-                                                            <button class="btn btn-sm btn-white shadow-sm rounded-circle" onclick="focusMeeting(<?php echo $m['latitude']; ?>, <?php echo $m['longitude']; ?>)">
-                                                                <i class="fe fe-map-pin text-primary"></i>
-                                                            </button>
-                                                            <?php endif; ?>
+                                                            <div class="d-flex flex-column align-items-end">
+                                                                <?php if($m['latitude']): ?>
+                                                                <button class="btn btn-sm btn-white shadow-sm rounded-circle mb-2" onclick="focusMeeting(<?php echo $m['latitude']; ?>, <?php echo $m['longitude']; ?>)" title="Show on map">
+                                                                    <i class="fe fe-map-pin text-primary"></i>
+                                                                </button>
+                                                                <small class="text-muted text-truncate" style="max-width: 120px;" title="<?php echo $m['address']; ?>"><?php echo $m['address']; ?></small>
+                                                                <?php endif; ?>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
                                         </tbody>
+
                                     </table>
                                 </div>
                             </div>
