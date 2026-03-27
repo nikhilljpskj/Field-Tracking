@@ -6,7 +6,7 @@ use App\Models\Travel;
 
 class SettingsController extends Controller {
     public function index() {
-        $this->checkRole(['Admin', 'Manager']);
+        $this->checkRole('Admin');
         $travelModel = new \App\Models\Travel();
         $rate = $travelModel->getCurrentRate();
         $history = $travelModel->getAllRates();
@@ -25,7 +25,7 @@ class SettingsController extends Controller {
     }
 
     public function update_thresholds() {
-        $this->checkRole(['Admin', 'Manager']);
+        $this->checkRole('Admin');
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db = \Database::getInstance()->getConnection();
             $stmt = $db->prepare("UPDATE performance_configs SET value_low = ?, value_avg = ?, value_exc = ? WHERE key_name = 'daily_visits'");

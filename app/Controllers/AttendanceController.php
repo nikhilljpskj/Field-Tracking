@@ -5,9 +5,8 @@ use App\Core\Controller;
 use App\Models\Attendance;
 
 class AttendanceController extends Controller {
-    public function index() {
-        // If Admin is visiting, show the management list, else show personal attendance
-        if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
+        // If Admin or Manager is visiting, show the management list, else show personal attendance
+        if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])) {
             return $this->manage();
         }
 
@@ -24,19 +23,19 @@ class AttendanceController extends Controller {
     }
 
     public function manage() {
-        $this->checkRole('Admin');
+        $this->checkRole(['Admin', 'Manager']);
         $attendanceModel = new Attendance();
         $records = $attendanceModel->getAllLatest();
         
         $data = [
-            'title' => 'Attendance Management - Admin',
+            'title' => 'Attendance Management',
             'records' => $records
         ];
         $this->view('attendance_manage', $data);
     }
 
     public function edit() {
-        $this->checkRole('Admin');
+        $this->checkRole(['Admin', 'Manager']);
         if (isset($_GET['id'])) {
             $attendanceModel = new Attendance();
             $record = $attendanceModel->getById($_GET['id']);
@@ -52,7 +51,7 @@ class AttendanceController extends Controller {
     }
 
     public function update() {
-        $this->checkRole('Admin');
+        $this->checkRole(['Admin', 'Manager']);
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id'])) {
             $attendanceModel = new Attendance();
             $result = $attendanceModel->update($_POST['id'], $_POST);
@@ -66,7 +65,7 @@ class AttendanceController extends Controller {
     }
 
     public function delete() {
-        $this->checkRole('Admin');
+        $this->checkRole(['Admin', 'Manager']);
         if (isset($_GET['id'])) {
             $attendanceModel = new Attendance();
             $result = $attendanceModel->delete($_GET['id']);
