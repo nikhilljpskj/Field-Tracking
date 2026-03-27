@@ -384,7 +384,11 @@
         }
 
         function validateAttendance() {
-            if (isGpsLocked && isPhotoCaptured && isOdoCaptured) {
+            // Odometer is only mandatory if the user is an Executive
+            const odoRequired = <?php echo ($_SESSION['role'] == 'Executive') ? 'true' : 'false'; ?>;
+            const odoDone = odoRequired ? isOdoCaptured : true;
+
+            if (isGpsLocked && isPhotoCaptured && odoDone) {
                 if (checkInBtn) {
                     checkInBtn.disabled = false;
                     checkInBtn.innerHTML = '<i class="fe fe-check mr-2"></i> Confirm Check-In';

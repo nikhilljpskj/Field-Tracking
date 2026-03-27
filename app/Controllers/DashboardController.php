@@ -15,7 +15,12 @@ class DashboardController extends Controller {
         
         $data = [
             'title' => 'Dashboard - Performance Intelligence',
-            'role' => $role
+            'role' => $role,
+            'total_employees' => 0,
+            'today_attendance' => 0,
+            'total_distance' => 0,
+            'today_meetings' => 0,
+            'today_meetings_count' => 0
         ];
 
         // Fetch Performance Thresholds

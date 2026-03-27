@@ -5,8 +5,10 @@ use App\Core\Controller;
 use App\Models\Attendance;
 
 class AttendanceController extends Controller {
+    public function index() {
         // If Admin or Manager is visiting, show the management list, else show personal attendance
-        if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])) {
+        // Check for ?mode=self to allow marking own attendance via /attendance?mode=self
+        if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager']) && !isset($_GET['mode'])) {
             return $this->manage();
         }
 
@@ -173,6 +175,7 @@ class AttendanceController extends Controller {
     }
 
     public function history() {
+        $this->checkRole(['Admin', 'Manager', 'HR', 'Executive']);
         $attendanceModel = new Attendance();
         $leaveModel = new \App\Models\Leave();
         $userModel = new \App\Models\User();

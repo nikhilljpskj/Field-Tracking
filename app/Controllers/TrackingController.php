@@ -26,11 +26,7 @@ class TrackingController extends Controller {
         $trackingModel = new Tracking();
         $userModel = new User();
         
-        if ($_SESSION['role'] == 'Manager') {
-            $team = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
-        } else {
-            $team = $userModel->getAll(); // Admin can see all for tracking
-        }
+        $team = $userModel->getAll(); // Allow both Admin and Manager to monitor all users
         
         $teamIds = array_column($team, 'id');
         $locations = $trackingModel->getTeamLastLocations($teamIds);
