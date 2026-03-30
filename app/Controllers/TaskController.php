@@ -177,10 +177,12 @@ class TaskController extends Controller {
                 
                 // Fetch info for notification
                 $task = $inhouseModel->getTaskById($taskId);
-                $db = \Database::getInstance()->getConnection();
-                $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskSubmitted', ?)");
-                $title = ($subType === 'Partial') ? "Partial Submission ($task[task_name]) by $task[assignee_name]" : "Final Submission ($task[task_name]) by $task[assignee_name]";
-                $stmt->execute([$task['assigned_by'], $title]);
+                if ($task) {
+                    $db = \Database::getInstance()->getConnection();
+                    $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskSubmitted', ?)");
+                    $title = ($subType === 'Partial') ? "Partial Submission ($task[task_name]) by $task[assignee_name]" : "Final Submission ($task[task_name]) by $task[assignee_name]";
+                    $stmt->execute([$task['assigned_by'], $title]);
+                }
                 
                 $_SESSION['flash_success'] = ($subType === 'Partial') ? "Task saved as Partial Submission!" : "Task locked and sent for Manager Approval!";
             }
