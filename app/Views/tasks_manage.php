@@ -290,10 +290,16 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-3 rounded shadow-sm mb-4 border border-light">
-                    <small class="text-uppercase text-muted font-weight-bold">Acceptance / Completion Audit</small>
-                    <div class="mt-2 small" id="ve_audit_log"></div>
-                    <div class="mt-3" id="ve_attachments"></div>
+                <!-- Full History Timeline -->
+                <div class="bg-white rounded shadow-sm mb-4 border border-light overflow-hidden">
+                    <div class="px-3 pt-3 pb-2 border-bottom d-flex align-items-center justify-content-between">
+                        <small class="text-uppercase text-muted font-weight-bold"><i class="fe fe-clock mr-1"></i>Full Task History &amp; Audit Trail</small>
+                        <span id="ve_history_count" class="badge badge-secondary">0 events</span>
+                    </div>
+                    <div id="ve_history_timeline" style="max-height: 320px; overflow-y: auto;" class="px-3 pt-3 pb-2">
+                        <div class="text-center text-muted py-4 small"><i class="fe fe-loader"></i> Loading history...</div>
+                    </div>
+                    <div class="px-3 pb-3" id="ve_attachments"></div>
                 </div>
 
                 <hr>
@@ -373,22 +379,48 @@ function openViewEditInhouseModal(btn) {
         if(task.status == 'Pending Approval') statusBadge.classList.add('badge-warning', 'text-dark');
         if(task.status == 'Revision Requested') statusBadge.classList.add('badge-danger', 'text-white');
         
-        let audit = '';
-        if(task.accepted_at) {
-            audit += `<div class="mb-2"><strong class="text-primary">Accepted At:</strong> ${task.accepted_at} <br><span class="text-muted italic">"${task.acceptance_comment || ''}"</span></div>`;
+        // ---- Full History Timeline ----
+        const historyEl = document.getElementById('ve_history_timeline');
+        const historyCount = document.getElementById('ve_history_count');
+        const history = task.history || [];
+
+        const actionConfig = {
+            'Task Created':        { icon: 'fe-plus-circle',    color: '#6f42c1', label: 'Task Created',         bg: '#f3eeff' },
+            'Accepted':            { icon: 'fe-check',           color: '#007bff', label: 'Accepted',             bg: '#e8f4ff' },
+            'Submitted':           { icon: 'fe-upload-cloud',    color: '#17a2b8', label: 'Submitted',            bg: '#e8f9fc' },
+            'Approved':            { icon: 'fe-check-circle',    color: '#28a745', label: 'Approved & Closed',    bg: '#eaffef' },
+            'Revision Requested':  { icon: 'fe-corner-up-left', color: '#dc3545', label: 'Revision Requested',   bg: '#fff1f1' },
+        };
+
+        if (history.length === 0) {
+            historyEl.innerHTML = `<div class="text-center text-muted small py-4"><i class="fe fe-inbox" style="font-size:1.5rem"></i><br>No recorded history yet. Actions on this task will appear here.</div>`;
+            historyCount.textContent = '0 events';
         } else {
-            audit += `<div class="text-muted italic">Not accepted yet.</div>`;
+            historyCount.textContent = history.length + ' event' + (history.length > 1 ? 's' : '');
+            let html = '<div style="position:relative; padding-left: 20px; border-left: 2px solid #e0e0e0;">';
+            history.forEach(function(ev, idx) {
+                const cfg = actionConfig[ev.action] || { icon: 'fe-activity', color: '#6c757d', label: ev.action, bg: '#f8f9fa' };
+                const isLast = idx === history.length - 1;
+                const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+                html += `
+                <div style="margin-bottom: ${isLast ? '4px' : '18px'}; position: relative;">
+                    <div style="position:absolute; left:-28px; top:2px; width:18px; height:18px; border-radius:50%; background:${cfg.bg}; border:2px solid ${cfg.color}; display:flex; align-items:center; justify-content:center;">
+                        <i class="fe ${cfg.icon}" style="font-size:9px; color:${cfg.color};"></i>
+                    </div>
+                    <div style="background:${cfg.bg}; border-left: 3px solid ${cfg.color}; border-radius: 4px; padding: 8px 12px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong style="color:${cfg.color}; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">${cfg.label}</strong>
+                            <span class="text-muted" style="font-size:0.72rem;">${dateStr}</span>
+                        </div>
+                        <div class="font-weight-bold text-dark" style="font-size:0.82rem;">${ev.user_name || 'System'}</div>
+                        ${ev.message ? `<div class="text-muted mt-1" style="font-size:0.8rem; white-space:pre-wrap;">${ev.message}</div>` : ''}
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            historyEl.innerHTML = html;
+            historyEl.scrollTop = historyEl.scrollHeight;
         }
-        
-        if(task.completed_at) {
-            audit += `<hr class="my-2"><div class="mb-1"><strong class="text-success">Submission Timestamp:</strong> ${task.completed_at}</div>`;
-            audit += `<div class="mb-1"><strong class="text-dark">Completion Log:</strong> ${task.completion_details || ''}</div>`;
-            audit += `<div class="mb-1 text-muted italic">"${task.completion_comment || ''}"</div>`;
-        }
-        if(task.manager_feedback && task.manager_feedback.trim() !== '') {
-            audit += `<hr class="my-2"><div class="mb-1 bg-warning px-2 py-1 rounded text-dark"><strong class="text-dark"><i class="fe fe-alert-triangle mr-1"></i>Manager Feedback / Revision Needs:</strong><br>${task.manager_feedback}</div>`;
-        }
-        document.getElementById('ve_audit_log').innerHTML = audit;
         
         let attachments = '';
         if(task.attachment_path) {
