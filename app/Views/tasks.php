@@ -403,13 +403,19 @@ function openViewEditInhouseModal(btn) {
     try {
         let jsonStr = btn.getAttribute('data-task');
         let task = JSON.parse(jsonStr);
-        document.getElementById('ve_task_id').value = task.id;
-        document.getElementById('ve_task_name').value = task.task_name;
-        document.getElementById('ve_requirements').value = task.requirements;
+        let veId = document.getElementById('ve_task_id');
+        if(veId) veId.value = task.id;
+        
+        let veName = document.getElementById('ve_task_name');
+        if(veName) veName.value = task.task_name;
+        
+        let veReq = document.getElementById('ve_requirements');
+        if(veReq) veReq.value = task.requirements;
         
         let d = new Date(task.deadline);
         d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-        document.getElementById('ve_deadline').value = d.toISOString().slice(0, 16);
+        let veDeadline = document.getElementById('ve_deadline');
+        if(veDeadline) veDeadline.value = d.toISOString().slice(0, 16);
         
         document.getElementById('ve_assigned_by').innerText = task.assigner_name || 'System';
         
