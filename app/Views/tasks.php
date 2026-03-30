@@ -304,15 +304,27 @@
     </div>
 </div>
 
+<!-- Hidden data store for PDF generation -->
+<span id="ve_pdf_task_name" style="display:none;"></span>
+<span id="ve_pdf_assigner" style="display:none;"></span>
+<span id="ve_pdf_deadline" style="display:none;"></span>
+<span id="ve_pdf_status" style="display:none;"></span>
+<span id="ve_pdf_requirements" style="display:none;"></span>
+
 <!-- View / Edit Detail Modal -->
 <div class="modal fade" id="viewEditInhouseModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg border-0">
             <div class="modal-header bg-primary text-white border-bottom border-primary" style="border-bottom-width: 4px !important;">
-                <h5 class="modal-title font-weight-bold"><i class="fe fe-cpu mr-2"></i>Task Intelligence & Operations</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title font-weight-bold"><i class="fe fe-cpu mr-2"></i>Task Intelligence &amp; Operations</h5>
+                <div class="d-flex align-items-center">
+                    <button type="button" onclick="downloadTaskPdf()" class="btn btn-sm btn-light text-primary font-weight-bold shadow-sm mr-3" title="Download Requirements as PDF">
+                        <i class="fe fe-download mr-1"></i> PDF
+                    </button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="position:static; margin:0; opacity:1;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
             </div>
             <div class="modal-body p-4 bg-light">
                 <div class="row mb-3">
@@ -436,6 +448,14 @@ function openViewEditInhouseModal(btn) {
         if(task.status == 'Pending Approval') statusBadge.classList.add('badge-warning', 'text-dark');
         if(task.status == 'Revision Requested') statusBadge.classList.add('badge-danger', 'text-white');
         
+        // ---- Populate hidden PDF data spans ----
+        document.getElementById('ve_pdf_task_name').textContent    = task.task_name || '';
+        document.getElementById('ve_pdf_assigner').textContent     = task.assigner_name || 'System';
+        document.getElementById('ve_pdf_requirements').textContent = task.requirements || '';
+        document.getElementById('ve_pdf_status').textContent       = task.status || '';
+        const dl = task.deadline ? new Date(task.deadline).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+        document.getElementById('ve_pdf_deadline').textContent = dl;
+
         // ---- Full History Timeline ----
         const historyEl = document.getElementById('ve_history_timeline');
         const historyCount = document.getElementById('ve_history_count');
@@ -504,6 +524,103 @@ function openViewEditInhouseModal(btn) {
         console.error("Parse error: ", e);
     }
 }
+
+function downloadTaskPdf() {
+    const name     = document.getElementById('ve_pdf_task_name').textContent;
+    const assigner = document.getElementById('ve_pdf_assigner').textContent;
+    const deadline = document.getElementById('ve_pdf_deadline').textContent;
+    const status   = document.getElementById('ve_pdf_status').textContent;
+    const reqs     = document.getElementById('ve_pdf_requirements').textContent;
+
+    if (!name) { alert('No task loaded.'); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 18;
+    const contentW = pageW - margin * 2;
+
+    // Header banner
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, pageW, 36, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Task Requirements Briefing', margin, 15);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Redeemer Technologies Field Tracking System', margin, 23);
+    doc.text('Generated: ' + new Date().toLocaleString('en-IN'), margin, 30);
+
+    let y = 48;
+
+    // Task name
+    doc.setFillColor(243, 244, 246);
+    doc.roundedRect(margin, y, contentW, 18, 2, 2, 'F');
+    doc.setTextColor(17, 24, 39);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text(name, margin + 4, y + 12);
+    y += 26;
+
+    // Meta grid
+    const metaItems = [
+        { label: 'Assigned By', value: assigner },
+        { label: 'Current Status', value: status },
+        { label: 'Deadline', value: deadline },
+    ];
+    doc.setFontSize(9);
+    metaItems.forEach(function(m, i) {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const x = margin + col * (contentW / 2 + 2);
+        const itemY = y + row * 20;
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(107, 114, 128);
+        doc.text(m.label.toUpperCase(), x, itemY);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(17, 24, 39);
+        doc.text(m.value || '—', x, itemY + 5);
+    });
+    y += Math.ceil(metaItems.length / 2) * 20 + 6;
+
+    // Divider
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.4);
+    doc.line(margin, y, pageW - margin, y);
+    y += 8;
+
+    // Requirements section
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(37, 99, 235);
+    doc.text('REQUIREMENTS & DETAILS', margin, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(31, 41, 55);
+    const lines = doc.splitTextToSize(reqs || 'No requirements specified.', contentW);
+    lines.forEach(function(line) {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.text(line, margin, y);
+        y += 5.5;
+    });
+
+    // Footer
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setFontSize(8);
+        doc.setTextColor(156, 163, 175);
+        doc.text('Page ' + p + ' of ' + totalPages + '  |  Redeemer Technologies – Confidential', margin, 290);
+    }
+
+    const safeFilename = name.replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+    doc.save('Task_' + safeFilename + '.pdf');
+}
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <?php include 'layout/footer.php'; ?>
