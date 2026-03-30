@@ -14,6 +14,9 @@ class TaskController extends Controller {
         }
 
         $taskModel = new Task();
+        $inhouseModel = new InhouseTask();
+        $userModel = new User();
+        
         $tasks = $taskModel->getTasksForUser($_SESSION['user_id']);
         $inhouseTasks = $inhouseModel->getTasksForUser($_SESSION['user_id']);
         foreach($inhouseTasks as &$ih) {
@@ -21,8 +24,8 @@ class TaskController extends Controller {
         }
         $overdueTasks = $inhouseModel->getOverdueTasks($_SESSION['user_id']);
         
-        // Employees can assign inhouse tasks to themselves or others in their team (if restricted, here we allow all or team)
-        $team = (in_array($_SESSION['role'], ['Admin'])) ? $userModel->getAll() : $userModel->getAll(); 
+        // Employees can assign inhouse tasks to themselves or others in their team
+        $team = $userModel->getAll(); 
         
         $data = [
             'title' => 'Daily Tasks - Sales Tracking',
@@ -134,7 +137,7 @@ class TaskController extends Controller {
 
             $result = $inhouseModel->create($data);
             if ($result) {
-                $lastId = Database::getInstance()->getConnection()->lastInsertId();
+                $lastId = \Database::getInstance()->getConnection()->lastInsertId();
                 $inhouseModel->logEvent($lastId, $_SESSION['user_id'], 'Task Created', 'Assignment initialized by leader.');
                 // Notify user
                 $db = \Database::getInstance()->getConnection();
