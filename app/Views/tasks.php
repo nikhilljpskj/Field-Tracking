@@ -165,7 +165,7 @@
                                                         <button class="btn btn-sm btn-light text-success" disabled><i class="fe fe-check-circle"></i></button>
                                                     <?php endif; ?>
                                                     
-                                                    <button class="btn btn-sm btn-light border" onclick="openViewEditInhouseModal(htmlspecialchars_decode('<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES); ?>'))">Details</button>
+                                                    <button class="btn btn-sm btn-light border" data-task="<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES, 'UTF-8'); ?>" onclick="openViewEditInhouseModal(this)">Details</button>
                                                     
                                                     <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
                                                         <a href="tasks?action=deleteInhouse&id=<?php echo $ih['id']; ?>" class="btn btn-sm btn-danger text-white" onclick="return confirm('Permanently delete this task?');"><i class="fe fe-trash-2"></i></a>
@@ -365,8 +365,9 @@ function openCompleteModal(id) {
     document.getElementById('complete_task_id').value = id;
     $('#completeModal').modal('show');
 }
-function openViewEditInhouseModal(jsonStr) {
+function openViewEditInhouseModal(btn) {
     try {
+        let jsonStr = btn.getAttribute('data-task');
         let task = JSON.parse(jsonStr);
         document.getElementById('ve_task_id').value = task.id;
         document.getElementById('ve_task_name').value = task.task_name;

@@ -134,7 +134,7 @@
                                         </td>
                                         <td class="text-right pr-4">
                                             <div class="btn-group shadow-sm">
-                                                <button class="btn btn-sm btn-light border font-weight-bold" onclick="openViewEditInhouseModal(htmlspecialchars_decode('<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES); ?>'))">Details</button>
+                                                <button class="btn btn-sm btn-light border font-weight-bold" data-task="<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES, 'UTF-8'); ?>" onclick="openViewEditInhouseModal(this)">Details</button>
                                                 <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
                                                     <a href="tasks?action=deleteInhouse&id=<?php echo $ih['id']; ?>" class="btn btn-sm btn-danger text-white" onclick="return confirm('Permanently delete this task and its associated files?');" title="Delete Event">
                                                         <i class="fe fe-trash-2"></i>
@@ -330,8 +330,9 @@ function htmlspecialchars_decode(str) {
     return str.replace(/&amp;|&#039;|&quot;|&lt;|&gt;/g, function(m) { return map[m]; });
 }
 
-function openViewEditInhouseModal(jsonStr) {
+function openViewEditInhouseModal(btn) {
     try {
+        let jsonStr = btn.getAttribute('data-task');
         let task = JSON.parse(jsonStr);
         document.getElementById('ve_task_id').value = task.id;
         document.getElementById('ve_task_name').value = task.task_name;
