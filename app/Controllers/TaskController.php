@@ -182,6 +182,57 @@ class TaskController extends Controller {
         exit;
     }
 
+    public function editInhouse() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['task_id'])) {
+            $db = \Database::getInstance()->getConnection();
+            $stmt = $db->prepare("UPDATE inhouse_tasks SET task_name = ?, requirements = ?, deadline = ? WHERE id = ?");
+            $result = $stmt->execute([
+                $_POST['task_name'], 
+                $_POST['requirements'], 
+                $_POST['deadline'], 
+                $_POST['task_id']
+            ]);
+            if ($result) {
+                $_SESSION['flash_success'] = "In-House Task successfully updated.";
+            } else {
+                $_SESSION['flash_error'] = "Failed to update task.";
+            }
+        }
+        $redirect = $_SERVER['HTTP_REFERER'] ?? 'tasks';
+        header("Location: $redirect");
+        exit;
+    }
+
+    public function deleteInhouse() {
+        $this->checkRole(['Admin']); // Only Admin can delete
+        if (isset($_GET['id'])) {
+            $db = \Database::getInstance()->getConnection();
+            // Fetch file to delete if necessary
+            $stmt = $db->prepare("SELECT attachment_path, completion_file_path FROM inhouse_tasks WHERE id = ?");
+            $stmt->execute([$_GET['id']]);
+            $task = $stmt->fetch();
+            if ($task) {
+                if ($task['attachment_path'] && file_exists(BASE_PATH . '/' . $task['attachment_path'])) {
+                    @unlink(BASE_PATH . '/' . $task['attachment_path']);
+                }
+                if ($task['completion_file_path'] && file_exists(BASE_PATH . '/' . $task['completion_file_path'])) {
+                    @unlink(BASE_PATH . '/' . $task['completion_file_path']);
+                }
+            }
+            $stmt = $db->prepare("DELETE FROM inhouse_tasks WHERE id = ?");
+            $result = $stmt->execute([$_GET['id']]);
+            if ($result) {
+                $_SESSION['flash_success'] = "In-House Task deleted permanently.";
+            } else {
+                $_SESSION['flash_error'] = "Failed to delete task.";
+            }
+        }
+        $redirect = $_SERVER['HTTP_REFERER'] ?? 'tasks';
+        header("Location: $redirect");
+        exit;
+    }
+
+
 
     public function delete() {
         $this->checkRole(['Admin', 'Manager']);

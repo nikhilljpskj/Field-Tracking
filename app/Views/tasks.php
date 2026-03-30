@@ -4,7 +4,7 @@
 <main role="main" class="main-content">
     <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-lg-8">
+            <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 class="h3 mb-0 page-title">My Visit Schedule</h2>
@@ -155,17 +155,22 @@
                                                     <?php echo date('M d, Y', strtotime($ih['deadline'])); ?>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3 text-right">
-                                                <?php if($ih['status'] == 'Pending'): ?>
-                                                    <button class="btn btn-sm btn-primary shadow-sm w-100 mb-1" onclick="openAcceptModal(<?php echo $ih['id']; ?>)">Accept Task</button>
-                                                <?php elseif($ih['status'] == 'Accepted' || $ih['status'] == 'Overdue'): ?>
-                                                    <button class="btn btn-sm btn-success text-white shadow-sm w-100 mb-1" onclick="openCompleteModal(<?php echo $ih['id']; ?>)">Mark Completed</button>
-                                                <?php else: ?>
-                                                    <span class="badge badge-success px-3 py-2 text-uppercase"><i class="fe fe-check-circle mr-1"></i> Completed</span>
-                                                <?php endif; ?>
-                                                <?php if($ih['attachment_path']): ?>
-                                                    <a href="<?php echo $ih['attachment_path']; ?>" target="_blank" class="btn btn-sm btn-light w-100 mt-1"><i class="fe fe-paperclip"></i> View Brief</a>
-                                                <?php endif; ?>
+                                            <div class="col-md-3 mt-3 mt-md-0 text-md-right text-center">
+                                                <div class="btn-group w-100 mb-2 shadow-sm">
+                                                    <?php if($ih['status'] == 'Pending'): ?>
+                                                        <button class="btn btn-sm btn-primary" onclick="openAcceptModal(<?php echo $ih['id']; ?>)">Accept</button>
+                                                    <?php elseif($ih['status'] == 'Accepted' || $ih['status'] == 'Overdue'): ?>
+                                                        <button class="btn btn-sm btn-success text-white" onclick="openCompleteModal(<?php echo $ih['id']; ?>)">Complete</button>
+                                                    <?php else: ?>
+                                                        <button class="btn btn-sm btn-light text-success" disabled><i class="fe fe-check-circle"></i></button>
+                                                    <?php endif; ?>
+                                                    
+                                                    <button class="btn btn-sm btn-light border" onclick="openViewEditInhouseModal(htmlspecialchars_decode('<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES); ?>'))">Details</button>
+                                                    
+                                                    <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
+                                                        <a href="tasks?action=deleteInhouse&id=<?php echo $ih['id']; ?>" class="btn btn-sm btn-danger text-white" onclick="return confirm('Permanently delete this task?');"><i class="fe fe-trash-2"></i></a>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -290,7 +295,68 @@
     </div>
 </div>
 
+<!-- View / Edit Detail Modal -->
+<div class="modal fade" id="viewEditInhouseModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title font-weight-bold"><i class="fe fe-info mr-2"></i>Task Details & Edit</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <small class="text-uppercase text-muted font-weight-bold">Assigned By</small>
+                        <div id="ve_assigned_by" class="font-weight-600 text-dark"></div>
+                    </div>
+                    <div class="col-md-6 text-md-right mt-2 mt-md-0">
+                        <span id="ve_status_badge" class="badge px-3 py-1 font-weight-bold text-lg"></span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-3 rounded shadow-sm mb-4 border border-light">
+                    <small class="text-uppercase text-muted font-weight-bold">Acceptance / Completion Audit</small>
+                    <div class="mt-2 small" id="ve_audit_log"></div>
+                    <div class="mt-3" id="ve_attachments"></div>
+                </div>
+
+                <hr>
+                
+                <h6 class="font-weight-bold text-dark mb-3"><i class="fe fe-edit-3 mr-2"></i>Edit Task Information</h6>
+                <form action="tasks?action=editInhouse" method="POST">
+                    <input type="hidden" name="task_id" id="ve_task_id">
+                    <div class="form-group">
+                        <label class="small text-uppercase font-weight-bold text-muted">Task Name</label>
+                        <input type="text" name="task_name" id="ve_task_name" class="form-control font-weight-bold" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="small text-uppercase font-weight-bold text-muted">Core Requirements</label>
+                        <textarea name="requirements" id="ve_requirements" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            <label class="small text-uppercase font-weight-bold text-muted">Deadline</label>
+                            <input type="datetime-local" name="deadline" id="ve_deadline" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="text-right mt-4">
+                        <button type="button" class="btn btn-white shadow-sm mr-2" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary shadow-sm"><i class="fe fe-save mr-1"></i> Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+function htmlspecialchars_decode(str) {
+    var map = { '&amp;': '&', '&#039;': "'", '&quot;': '"', '&lt;': '<', '&gt;': '>' };
+    return str.replace(/&amp;|&#039;|&quot;|&lt;|&gt;/g, function(m) { return map[m]; });
+}
+
 function openAcceptModal(id) {
     document.getElementById('accept_task_id').value = id;
     $('#acceptModal').modal('show');
@@ -298,6 +364,55 @@ function openAcceptModal(id) {
 function openCompleteModal(id) {
     document.getElementById('complete_task_id').value = id;
     $('#completeModal').modal('show');
+}
+function openViewEditInhouseModal(jsonStr) {
+    try {
+        let task = JSON.parse(jsonStr);
+        document.getElementById('ve_task_id').value = task.id;
+        document.getElementById('ve_task_name').value = task.task_name;
+        document.getElementById('ve_requirements').value = task.requirements;
+        
+        let d = new Date(task.deadline);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        document.getElementById('ve_deadline').value = d.toISOString().slice(0, 16);
+        
+        document.getElementById('ve_assigned_by').innerText = task.assigner_name || 'System';
+        
+        let statusBadge = document.getElementById('ve_status_badge');
+        statusBadge.innerText = task.status;
+        statusBadge.className = 'badge px-3 py-1 font-weight-bold ';
+        if(task.status == 'Pending') statusBadge.classList.add('badge-secondary');
+        if(task.status == 'Accepted') statusBadge.classList.add('badge-primary');
+        if(task.status == 'Completed') statusBadge.classList.add('badge-success');
+        if(task.status == 'Overdue') statusBadge.classList.add('badge-danger', 'text-white');
+        
+        let audit = '';
+        if(task.accepted_at) {
+            audit += `<div class="mb-2"><strong class="text-primary">Accepted At:</strong> ${task.accepted_at} <br><span class="text-muted italic">"${task.acceptance_comment || ''}"</span></div>`;
+        } else {
+            audit += `<div class="text-muted italic">Not accepted yet.</div>`;
+        }
+        
+        if(task.completed_at) {
+            audit += `<hr class="my-2"><div class="mb-1"><strong class="text-success">Completed At:</strong> ${task.completed_at}</div>`;
+            audit += `<div class="mb-1"><strong class="text-dark">Completion Log:</strong> ${task.completion_details || ''}</div>`;
+            audit += `<div class="mb-1 text-muted italic">"${task.completion_comment || ''}"</div>`;
+        }
+        document.getElementById('ve_audit_log').innerHTML = audit;
+        
+        let attachments = '';
+        if(task.attachment_path) {
+            attachments += `<a href="${task.attachment_path}" target="_blank" class="btn btn-sm btn-outline-secondary mr-2"><i class="fe fe-paperclip mr-1"></i> Original Brief</a>`;
+        }
+        if(task.completion_file_path) {
+            attachments += `<a href="${task.completion_file_path}" target="_blank" class="btn btn-sm btn-success text-white"><i class="fe fe-download mr-1"></i> Download Deliverable</a>`;
+        }
+        document.getElementById('ve_attachments').innerHTML = attachments;
+
+        $('#viewEditInhouseModal').modal('show');
+    } catch(e) {
+        console.error("Parse error: ", e);
+    }
 }
 </script>
 
