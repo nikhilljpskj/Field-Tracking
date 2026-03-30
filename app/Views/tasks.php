@@ -137,7 +137,7 @@
                     <?php else: ?>
                         <?php foreach($inhouseTasks as $ih): ?>
                             <div class="col-md-12 mb-3">
-                                <div class="card shadow-sm border-0 <?php echo (strtotime($ih['deadline']) < time() && $ih['status'] != 'Completed') ? 'border-left border-danger border-4' : ''; ?>">
+                                <div class="card shadow-sm border-0 <?php echo (strtotime($ih['deadline']) < time() && !in_array($ih['status'], ['Completed', 'Pending Approval'])) ? 'border-left border-danger border-4' : ''; ?>">
                                     <div class="card-body">
                                         <div class="row align-items-center">
                                             <div class="col-md-3">
@@ -151,7 +151,7 @@
                                             </div>
                                             <div class="col-md-2 text-center">
                                                 <div class="small text-uppercase text-muted font-weight-bold mb-1">Deadline</div>
-                                                <div class="<?php echo (strtotime($ih['deadline']) < time() && $ih['status'] != 'Completed') ? 'text-danger font-weight-bold' : 'text-dark'; ?>">
+                                                <div class="<?php echo (strtotime($ih['deadline']) < time() && !in_array($ih['status'], ['Completed', 'Pending Approval'])) ? 'text-danger font-weight-bold' : 'text-dark'; ?>">
                                                     <?php echo date('M d, Y', strtotime($ih['deadline'])); ?>
                                                 </div>
                                             </div>
@@ -159,8 +159,10 @@
                                                 <div class="btn-group w-100 mb-2 shadow-sm">
                                                     <?php if($ih['status'] == 'Pending'): ?>
                                                         <button class="btn btn-sm btn-primary" onclick="openAcceptModal(<?php echo $ih['id']; ?>)">Accept</button>
-                                                    <?php elseif($ih['status'] == 'Accepted' || $ih['status'] == 'Overdue'): ?>
+                                                    <?php elseif(in_array($ih['status'], ['Accepted', 'Overdue', 'Revision Requested', 'Partial Submitted'])): ?>
                                                         <button class="btn btn-sm btn-success text-white" onclick="openCompleteModal(<?php echo $ih['id']; ?>)">Complete</button>
+                                                    <?php elseif($ih['status'] == 'Pending Approval'): ?>
+                                                        <button class="btn btn-sm btn-warning text-dark font-weight-bold" disabled><i class="fe fe-clock"></i> In Review</button>
                                                     <?php else: ?>
                                                         <button class="btn btn-sm btn-light text-success" disabled><i class="fe fe-check-circle"></i></button>
                                                     <?php endif; ?>
@@ -276,7 +278,14 @@
                 <input type="hidden" name="action" value="complete">
                 <input type="hidden" name="task_id" id="complete_task_id">
                 <div class="form-group">
-                    <label class="small text-muted font-weight-bold text-uppercase">Completion Details</label>
+                    <label class="small text-muted font-weight-bold text-uppercase">Submission Type</label>
+                    <select name="submission_type" class="form-control font-weight-bold" required>
+                        <option value="Partial">Partial Submission (Work in progress)</option>
+                        <option value="Final" selected>Final Submission (Ready for Approval)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="small text-muted font-weight-bold text-uppercase">Completion Details / URL</label>
                     <textarea name="completion_details" class="form-control" rows="3" required placeholder="What was done? Code links, resolutions, etc."></textarea>
                 </div>
                 <div class="form-group">
@@ -299,8 +308,8 @@
 <div class="modal fade" id="viewEditInhouseModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-dark text-white border-0">
-                <h5 class="modal-title font-weight-bold"><i class="fe fe-info mr-2"></i>Task Details & Edit</h5>
+            <div class="modal-header bg-primary text-white border-bottom border-primary" style="border-bottom-width: 4px !important;">
+                <h5 class="modal-title font-weight-bold"><i class="fe fe-cpu mr-2"></i>Task Intelligence & Operations</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -323,8 +332,27 @@
                 </div>
 
                 <hr>
+
+                <?php if (in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
                 
-                <h6 class="font-weight-bold text-dark mb-3"><i class="fe fe-edit-3 mr-2"></i>Edit Task Information</h6>
+                <div id="ve_admin_controls" style="display:none;" class="bg-white p-3 border border-warning rounded rounded-lg mb-4 shadow-sm">
+                    <h6 class="font-weight-bold text-warning mb-2"><i class="fe fe-shield mr-1"></i> Leadership Review Required</h6>
+                    <p class="small text-muted mb-3">This task has been submitted by the assignee. Please review the output attached above and either formally Approve it to complete the cycle, or Request Revisions to send it back.</p>
+                    
+                    <form action="tasks?action=updateInhouse" method="POST" id="ve_review_form">
+                        <input type="hidden" name="task_id" id="ve_review_task_id">
+                        <div class="form-group">
+                            <label class="small font-weight-bold text-dark text-uppercase">Manager Feedback / Revision Notes</label>
+                            <textarea name="manager_feedback" class="form-control" rows="3" placeholder="If requesting revisions, detail exactly what needs fixing..."></textarea>
+                        </div>
+                        <div class="d-flex w-100">
+                            <button type="submit" name="action" value="revision" class="btn btn-warning shadow-sm flex-fill mr-2 font-weight-bold" onclick="return confirm('Send task back to user for further revisions?');"><i class="fe fe-corner-up-left mr-1"></i> Request Revision</button>
+                            <button type="submit" name="action" value="approve" class="btn btn-success text-white shadow-sm flex-fill ml-2 font-weight-bold" onclick="return confirm('You are formally approving this task. Continue?');"><i class="fe fe-check-circle mr-1"></i> Approve & Close</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <h6 class="font-weight-bold text-dark mb-3"><i class="fe fe-edit-3 mr-2"></i>Administrative Task Control</h6>
                 <form action="tasks?action=editInhouse" method="POST">
                     <input type="hidden" name="task_id" id="ve_task_id">
                     <div class="form-group">
@@ -343,9 +371,15 @@
                     </div>
                     <div class="text-right mt-4">
                         <button type="button" class="btn btn-white shadow-sm mr-2" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary shadow-sm"><i class="fe fe-save mr-1"></i> Save Changes</button>
+                        <button type="submit" class="btn btn-primary shadow-sm"><i class="fe fe-save mr-1"></i> Update Properties</button>
                     </div>
                 </form>
+
+                <?php else: ?>
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-white px-5 shadow-sm" data-dismiss="modal">Close Details</button>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -386,6 +420,9 @@ function openViewEditInhouseModal(btn) {
         if(task.status == 'Accepted') statusBadge.classList.add('badge-primary');
         if(task.status == 'Completed') statusBadge.classList.add('badge-success');
         if(task.status == 'Overdue') statusBadge.classList.add('badge-danger', 'text-white');
+        if(task.status == 'Partial Submitted') statusBadge.classList.add('badge-info', 'text-white');
+        if(task.status == 'Pending Approval') statusBadge.classList.add('badge-warning', 'text-dark');
+        if(task.status == 'Revision Requested') statusBadge.classList.add('badge-danger', 'text-white');
         
         let audit = '';
         if(task.accepted_at) {
@@ -395,9 +432,12 @@ function openViewEditInhouseModal(btn) {
         }
         
         if(task.completed_at) {
-            audit += `<hr class="my-2"><div class="mb-1"><strong class="text-success">Completed At:</strong> ${task.completed_at}</div>`;
+            audit += `<hr class="my-2"><div class="mb-1"><strong class="text-success">Submission Timestamp:</strong> ${task.completed_at}</div>`;
             audit += `<div class="mb-1"><strong class="text-dark">Completion Log:</strong> ${task.completion_details || ''}</div>`;
             audit += `<div class="mb-1 text-muted italic">"${task.completion_comment || ''}"</div>`;
+        }
+        if(task.manager_feedback && task.manager_feedback.trim() !== '') {
+            audit += `<hr class="my-2"><div class="mb-1 bg-warning px-2 py-1 rounded text-dark"><strong class="text-dark"><i class="fe fe-alert-triangle mr-1"></i>Manager Feedback / Revision Needs:</strong><br>${task.manager_feedback}</div>`;
         }
         document.getElementById('ve_audit_log').innerHTML = audit;
         
@@ -409,6 +449,16 @@ function openViewEditInhouseModal(btn) {
             attachments += `<a href="${task.completion_file_path}" target="_blank" class="btn btn-sm btn-success text-white"><i class="fe fe-download mr-1"></i> Download Deliverable</a>`;
         }
         document.getElementById('ve_attachments').innerHTML = attachments;
+
+        let adminControls = document.getElementById('ve_admin_controls');
+        if (adminControls) {
+            if (task.status === 'Pending Approval' || task.status === 'Partial Submitted') {
+                adminControls.style.display = 'block';
+                document.getElementById('ve_review_task_id').value = task.id;
+            } else {
+                adminControls.style.display = 'none';
+            }
+        }
 
         $('#viewEditInhouseModal').modal('show');
     } catch(e) {

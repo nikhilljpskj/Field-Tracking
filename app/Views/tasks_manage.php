@@ -24,124 +24,86 @@
                     <div class="alert alert-success border-0 shadow-sm"><?php echo $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
                 <?php endif; ?>
 
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="bg-light text-muted small text-uppercase font-weight-bold">
-                                    <tr>
-                                        <th class="pl-4">Executive</th>
-                                        <th>Hospital / Office</th>
-                                        <th>Visit Date</th>
-                                        <th>Priority</th>
-                                        <th>Status</th>
-                                        <th class="text-right pr-4">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if(empty($tasks)): ?>
-                                        <tr>
-                                            <td colspan="6" class="text-center py-5 text-muted">
-                                                <i class="fe fe-info fe-24 mb-2 d-block"></i>
-                                                No visits assigned to your team yet.
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                    <?php foreach($tasks as $t): ?>
-                                    <tr>
-                                        <td class="pl-4 font-weight-600"><?php echo htmlspecialchars($t['executive_name']); ?></td>
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <span class="text-dark font-weight-500"><?php echo htmlspecialchars($t['hospital_office_name']); ?></span>
-                                                <small class="text-muted"><?php echo htmlspecialchars($t['location_desc']); ?></small>
-                                            </div>
-                                        </td>
-                                        <td><?php echo date('M d, Y', strtotime($t['visit_date'])); ?></td>
-                                        <td>
-                                            <?php 
-                                            $priorityClass = 'bg-secondary';
-                                            if($t['priority'] == 'High') $priorityClass = 'bg-danger';
-                                            if($t['priority'] == 'Medium') $priorityClass = 'bg-warning';
-                                            ?>
-                                            <span class="badge <?php echo $priorityClass; ?> text-white"><?php echo $t['priority']; ?></span>
-                                        </td>
-                                        <td>
-                                            <?php 
-                                            $statusClass = 'text-muted';
-                                            if($t['status'] == 'Completed') $statusClass = 'text-success font-weight-bold';
-                                            if($t['status'] == 'In Progress') $statusClass = 'text-primary font-weight-bold';
-                                            if($t['status'] == 'Cancelled') $statusClass = 'text-danger';
-                                            ?>
-                                            <span class="<?php echo $statusClass; ?>">
-                                                <i class="fe fe-circle fe-10 mr-1"></i> <?php echo $t['status']; ?>
-                                            </span>
-                                        </td>
-                                        <td class="text-right pr-4">
-                                            <a href="tasks?action=delete&id=<?php echo $t['id']; ?>" class="btn btn-sm btn-light text-danger" onclick="return confirm('Remove this visit assignment?')">
-                                                <i class="fe fe-trash-2"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                <?php 
+                $unifiedTasks = [];
+                // Process Visit Tasks
+                foreach($tasks as $t) {
+                    $statusBadge = 'badge-secondary';
+                    if($t['status'] == 'Completed') $statusBadge = 'badge-success';
+                    if($t['status'] == 'In Progress') $statusBadge = 'badge-primary';
+                    if($t['status'] == 'Cancelled') $statusBadge = 'badge-danger';
+                    
+                    $actionHtml = '<a href="tasks?action=delete&id='.$t['id'].'" class="btn btn-sm btn-light text-danger border" onclick="return confirm(\'Remove this visit assignment?\')"><i class="fe fe-trash-2"></i></a>';
+                    
+                    $unifiedTasks[] = [
+                        'sort_date' => strtotime($t['visit_date']),
+                        'type_html' => '<span class="badge badge-light border text-dark px-2 py-1"><i class="fe fe-map-pin text-primary mr-1"></i> Site Visit</span>',
+                        'assignee' => htmlspecialchars($t['executive_name']),
+                        'task_name' => htmlspecialchars($t['hospital_office_name']),
+                        'desc' => htmlspecialchars($t['location_desc']),
+                        'date_label' => date('M d, Y', strtotime($t['visit_date'])),
+                        'status_html' => '<span class="badge '.$statusBadge.' px-2 py-1">'.$t['status'].'</span>',
+                        'action_html' => $actionHtml
+                    ];
+                }
                 
-                <h4 class="mt-5 mb-3 text-dark">In-House Task Delegation</h4>
+                // Process In-House Tasks
+                foreach($inhouseTasks as $ih) {
+                    $bh = 'badge-secondary';
+                    if($ih['status'] == 'Accepted') $bh = 'badge-primary';
+                    if($ih['status'] == 'Partial Submitted') $bh = 'badge-info text-white';
+                    if($ih['status'] == 'Pending Approval') $bh = 'badge-warning text-dark';
+                    if($ih['status'] == 'Revision Requested') $bh = 'badge-danger text-white';
+                    if($ih['status'] == 'Completed') $bh = 'badge-success';
+                    if($ih['status'] == 'Overdue') $bh = 'badge-danger';
+                    
+                    $actionHtml = '<button class="btn btn-sm btn-dark font-weight-bold shadow-sm" data-task="'.htmlspecialchars(json_encode($ih), ENT_QUOTES, 'UTF-8').'" onclick="openViewEditInhouseModal(this)"><i class="fe fe-cpu mr-1"></i> Details</button>';
+                    if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
+                        $actionHtml .= ' <a href="tasks?action=deleteInhouse&id='.$ih['id'].'" class="btn btn-sm btn-danger text-white shadow-sm ml-1" onclick="return confirm(\'Permanently delete this task?\');"><i class="fe fe-trash-2"></i></a>';
+                    }
+                    
+                    $unifiedTasks[] = [
+                        'sort_date' => strtotime($ih['deadline']),
+                        'type_html' => '<span class="badge badge-dark px-2 py-1"><i class="fe fe-briefcase mr-1"></i> In-House Task</span>',
+                        'assignee' => htmlspecialchars($ih['assignee_name']),
+                        'task_name' => htmlspecialchars($ih['task_name']),
+                        'desc' => htmlspecialchars($ih['requirements']),
+                        'date_label' => date('M d, Y H:i', strtotime($ih['deadline'])),
+                        'status_html' => '<span class="badge '.$bh.' px-2 py-1">'.$ih['status'].'</span>',
+                        'action_html' => $actionHtml
+                    ];
+                }
+                
+                usort($unifiedTasks, function($a, $b) {
+                    return $b['sort_date'] - $a['sort_date'];
+                });
+                ?>
+
                 <div class="card shadow-sm border-0 mb-5">
-                    <div class="card-body p-0">
+                    <div class="card-body p-4">
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
+                            <table class="table table-hover datatables w-100" id="unifiedTaskTable">
                                 <thead class="bg-light text-muted small text-uppercase font-weight-bold">
                                     <tr>
-                                        <th class="pl-4">Assignee</th>
-                                        <th>Task Definition</th>
-                                        <th>Deadline</th>
-                                        <th>Status</th>
-                                        <th class="text-right pr-4">Attachment / View</th>
+                                        <th>Assignee Employee</th>
+                                        <th>Task Type</th>
+                                        <th>Task Target / Name</th>
+                                        <th>Location / Requirements</th>
+                                        <th>Date / Deadline</th>
+                                        <th>Current Status</th>
+                                        <th class="text-right">Administration</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if(empty($inhouseTasks)): ?>
-                                        <tr>
-                                            <td colspan="5" class="text-center py-5 text-muted">No in-house tasks delegated.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                    <?php foreach($inhouseTasks as $ih): ?>
+                                    <?php foreach($unifiedTasks as $ut): ?>
                                     <tr>
-                                        <td class="pl-4 font-weight-600"><?php echo htmlspecialchars($ih['assignee_name']); ?></td>
-                                        <td>
-                                            <div class="d-flex flex-column" style="max-width:300px;">
-                                                <span class="text-dark font-weight-bold"><?php echo htmlspecialchars($ih['task_name']); ?></span>
-                                                <small class="text-muted text-truncate"><?php echo htmlspecialchars($ih['requirements']); ?></small>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="<?php echo (strtotime($ih['deadline']) < time() && $ih['status'] != 'Completed') ? 'text-danger font-weight-bold' : ''; ?>">
-                                                <?php echo date('M d, Y H:i', strtotime($ih['deadline'])); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <?php 
-                                            $bh = 'badge-secondary';
-                                            if($ih['status'] == 'Accepted') $bh = 'badge-primary';
-                                            if($ih['status'] == 'Completed') $bh = 'badge-success';
-                                            if($ih['status'] == 'Overdue') $bh = 'badge-danger';
-                                            ?>
-                                            <span class="badge <?php echo $bh; ?> px-2 py-1"><?php echo $ih['status']; ?></span>
-                                        </td>
-                                        <td class="text-right pr-4">
-                                            <div class="btn-group shadow-sm">
-                                                <button class="btn btn-sm btn-light border font-weight-bold" data-task="<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES, 'UTF-8'); ?>" onclick="openViewEditInhouseModal(this)">Details</button>
-                                                <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
-                                                    <a href="tasks?action=deleteInhouse&id=<?php echo $ih['id']; ?>" class="btn btn-sm btn-danger text-white" onclick="return confirm('Permanently delete this task and its associated files?');" title="Delete Event">
-                                                        <i class="fe fe-trash-2"></i>
-                                                    </a>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
+                                        <td class="font-weight-bold text-dark"><?php echo $ut['assignee']; ?></td>
+                                        <td><?php echo $ut['type_html']; ?></td>
+                                        <td class="font-weight-600 text-dark"><?php echo $ut['task_name']; ?></td>
+                                        <td><div style="max-width:250px;" class="text-truncate text-muted small" title="<?php echo $ut['desc']; ?>"><?php echo $ut['desc']; ?></div></td>
+                                        <td><span class="font-weight-bold" data-order="<?php echo $ut['sort_date']; ?>"><?php echo $ut['date_label']; ?></span></td>
+                                        <td><?php echo $ut['status_html']; ?></td>
+                                        <td class="text-right"><?php echo $ut['action_html']; ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -272,8 +234,8 @@
 <div class="modal fade" id="viewEditInhouseModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-dark text-white border-0">
-                <h5 class="modal-title font-weight-bold"><i class="fe fe-info mr-2"></i>Task Details & Edit</h5>
+            <div class="modal-header bg-primary text-white border-bottom border-primary" style="border-bottom-width: 4px !important;">
+                <h5 class="modal-title font-weight-bold"><i class="fe fe-cpu mr-2"></i>Task Intelligence & Operations</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -297,7 +259,24 @@
 
                 <hr>
                 
-                <h6 class="font-weight-bold text-dark mb-3"><i class="fe fe-edit-3 mr-2"></i>Edit Task Information</h6>
+                <div id="ve_admin_controls" style="display:none;" class="bg-white p-3 border border-warning rounded rounded-lg mb-4 shadow-sm">
+                    <h6 class="font-weight-bold text-warning mb-2"><i class="fe fe-shield mr-1"></i> Leadership Review Required</h6>
+                    <p class="small text-muted mb-3">This task has been submitted by the assignee. Please review the output attached above and either formally Approve it to complete the cycle, or Request Revisions to send it back.</p>
+                    
+                    <form action="tasks?action=updateInhouse" method="POST" id="ve_review_form">
+                        <input type="hidden" name="task_id" id="ve_review_task_id">
+                        <div class="form-group">
+                            <label class="small font-weight-bold text-dark text-uppercase">Manager Feedback / Revision Notes</label>
+                            <textarea name="manager_feedback" class="form-control" rows="3" placeholder="If requesting revisions, detail exactly what needs fixing..."></textarea>
+                        </div>
+                        <div class="d-flex w-100">
+                            <button type="submit" name="action" value="revision" class="btn btn-warning shadow-sm flex-fill mr-2 font-weight-bold" onclick="return confirm('Send task back to user for further revisions?');"><i class="fe fe-corner-up-left mr-1"></i> Request Revision</button>
+                            <button type="submit" name="action" value="approve" class="btn btn-success text-white shadow-sm flex-fill ml-2 font-weight-bold" onclick="return confirm('You are formally approving this task. Continue?');"><i class="fe fe-check-circle mr-1"></i> Approve & Close</button>
+                        </div>
+                    </form>
+                </div>
+
+                <h6 class="font-weight-bold text-dark mb-3"><i class="fe fe-edit-3 mr-2"></i>Administrative Task Control</h6>
                 <form action="tasks?action=editInhouse" method="POST">
                     <input type="hidden" name="task_id" id="ve_task_id">
                     <div class="form-group">
@@ -316,7 +295,7 @@
                     </div>
                     <div class="text-right mt-4">
                         <button type="button" class="btn btn-white shadow-sm mr-2" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary shadow-sm"><i class="fe fe-save mr-1"></i> Save Changes</button>
+                        <button type="submit" class="btn btn-primary shadow-sm"><i class="fe fe-save mr-1"></i> Update Properties</button>
                     </div>
                 </form>
             </div>
@@ -351,6 +330,9 @@ function openViewEditInhouseModal(btn) {
         if(task.status == 'Accepted') statusBadge.classList.add('badge-primary');
         if(task.status == 'Completed') statusBadge.classList.add('badge-success');
         if(task.status == 'Overdue') statusBadge.classList.add('badge-danger', 'text-white');
+        if(task.status == 'Partial Submitted') statusBadge.classList.add('badge-info', 'text-white');
+        if(task.status == 'Pending Approval') statusBadge.classList.add('badge-warning', 'text-dark');
+        if(task.status == 'Revision Requested') statusBadge.classList.add('badge-danger', 'text-white');
         
         let audit = '';
         if(task.accepted_at) {
@@ -360,9 +342,12 @@ function openViewEditInhouseModal(btn) {
         }
         
         if(task.completed_at) {
-            audit += `<hr class="my-2"><div class="mb-1"><strong class="text-success">Completed At:</strong> ${task.completed_at}</div>`;
+            audit += `<hr class="my-2"><div class="mb-1"><strong class="text-success">Submission Timestamp:</strong> ${task.completed_at}</div>`;
             audit += `<div class="mb-1"><strong class="text-dark">Completion Log:</strong> ${task.completion_details || ''}</div>`;
             audit += `<div class="mb-1 text-muted italic">"${task.completion_comment || ''}"</div>`;
+        }
+        if(task.manager_feedback && task.manager_feedback.trim() !== '') {
+            audit += `<hr class="my-2"><div class="mb-1 bg-warning px-2 py-1 rounded text-dark"><strong class="text-dark"><i class="fe fe-alert-triangle mr-1"></i>Manager Feedback / Revision Needs:</strong><br>${task.manager_feedback}</div>`;
         }
         document.getElementById('ve_audit_log').innerHTML = audit;
         
@@ -375,11 +360,41 @@ function openViewEditInhouseModal(btn) {
         }
         document.getElementById('ve_attachments').innerHTML = attachments;
 
+        let adminControls = document.getElementById('ve_admin_controls');
+        if (adminControls) {
+            if (task.status === 'Pending Approval' || task.status === 'Partial Submitted') {
+                adminControls.style.display = 'block';
+                document.getElementById('ve_review_task_id').value = task.id;
+            } else {
+                adminControls.style.display = 'none';
+            }
+        }
+
         $('#viewEditInhouseModal').modal('show');
     } catch(e) {
         console.error("Parse error: ", e);
     }
 }
+</script>
+
+<link rel="stylesheet" href="css/dataTables.bootstrap4.css">
+<script src="js/jquery.dataTables.min.js"></script>
+<script src="js/dataTables.bootstrap4.min.js"></script>
+<script>
+    $(document).ready(function() {
+        if (!$.fn.DataTable.isDataTable('#unifiedTaskTable')) {
+            $('#unifiedTaskTable').DataTable({
+                "pageLength": 100,
+                "order": [[ 4, "desc" ]], // Sort by Date/Deadline by default
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Filter employees, status..."
+                }
+            });
+            // Fix search bar styling
+            $('.dataTables_filter input').addClass('form-control form-control-lg border-0 bg-light shadow-sm').css('width', '350px');
+        }
+    });
 </script>
 
 <?php include 'layout/footer.php'; ?>

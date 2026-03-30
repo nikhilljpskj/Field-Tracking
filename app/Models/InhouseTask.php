@@ -41,13 +41,24 @@ class InhouseTask extends Model {
         return $stmt->execute([$comment, $id]);
     }
 
-    public function completeTask($id, $details, $filePath, $comment) {
-        $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = 'Completed', completed_at = NOW(), completion_details = ?, completion_file_path = ?, completion_comment = ? WHERE id = ?");
-        return $stmt->execute([$details, $filePath, $comment, $id]);
+    public function completeTask($id, $details, $filePath, $comment, $subType = 'Final') {
+        $status = ($subType === 'Partial') ? 'Partial Submitted' : 'Pending Approval';
+        $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = ?, completed_at = NOW(), completion_details = ?, completion_file_path = ?, completion_comment = ? WHERE id = ?");
+        return $stmt->execute([$status, $details, $filePath, $comment, $id]);
+    }
+
+    public function approveTask($id) {
+        $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = 'Completed' WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    public function requestRevisionTask($id, $feedback) {
+        $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = 'Revision Requested', manager_feedback = ? WHERE id = ?");
+        return $stmt->execute([$feedback, $id]);
     }
     
     public function getOverdueTasks($user_id) {
-        $stmt = $this->db->prepare("SELECT * FROM inhouse_tasks WHERE assigned_to = ? AND deadline < NOW() AND status != 'Completed'");
+        $stmt = $this->db->prepare("SELECT * FROM inhouse_tasks WHERE assigned_to = ? AND deadline < NOW() AND status NOT IN ('Completed', 'Pending Approval')");
         $stmt->execute([$user_id]);
         return $stmt->fetchAll();
     }

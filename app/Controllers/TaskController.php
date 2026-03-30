@@ -158,6 +158,7 @@ class TaskController extends Controller {
             elseif ($action === 'complete') {
                 $details = $_POST['completion_details'] ?? '';
                 $comment = $_POST['completion_comment'] ?? '';
+                $subType = $_POST['submission_type'] ?? 'Final'; // Partial or Final
                 
                 $filePath = null;
                 if (isset($_FILES['completion_file']) && $_FILES['completion_file']['error'] == UPLOAD_ERR_OK) {
@@ -172,10 +173,40 @@ class TaskController extends Controller {
                     }
                 }
                 
-                $inhouseModel->completeTask($taskId, $details, $filePath, $comment);
-                $_SESSION['flash_success'] = "Task submitted as Completed!";
+                $inhouseModel->completeTask($taskId, $details, $filePath, $comment, $subType);
+                
+                // Fetch info for notification
+                $task = $inhouseModel->getTaskById($taskId);
+                $db = \Database::getInstance()->getConnection();
+                $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskSubmitted', ?)");
+                $title = ($subType === 'Partial') ? "Partial Submission ($task[task_name]) by $task[assignee_name]" : "Final Submission ($task[task_name]) by $task[assignee_name]";
+                $stmt->execute([$task['assigned_by'], $title]);
+                
+                $_SESSION['flash_success'] = ($subType === 'Partial') ? "Task saved as Partial Submission!" : "Task locked and sent for Manager Approval!";
             }
-            // Send back to caller view
+            elseif ($action === 'approve') {
+                $this->checkRole(['Admin', 'Manager']);
+                $inhouseModel->approveTask($taskId);
+                
+                $task = $inhouseModel->getTaskById($taskId);
+                $db = \Database::getInstance()->getConnection();
+                $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskApproved', ?)");
+                $stmt->execute([$task['assigned_to'], "Good job! Task Approved: " . $task['task_name']]);
+                
+                $_SESSION['flash_success'] = "Task officially complete and approved.";
+            }
+            elseif ($action === 'revision') {
+                $this->checkRole(['Admin', 'Manager']);
+                $feedback = $_POST['manager_feedback'] ?? '';
+                $inhouseModel->requestRevisionTask($taskId, $feedback);
+                
+                $task = $inhouseModel->getTaskById($taskId);
+                $db = \Database::getInstance()->getConnection();
+                $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskRevision', ?)");
+                $stmt->execute([$task['assigned_to'], "Revision Requested for: " . $task['task_name'] . " - Please check the task details."]);
+                
+                $_SESSION['flash_success'] = "Revision notification sent to the assignee.";
+            }
         }
         $redirect = $_SERVER['HTTP_REFERER'] ?? 'tasks';
         header("Location: $redirect");
