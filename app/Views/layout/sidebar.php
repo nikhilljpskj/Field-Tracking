@@ -112,6 +112,26 @@
     </li>
   </ul>
 
+  <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
+  <p class="text-muted nav-heading mt-4 mb-1">
+    <span>Master Data</span>
+  </p>
+  <ul class="navbar-nav flex-fill w-100 mb-2">
+    <li class="nav-item w-100">
+      <a class="nav-link" href="hospitals">
+        <i class="fe fe-heart fe-16"></i>
+        <span class="ml-3 item-text">Hospitals & Offices</span>
+      </a>
+    </li>
+    <li class="nav-item w-100">
+      <a class="nav-link" href="doctors">
+        <i class="fe fe-users fe-16"></i>
+        <span class="ml-3 item-text">Doctors & POC</span>
+      </a>
+    </li>
+  </ul>
+  <?php endif; ?>
+
   <p class="text-muted nav-heading mt-4 mb-1">
     <span>Reporting</span>
   </p>

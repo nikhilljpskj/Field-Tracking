@@ -32,9 +32,9 @@ class Travel extends Model {
         }
     }
 
-    public function updateStatus($id, $status) {
-        $stmt = $this->db->prepare("UPDATE travel_summary SET status = ? WHERE id = ?");
-        return $stmt->execute([$status, $id]);
+    public function updateStatus($id, $status, $auditor_id = null, $comments = null) {
+        $stmt = $this->db->prepare("UPDATE travel_summary SET status = ?, approved_by = ?, admin_comments = ? WHERE id = ?");
+        return $stmt->execute([$status, $auditor_id, $comments, $id]);
     }
 
     public function getTeamSummaries($team_ids) {

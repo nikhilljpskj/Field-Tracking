@@ -29,7 +29,7 @@
                                     <select id="user-selector" class="form-control form-control-sm border-0 shadow-sm px-3" style="min-width: 200px; border-radius: 20px; height: 38px;">
                                         <?php foreach($users as $u): ?>
                                             <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $selectedUser) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($u['name']); ?> (<?php echo $u['role']; ?>)
+                                                <?php echo htmlspecialchars($u['name']); ?> (<?php echo $u['role_name'] ?? 'Staff'; ?>)
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -43,6 +43,21 @@
                                 <label class="btn btn-white" id="btn-list">
                                     <input type="radio" name="options" id="option2"> <i class="fe fe-list mr-1"></i> List
                                 </label>
+                            </div>
+                            
+                            <!-- Export Functional Dropdown -->
+                            <div class="dropdown d-inline-block ml-3 shadow-sm">
+                                <button class="btn btn-white dropdown-toggle" type="button" id="exportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 8px;">
+                                    <i class="fe fe-download mr-1 text-primary"></i> Export Report
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="exportDropdown">
+                                    <a class="dropdown-item" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=csv">
+                                        <i class="fe fe-file-text mr-2 text-success"></i> Excel (CSV)
+                                    </a>
+                                    <a class="dropdown-item" target="_blank" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=pdf">
+                                        <i class="fe fe-printer mr-2 text-danger"></i> PDF / Print
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

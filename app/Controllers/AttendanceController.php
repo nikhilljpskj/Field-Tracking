@@ -209,6 +209,59 @@ class AttendanceController extends Controller {
         $this->view('attendance_history', $data);
     }
 
+    public function exportHistory() {
+        $this->checkRole(['Admin', 'Manager', 'HR', 'Executive']);
+        $attendanceModel = new Attendance();
+        $userModel = new \App\Models\User();
+
+        $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
+        $month = $_GET['month'] ?? date('n');
+        $year = $_GET['year'] ?? date('Y');
+        $format = $_GET['format'] ?? 'csv';
+
+        // RBAC validation
+        if (!in_array($_SESSION['role'], ['Admin', 'Manager', 'HR']) && $userId != $_SESSION['user_id']) {
+            $userId = $_SESSION['user_id'];
+        }
+
+        $records = $attendanceModel->getMonthlyHistory($userId, $month, $year);
+        $user = $userModel->findById($userId);
+        
+        $filename = "attendance_report_" . str_replace(' ', '_', $user['name']) . "_{$year}_{$month}";
+
+        if ($format == 'csv') {
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+            
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Employee Name: ' . $user['name'], 'Month: ' . date('F Y', mktime(0, 0, 0, $month, 10, $year))]);
+            fputcsv($output, []); // blank row
+            fputcsv($output, ['Date', 'Day', 'Location (Check-In)', 'Check-In Time', 'Location (Check-Out)', 'Check-Out Time']);
+            
+            foreach ($records as $r) {
+                fputcsv($output, [
+                    date('d M Y', strtotime($r['check_in_time'])),
+                    date('l', strtotime($r['check_in_time'])),
+                    $r['check_in_address'],
+                    date('h:i A', strtotime($r['check_in_time'])),
+                    $r['check_out_address'] ?: '-',
+                    $r['check_out_time'] ? date('h:i A', strtotime($r['check_out_time'])) : 'Active'
+                ]);
+            }
+            fclose($output);
+            exit;
+        } else {
+            // PDF/Print view
+            $data = [
+                'user' => $user,
+                'records' => $records,
+                'month' => $month,
+                'year' => $year
+            ];
+            $this->view('reports/print_history', $data);
+        }
+    }
+
     private function saveBase64Image($base64String, $prefix) {
         $dir = \App\Core\Config::get('UPLOAD_DIR', 'uploads/attendance/');
         $fullPath = BASE_PATH . '/' . $dir;

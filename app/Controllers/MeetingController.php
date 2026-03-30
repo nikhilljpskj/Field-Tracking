@@ -31,6 +31,9 @@ class MeetingController extends Controller {
         }
         $unique_clients = count(array_unique($clients_seen));
         
+        $doctorModel = new \App\Models\Doctor();
+        $doctors = $doctorModel->getAll();
+
         $data = [
             'title' => 'Intelligence Hub - Client Interactions',
             'meetings' => $meetings,
@@ -38,7 +41,8 @@ class MeetingController extends Controller {
                 'total_today' => $total_today,
                 'approved_today' => $approved_today,
                 'unique_clients' => $unique_clients
-            ]
+            ],
+            'doctors' => $doctors
         ];
         $this->view('meetings', $data);
     }
@@ -63,7 +67,8 @@ class MeetingController extends Controller {
                 'latitude' => $_POST['latitude'],
                 'longitude' => $_POST['longitude'],
                 'address' => $_POST['address'],
-                'selfie_path' => $selfiePath
+                'selfie_path' => $selfiePath,
+                'referenced_doctor_id' => $_POST['referenced_doctor_id'] ?? null
             ];
             
             $result = $meetingModel->logMeeting($data);

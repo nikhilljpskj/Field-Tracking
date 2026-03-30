@@ -33,29 +33,57 @@ class ReportController extends Controller {
         $travelModel = new Travel();
         $userModel = new User();
         
+        $userId = $_GET['user_id'] ?? 'all';
+        $users = [];
+
         if ($_SESSION['role'] == 'Manager') {
             $team = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
+            $users = $team;
             $teamIds = array_column($team, 'id');
-            $meetings = $meetingModel->getTeamMeetings($teamIds);
-            $travelSummaries = $travelModel->getTeamSummaries($teamIds);
+            
+            // Further filter if a specific user in the team is selected
+            if ($userId !== 'all' && in_array($userId, $teamIds)) {
+                $meetings = $meetingModel->getUserMeetings($userId);
+                $allTravel = $travelModel->getTeamSummaries($teamIds);
+                $travelSummaries = array_filter($allTravel, function($t) use ($userId) {
+                    return $t['user_id'] == $userId;
+                });
+            } else {
+                $meetings = $meetingModel->getTeamMeetings($teamIds);
+                $travelSummaries = $travelModel->getTeamSummaries($teamIds);
+            }
         } else {
-            $meetings = $meetingModel->getAllMeetings();
-            $travelSummaries = $travelModel->getAllSummaries();
+            $users = $userModel->getAll();
+            if ($userId !== 'all') {
+                $meetings = $meetingModel->getUserMeetings($userId);
+                // The Travel getTravelSummary is for a specific date, to keep format matched with manage page:
+                $allTravel = $travelModel->getAllSummaries();
+                $travelSummaries = array_filter($allTravel, function($t) use ($userId) {
+                    return $t['user_id'] == $userId;
+                });
+            } else {
+                $meetings = $meetingModel->getAllMeetings();
+                $travelSummaries = $travelModel->getAllSummaries();
+            }
         }
         
         $data = [
             'title' => 'Team Reports & Approvals',
             'meetings' => $meetings,
-            'travelSummaries' => $travelSummaries
+            'travelSummaries' => $travelSummaries,
+            'users' => $users,
+            'selectedUser' => $userId
         ];
         $this->view('reports/manage', $data);
     }
 
     public function approveMeeting() {
         $this->checkRole(['Admin', 'Manager']);
-        if (isset($_GET['id'])) {
+        if (isset($_GET['id']) || isset($_POST['id'])) {
+            $id = $_POST['id'] ?? $_GET['id'];
+            $reason = $_POST['reason'] ?? $_GET['reason'] ?? null;
             $meetingModel = new Meeting();
-            $meetingModel->updateStatus($_GET['id'], 'Approved');
+            $meetingModel->updateStatus($id, 'Approved', $_SESSION['user_id'], $reason);
             $_SESSION['flash_success'] = "Meeting approved!";
         }
         $this->redirect('reports');
@@ -63,9 +91,11 @@ class ReportController extends Controller {
 
     public function rejectMeeting() {
         $this->checkRole(['Admin', 'Manager']);
-        if (isset($_GET['id'])) {
+        if (isset($_GET['id']) || isset($_POST['id'])) {
+            $id = $_POST['id'] ?? $_GET['id'];
+            $reason = $_POST['reason'] ?? $_GET['reason'] ?? null;
             $meetingModel = new Meeting();
-            $meetingModel->updateStatus($_GET['id'], 'Rejected');
+            $meetingModel->updateStatus($id, 'Rejected', $_SESSION['user_id'], $reason);
             $_SESSION['flash_error'] = "Meeting rejected.";
         }
         $this->redirect('reports');
@@ -73,9 +103,11 @@ class ReportController extends Controller {
 
     public function approveTravel() {
         $this->checkRole(['Admin', 'Manager']);
-        if (isset($_GET['id'])) {
+        if (isset($_GET['id']) || isset($_POST['id'])) {
+            $id = $_POST['id'] ?? $_GET['id'];
+            $reason = $_POST['reason'] ?? $_GET['reason'] ?? null;
             $travelModel = new Travel();
-            $travelModel->updateStatus($_GET['id'], 'Approved');
+            $travelModel->updateStatus($id, 'Approved', $_SESSION['user_id'], $reason);
             $_SESSION['flash_success'] = "Travel allowance approved!";
         }
         $this->redirect('reports');
@@ -83,9 +115,11 @@ class ReportController extends Controller {
 
     public function rejectTravel() {
         $this->checkRole(['Admin', 'Manager']);
-        if (isset($_GET['id'])) {
+        if (isset($_GET['id']) || isset($_POST['id'])) {
+            $id = $_POST['id'] ?? $_GET['id'];
+            $reason = $_POST['reason'] ?? $_GET['reason'] ?? null;
             $travelModel = new Travel();
-            $travelModel->updateStatus($_GET['id'], 'Rejected');
+            $travelModel->updateStatus($id, 'Rejected', $_SESSION['user_id'], $reason);
             $_SESSION['flash_error'] = "Travel allowance rejected.";
         }
         $this->redirect('reports');
@@ -147,22 +181,63 @@ class ReportController extends Controller {
         $travelModel = new Travel();
         
         $data = [];
-        if ($type == 'daily') {
-            $data = $meetingModel->getUserMeetings($_SESSION['user_id']);
-            $filename = "daily_report_" . date('Y-m-d') . ".csv";
-        } elseif ($type == 'weekly') {
-            $startDate = date('Y-m-d', strtotime('-7 days'));
-            $endDate = date('Y-m-d');
-            $data = $meetingModel->getWeeklyUserStats($_SESSION['user_id'], $startDate, $endDate);
-            $filename = "weekly_report_" . $startDate . "_to_" . $endDate . ".csv";
-        } elseif ($type == 'monthly') {
-            $data = $meetingModel->getMonthlyUserStats($_SESSION['user_id'], date('m'), date('Y'));
-            $filename = "monthly_report_" . date('Y_m') . ".csv";
+        $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
+        $userModel = new User();
+        $targetName = "My";
+
+        if ($userId === 'all') {
+            $this->checkRole(['Admin', 'Manager']);
+            $targetName = "Team";
+            if ($_SESSION['role'] == 'Manager') {
+                $team = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
+                $teamIds = array_column($team, 'id');
+                if ($type == 'daily') {
+                    $data = $meetingModel->getTeamMeetings($teamIds);
+                } else {
+                    // Quick patch for monthly team data (using teamIds in SQL conceptually or fetching all and filtering)
+                    // Currently we don't have getMonthlyTeamStats, so we use getTeamMeetings directly as a broad export
+                    $data = $meetingModel->getTeamMeetings($teamIds);
+                }
+            } else {
+                $data = $meetingModel->getAllMeetings();
+            }
+            $filename = "{$type}_team_report_" . date('Y_m_d');
+        } else {
+            // RBAC check if querying another user
+            if ($userId != $_SESSION['user_id']) {
+                $this->checkRole(['Admin', 'Manager', 'HR']);
+                $targetUser = $userModel->findById($userId);
+                $targetName = $targetUser['name'];
+            }
+            
+            if ($type == 'daily') {
+                $data = $meetingModel->getUserMeetings($userId);
+                $filename = "daily_report_{$userId}_" . date('Y-m-d');
+            } elseif ($type == 'weekly') {
+                $startDate = date('Y-m-d', strtotime('-7 days'));
+                $endDate = date('Y-m-d');
+                $data = $meetingModel->getWeeklyUserStats($userId, $startDate, $endDate);
+                $filename = "weekly_report_{$userId}_" . date('Y-m-d');
+            } elseif ($type == 'monthly') {
+                $data = $meetingModel->getMonthlyUserStats($userId, date('m'), date('Y'));
+                $filename = "monthly_report_{$userId}_" . date('Y_m');
+            }
+        }
+
+        // Apply specific category filtering
+        $category = $_GET['category'] ?? null;
+        if ($category) {
+            $data = array_filter($data, function($item) use ($category) {
+                return ($item['visit_category'] ?? 'Meeting') === $category;
+            });
+            // Re-index array after filtering for PDF logic
+            $data = array_values($data);
+            $filename .= "_" . strtolower(str_replace(' ', '_', $category));
         }
 
         if ($format == 'csv') {
             header('Content-Type: text/csv');
-            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
             
             $output = fopen('php://output', 'w');
             if (!empty($data)) {
@@ -175,7 +250,7 @@ class ReportController extends Controller {
             exit;
         } else {
             // PDF - Render print-friendly view
-            $this->view('reports/print', ['data' => $data, 'type' => $type]);
+            $this->view('reports/print', ['data' => $data, 'type' => $type, 'targetName' => $targetName]);
         }
     }
 }

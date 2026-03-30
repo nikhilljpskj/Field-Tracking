@@ -52,7 +52,10 @@ $routes = [
     'payroll-manage' => 'PayrollController',
     'travel-history' => 'TravelController',
     'attendance-history' => 'AttendanceController',
-    'attendance-edit' => 'AttendanceController'
+    'attendance-edit' => 'AttendanceController',
+    'attendance-export' => 'AttendanceController',
+    'hospitals' => 'HospitalController',
+    'doctors' => 'DoctorController'
 ];
 
 if (array_key_exists($url, $routes)) {
@@ -104,6 +107,8 @@ if (array_key_exists($url, $routes)) {
         $action = 'history';
     } elseif ($url == 'attendance-edit') {
         $action = 'edit';
+    } elseif ($url == 'attendance-export') {
+        $action = 'exportHistory';
     } elseif ($url == 'payroll-manage') {
         $action = $action === 'index' ? 'manage' : $action;
     }

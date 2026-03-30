@@ -174,9 +174,19 @@
                 </div>
                 <div class="form-group mb-3">
                     <label class="small font-weight-bold text-muted text-uppercase">Visit Category</label>
-                    <select name="visit_category" class="form-control custom-select bg-white">
+                    <select name="visit_category" id="visit_category" class="form-control custom-select bg-white">
                         <option value="Meeting">Standard Meeting</option>
                         <option value="Home Enrollment">Home Enrollment</option>
+                    </select>
+                </div>
+                
+                <div class="form-group mb-3" id="doctor_field_container" style="display: none;">
+                    <label class="small font-weight-bold text-primary text-uppercase">Referenced Doctor</label>
+                    <select name="referenced_doctor_id" class="form-control custom-select border-primary bg-light">
+                        <option value="">-- Select Register Doctor --</option>
+                        <?php if(!empty($doctors)): foreach($doctors as $d): ?>
+                            <option value="<?php echo $d['id']; ?>">Dr. <?php echo htmlspecialchars(str_ireplace('dr. ', '', str_ireplace('dr ', '', $d['name']))); ?></option>
+                        <?php endforeach; endif; ?>
                     </select>
                 </div>
                 <div class="form-group mb-3">
@@ -248,7 +258,12 @@
 
                         <div class="strip-content flex-fill text-truncate pr-4" style="max-width: 400px;">
                             <div class="font-weight-600 text-dark small mb-1">Outcome:</div>
-                            <div class="text-muted small text-truncate"><?php echo $m['outcome'] ?: 'No outcome specified.'; ?></div>
+                            <div class="text-muted small text-truncate">
+                                <?php if(($m['visit_category'] ?? '') == 'Home Enrollment' && !empty($m['referenced_doctor_name'])): ?>
+                                    <span class="badge badge-light border text-primary mb-1"><i class="fe fe-user mr-1"></i>Ref: Dr. <?php echo htmlspecialchars($m['referenced_doctor_name']); ?></span><br>
+                                <?php endif; ?>
+                                <?php echo $m['outcome'] ?: 'No outcome specified.'; ?>
+                            </div>
                             <div class="mt-2 text-primary small font-weight-bold">
                                 <i class="fe fe-maximize-2 mr-1"></i> Open Full Report
                             </div>
@@ -300,6 +315,11 @@
                                 <label class="small text-muted font-weight-bold text-uppercase">Time (IST)</label>
                                 <div id="modal-date-time" class="font-weight-bold"></div>
                              </div>
+                        </div>
+
+                        <div id="modal-ref-doctor-container" class="bg-light rounded p-3 mb-4 border border-dashed border-primary" style="display:none;">
+                            <label class="small text-primary font-weight-bold text-uppercase"><i class="fe fe-user mr-1"></i> Referenced Doctor</label>
+                            <div id="modal-ref-doctor" class="font-weight-bold text-dark"></div>
                         </div>
 
                         <div class="bg-light rounded p-3 mb-4 border border-dashed">
@@ -382,6 +402,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const lngInput = document.getElementById('longitude');
     const addrInput = document.getElementById('address');
     const btn = document.getElementById('log-meeting-btn');
+    
+    // Dynamic Form Trigger for Reference Doctor
+    const categorySelect = document.getElementById('visit_category');
+    const doctorFieldContainer = document.getElementById('doctor_field_container');
+    categorySelect.addEventListener('change', function() {
+        if (this.value === 'Home Enrollment') {
+            doctorFieldContainer.style.display = 'block';
+        } else {
+            doctorFieldContainer.style.display = 'none';
+            doctorFieldContainer.querySelector('select').value = '';
+        }
+    });
     
     let map, marker, platform;
     let isGpsLocked = false;
@@ -503,6 +535,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modal-notes').textContent = data.notes;
         document.getElementById('modal-outcome').textContent = data.outcome;
         document.getElementById('modal-address').textContent = data.address;
+        
+        const refDocContainer = document.getElementById('modal-ref-doctor-container');
+        if (data.visit_category === 'Home Enrollment' && data.referenced_doctor_name) {
+            document.getElementById('modal-ref-doctor').textContent = 'Dr. ' + data.referenced_doctor_name.replace(/dr\.?\s*/i, '');
+            refDocContainer.style.display = 'block';
+        } else {
+            refDocContainer.style.display = 'none';
+        }
         
         const b = document.getElementById('modal-status-badge');
         b.textContent = data.status || 'Pending';
