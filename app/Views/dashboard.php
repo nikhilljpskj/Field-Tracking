@@ -22,6 +22,20 @@
                     <?php endif; ?>
                 </div>
 
+                <?php if(!empty($overdueTasks)): ?>
+                    <div class="alert alert-danger border-left border-danger mb-4 shadow-sm" style="border-left-width: 4px !important;">
+                        <div class="d-flex align-items-center">
+                            <div class="mr-3">
+                                <i class="fe fe-alert-circle fe-24"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-danger font-weight-bold">CRITICAL: Overdue In-House Assignments</h5>
+                                <p class="mb-0 small">You have <strong><?php echo count($overdueTasks); ?></strong> internal task(s) that have passed their deadline and are NOT yet completed. <a href="tasks" class="font-weight-bold text-danger text-underline">Please complete them immediately.</a></p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Mobile Quick Actions (Full Width) -->
                 <?php if($_SESSION['role'] == 'Executive'): ?>
                 <div class="row d-md-none mb-4">

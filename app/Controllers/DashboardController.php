@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\Meeting;
 use App\Models\Travel;
 use App\Models\User;
+use App\Models\InhouseTask;
 
 class DashboardController extends Controller {
     public function index() {
@@ -122,6 +123,9 @@ class DashboardController extends Controller {
 
             $data['trends'] = [];
         }
+
+        $inhouseModel = new InhouseTask();
+        $data['overdueTasks'] = $inhouseModel->getOverdueTasks($user_id);
 
         $this->view('dashboard', $data);
     }
