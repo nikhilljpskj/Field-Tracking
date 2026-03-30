@@ -133,6 +133,11 @@
                                                     <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='attendance-edit?id=<?php echo $r['id']; ?>'">
                                                         <i class="fe fe-eye"></i>
                                                     </button>
+                                                    <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
+                                                    <button class="btn btn-sm btn-outline-danger ml-1" title="Permanently Delete" onclick="if(confirm('Are you sure you want to permanently delete this attendance record and its associated verification photos?')) window.location.href='attendance?action=delete&id=<?php echo $r['id']; ?>'">
+                                                        <i class="fe fe-trash-2"></i>
+                                                    </button>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                             <?php endforeach; ?>

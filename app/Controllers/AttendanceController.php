@@ -67,17 +67,29 @@ class AttendanceController extends Controller {
     }
 
     public function delete() {
-        $this->checkRole(['Admin', 'Manager']);
+        $this->checkRole(['Admin']);
         if (isset($_GET['id'])) {
             $attendanceModel = new Attendance();
-            $result = $attendanceModel->delete($_GET['id']);
-            if ($result) {
-                $_SESSION['flash_success'] = "Attendance record deleted successfully!";
-            } else {
-                $_SESSION['flash_error'] = "Failed to delete record.";
+            $record = $attendanceModel->getById($_GET['id']);
+            if ($record) {
+                $photos = ['check_in_photo', 'check_out_photo', 'odometer_photo', 'check_out_odometer_photo'];
+                foreach ($photos as $photo) {
+                    if (!empty($record[$photo]) && file_exists(BASE_PATH . '/' . $record[$photo])) {
+                        @unlink(BASE_PATH . '/' . $record[$photo]);
+                    }
+                }
+                $result = $attendanceModel->delete($_GET['id']);
+                if ($result) {
+                    $_SESSION['flash_success'] = "Attendance record and associated media purged successfully.";
+                } else {
+                    $_SESSION['flash_error'] = "Failed to purge attendance record.";
+                }
             }
         }
-        $this->redirect('attendance');
+        // Safely redirect back to referer or history
+        $redirect = $_SERVER['HTTP_REFERER'] ?? 'attendance-history';
+        header("Location: $redirect");
+        exit;
     }
 
     public function checkIn() {

@@ -275,6 +275,11 @@
                                     <i class="fe fe-map-pin text-primary"></i>
                                 </button>
                              <?php endif; ?>
+                             <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
+                                <button class="btn btn-sm btn-danger shadow-sm rounded-circle border-0 p-2 ml-1" onclick="event.stopPropagation(); if(confirm('Permanently delete this meeting log and its associated selfie?')) window.location.href='meetings?action=delete&id=<?php echo $m['id']; ?>'" title="Delete Record">
+                                    <i class="fe fe-trash-2 text-white"></i>
+                                </button>
+                             <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>

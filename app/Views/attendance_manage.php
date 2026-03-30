@@ -113,8 +113,10 @@
                                                     <a class="dropdown-item" href="javascript:void(0)" onclick="viewAttendanceDetails(<?php echo htmlspecialchars(json_encode($r)); ?>)"><i class="fe fe-eye fe-12 mr-2 text-primary"></i> View Full Audit</a>
                                                     <div class="dropdown-divider"></div>
                                                     <a class="dropdown-item" href="attendance?action=edit&id=<?php echo $r['id']; ?>"><i class="fe fe-edit-3 fe-12 mr-2"></i> Edit Record</a>
+                                                    <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item text-danger" href="attendance?action=delete&id=<?php echo $r['id']; ?>" onclick="return confirm('Delete this attendance record?')"><i class="fe fe-trash-2 fe-12 mr-2"></i> Delete</a>
+                                                    <a class="dropdown-item text-danger" href="attendance?action=delete&id=<?php echo $r['id']; ?>" onclick="return confirm('Permanently delete this attendance record and its associated verification photos?')"><i class="fe fe-trash-2 fe-12 mr-2"></i> Delete</a>
+                                                    <?php endif; ?>
                                                 </div>
 
                                             </div>

@@ -95,6 +95,26 @@ class MeetingController extends Controller {
         $this->redirect('meetings');
     }
 
+    public function delete() {
+        $this->checkRole(['Admin']);
+        if (isset($_GET['id'])) {
+            $meetingModel = new Meeting();
+            $record = $meetingModel->getById($_GET['id']);
+            if ($record) {
+                if (!empty($record['selfie_path']) && file_exists(BASE_PATH . '/' . $record['selfie_path'])) {
+                    @unlink(BASE_PATH . '/' . $record['selfie_path']);
+                }
+                $meetingModel->delete($_GET['id']);
+                $_SESSION['flash_success'] = "Intelligence interaction and photo purged successfully.";
+            } else {
+                $_SESSION['flash_error'] = "Failed to purge interaction log.";
+            }
+        }
+        $redirect = $_SERVER['HTTP_REFERER'] ?? 'meetings';
+        header("Location: $redirect");
+        exit;
+    }
+
     private function saveBase64Image($base64Data, $subfolder) {
         $uploadDir = 'uploads/' . $subfolder . '/';
         if (!is_dir(BASE_PATH . '/' . $uploadDir)) {

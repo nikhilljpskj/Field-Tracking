@@ -124,7 +124,8 @@
                                                     <button type="button" onclick="openActionModal('rejectMeeting', <?php echo $m['id']; ?>)" class="btn btn-sm btn-outline-danger mr-1">Reject</button>
                                                 <?php endif; ?>
                                                 <?php if($_SESSION['role'] == 'Admin'): ?>
-                                                    <a href="reports?action=editMeeting&id=<?php echo $m['id']; ?>" class="btn btn-sm btn-light">Edit</a>
+                                                    <a href="reports?action=editMeeting&id=<?php echo $m['id']; ?>" class="btn btn-sm btn-light mr-1">Edit</a>
+                                                    <a href="meetings?action=delete&id=<?php echo $m['id']; ?>" class="btn btn-sm btn-danger text-white" onclick="return confirm('Permanently delete this meeting log and its associated verification selfie?');"><i class="fe fe-trash-2"></i></a>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -178,9 +179,10 @@
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-right pr-4">
+                                            <a href="travel-history?user_id=<?php echo $s['user_id']; ?>&date=<?php echo $s['date']; ?>" class="btn btn-sm btn-info text-white mr-2" title="Verify Route & Coordinates"><i class="fe fe-map-pin mr-1"></i>Audit Route</a>
                                             <?php if($s['status'] == 'Pending'): ?>
-                                                <button type="button" onclick="openActionModal('approveTravel', <?php echo $s['id']; ?>)" class="btn btn-sm btn-outline-success mr-1">Approve</button>
-                                                <button type="button" onclick="openActionModal('rejectTravel', <?php echo $s['id']; ?>)" class="btn btn-sm btn-outline-danger">Reject</button>
+                                                <button type="button" onclick="openActionModal('approveTravel', <?php echo $s['id']; ?>)" class="btn btn-sm btn-outline-success mr-1" title="Approve Claim"><i class="fe fe-check"></i></button>
+                                                <button type="button" onclick="openActionModal('rejectTravel', <?php echo $s['id']; ?>)" class="btn btn-sm btn-outline-danger" title="Reject Claim"><i class="fe fe-x"></i></button>
                                             <?php else: ?>
                                                 <span class="text-muted small italic">Finalized</span>
                                             <?php endif; ?>

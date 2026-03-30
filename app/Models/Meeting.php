@@ -113,4 +113,9 @@ class Meeting extends Model {
         $stmt->execute([$user_id, $month, $year]);
         return $stmt->fetch();
     }
+
+    public function delete($id) {
+        $stmt = $this->db->prepare("DELETE FROM client_meetings WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
 }
