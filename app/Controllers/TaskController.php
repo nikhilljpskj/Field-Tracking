@@ -14,11 +14,11 @@ class TaskController extends Controller {
         }
 
         $taskModel = new Task();
-        $inhouseModel = new InhouseTask();
-        $userModel = new User();
-        
         $tasks = $taskModel->getTasksForUser($_SESSION['user_id']);
         $inhouseTasks = $inhouseModel->getTasksForUser($_SESSION['user_id']);
+        foreach($inhouseTasks as &$ih) {
+            $ih['history'] = $inhouseModel->getTaskHistory($ih['id']);
+        }
         $overdueTasks = $inhouseModel->getOverdueTasks($_SESSION['user_id']);
         
         // Employees can assign inhouse tasks to themselves or others in their team (if restricted, here we allow all or team)
@@ -61,6 +61,11 @@ class TaskController extends Controller {
         
         $inhouseModel = new InhouseTask();
         $inhouseTasks = $inhouseModel->getTeamTasks(($_SESSION['role'] == 'Manager') ? $_SESSION['user_id'] : null);
+        
+        // Attach audit history to each task
+        foreach($inhouseTasks as &$ih) {
+            $ih['history'] = $inhouseModel->getTaskHistory($ih['id']);
+        }
         
         $data = [
             'title' => 'Team Task Assignment',
@@ -129,6 +134,8 @@ class TaskController extends Controller {
 
             $result = $inhouseModel->create($data);
             if ($result) {
+                $lastId = Database::getInstance()->getConnection()->lastInsertId();
+                $inhouseModel->logEvent($lastId, $_SESSION['user_id'], 'Task Created', 'Assignment initialized by leader.');
                 // Notify user
                 $db = \Database::getInstance()->getConnection();
                 $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskAssigned', ?)");
@@ -152,7 +159,7 @@ class TaskController extends Controller {
             
             if ($action === 'accept') {
                 $comment = $_POST['acceptance_comment'] ?? '';
-                $inhouseModel->acceptTask($taskId, $comment);
+                $inhouseModel->acceptTask($taskId, $comment, $_SESSION['user_id']);
                 $_SESSION['flash_success'] = "Task marked as Accepted.";
             } 
             elseif ($action === 'complete') {
@@ -173,7 +180,7 @@ class TaskController extends Controller {
                     }
                 }
                 
-                $inhouseModel->completeTask($taskId, $details, $filePath, $comment, $subType);
+                $inhouseModel->completeTask($taskId, $details, $filePath, $comment, $_SESSION['user_id'], $subType);
                 
                 // Fetch info for notification
                 $task = $inhouseModel->getTaskById($taskId);
@@ -188,7 +195,7 @@ class TaskController extends Controller {
             }
             elseif ($action === 'approve') {
                 $this->checkRole(['Admin', 'Manager']);
-                $inhouseModel->approveTask($taskId);
+                $inhouseModel->approveTask($taskId, $_SESSION['user_id']);
                 
                 $task = $inhouseModel->getTaskById($taskId);
                 $db = \Database::getInstance()->getConnection();
@@ -200,7 +207,7 @@ class TaskController extends Controller {
             elseif ($action === 'revision') {
                 $this->checkRole(['Admin', 'Manager']);
                 $feedback = $_POST['manager_feedback'] ?? '';
-                $inhouseModel->requestRevisionTask($taskId, $feedback);
+                $inhouseModel->requestRevisionTask($taskId, $feedback, $_SESSION['user_id']);
                 
                 $task = $inhouseModel->getTaskById($taskId);
                 $db = \Database::getInstance()->getConnection();

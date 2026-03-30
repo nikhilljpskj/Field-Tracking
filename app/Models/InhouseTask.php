@@ -36,25 +36,43 @@ class InhouseTask extends Model {
         return $stmt->fetch();
     }
 
-    public function acceptTask($id, $comment) {
+    public function acceptTask($id, $comment, $user_id) {
         $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = 'Accepted', accepted_at = NOW(), acceptance_comment = ? WHERE id = ?");
+        $this->logEvent($id, $user_id, 'Accepted', $comment);
         return $stmt->execute([$comment, $id]);
     }
 
-    public function completeTask($id, $details, $filePath, $comment, $subType = 'Final') {
+    public function completeTask($id, $details, $filePath, $comment, $user_id, $subType = 'Final') {
         $status = ($subType === 'Partial') ? 'Partial Submitted' : 'Pending Approval';
         $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = ?, completed_at = NOW(), completion_details = ?, completion_file_path = ?, completion_comment = ? WHERE id = ?");
+        $logText = "($subType Submission) Details: " . $details . ($comment ? " | Comment: " . $comment : "");
+        $this->logEvent($id, $user_id, 'Submitted', $logText);
         return $stmt->execute([$status, $details, $filePath, $comment, $id]);
     }
 
-    public function approveTask($id) {
+    public function approveTask($id, $user_id) {
         $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = 'Completed' WHERE id = ?");
+        $this->logEvent($id, $user_id, 'Approved', 'Task formally approved and closed.');
         return $stmt->execute([$id]);
     }
 
-    public function requestRevisionTask($id, $feedback) {
+    public function requestRevisionTask($id, $feedback, $user_id) {
         $stmt = $this->db->prepare("UPDATE inhouse_tasks SET status = 'Revision Requested', manager_feedback = ? WHERE id = ?");
+        $this->logEvent($id, $user_id, 'Revision Requested', $feedback);
         return $stmt->execute([$feedback, $id]);
+    }
+    
+    public function logEvent($task_id, $user_id, $action, $message = null) {
+        $stmt = $this->db->prepare("INSERT INTO inhouse_task_history (task_id, user_id, action, message) VALUES (?, ?, ?, ?)");
+        return $stmt->execute([$task_id, $user_id, $action, $message]);
+    }
+
+    public function getTaskHistory($task_id) {
+        $stmt = $this->db->prepare("SELECT h.*, u.name as user_name FROM inhouse_task_history h 
+                                    JOIN users u ON h.user_id = u.id 
+                                    WHERE h.task_id = ? ORDER BY h.created_at ASC");
+        $stmt->execute([$task_id]);
+        return $stmt->fetchAll();
     }
     
     public function getOverdueTasks($user_id) {
