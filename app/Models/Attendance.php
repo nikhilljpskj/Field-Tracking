@@ -41,12 +41,49 @@ class Attendance extends Model {
     }
 
     public function getAllLatest($limit = 50) {
-        $stmt = $this->db->prepare("SELECT a.*, u.name as user_name 
+        $stmt = $this->db->prepare("SELECT a.*, u.name as user_name, u.phone as user_phone 
                                     FROM attendance a 
                                     JOIN users u ON a.user_id = u.id 
                                     ORDER BY a.created_at DESC LIMIT ?");
         $stmt->bindValue(1, (int)$limit, \PDO::PARAM_INT);
         $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function getFilteredRecords($filters = []) {
+        $sql = "SELECT a.*, u.name as user_name, u.phone as user_phone 
+                FROM attendance a 
+                JOIN users u ON a.user_id = u.id 
+                WHERE 1=1";
+        $params = [];
+
+        if (!empty($filters['user_id'])) {
+            $sql .= " AND a.user_id = ?";
+            $params[] = $filters['user_id'];
+        }
+
+        if (!empty($filters['date_from'])) {
+            $sql .= " AND DATE(a.check_in_time) >= ?";
+            $params[] = $filters['date_from'];
+        }
+
+        if (!empty($filters['date_to'])) {
+            $sql .= " AND DATE(a.check_in_time) <= ?";
+            $params[] = $filters['date_to'];
+        }
+
+        if (!empty($filters['search'])) {
+            $sql .= " AND (u.name LIKE ? OR a.check_in_address LIKE ? OR a.check_out_address LIKE ?)";
+            $searchTerm = "%" . $filters['search'] . "%";
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
+        $sql .= " ORDER BY a.check_in_time DESC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

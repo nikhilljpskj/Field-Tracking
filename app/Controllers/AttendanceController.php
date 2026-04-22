@@ -27,11 +27,23 @@ class AttendanceController extends Controller {
     public function manage() {
         $this->checkRole(['Admin', 'Manager']);
         $attendanceModel = new Attendance();
-        $records = $attendanceModel->getAllLatest();
+        $userModel = new \App\Models\User();
+        
+        $filters = [
+            'user_id' => $_GET['user_id'] ?? null,
+            'date_from' => $_GET['date_from'] ?? date('Y-m-01'), // Default to current month start
+            'date_to' => $_GET['date_to'] ?? date('Y-m-d'),
+            'search' => $_GET['search'] ?? null
+        ];
+
+        $records = $attendanceModel->getFilteredRecords($filters);
+        $users = $userModel->getAll();
         
         $data = [
-            'title' => 'Attendance Management',
-            'records' => $records
+            'title' => 'Attendance Logistics - Command Center',
+            'records' => $records,
+            'users' => $users,
+            'filters' => $filters
         ];
         $this->view('attendance_manage', $data);
     }
