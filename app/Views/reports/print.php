@@ -44,7 +44,7 @@
                 <div class="p-3 bg-light rounded text-left d-inline-block border">
                     <div class="small text-uppercase text-muted font-weight-bold mb-1">Target Scope</div>
                     <div class="font-weight-bold text-dark" style="font-size: 16px;"><?php echo htmlspecialchars($targetName ?? 'Unknown'); ?></div>
-                    <div class="text-muted small">Period: <?php echo date('F Y'); ?></div>
+                    <div class="text-muted small">Period: <?php echo htmlspecialchars($period ?? date('F Y')); ?></div>
                 </div>
             </div>
         </div>

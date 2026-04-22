@@ -72,12 +72,42 @@ class Travel extends Model {
     }
 
     public function getMonthlyBreakdown($user_id, $month, $year) {
-        $stmt = $this->db->prepare("SELECT s.*, 
-                                    (SELECT COUNT(*) FROM client_meetings m WHERE m.user_id = s.user_id AND DATE(m.meeting_time) = s.date) as meeting_count
-                                    FROM travel_summary s
-                                    WHERE s.user_id = ? AND MONTH(s.date) = ? AND YEAR(s.date) = ?
-                                    ORDER BY s.date DESC");
-        $stmt->execute([$user_id, $month, $year]);
+        $sql = "SELECT s.*, 
+                       (SELECT COUNT(*) FROM client_meetings m WHERE m.user_id = s.user_id AND DATE(m.meeting_time) = s.date) as meeting_count
+                FROM travel_summary s
+                WHERE MONTH(s.date) = ? AND YEAR(s.date) = ?";
+        
+        $params = [$month, $year];
+        if ($user_id !== 'all') {
+            $sql .= " AND s.user_id = ?";
+            $params[] = $user_id;
+        }
+        $sql .= " ORDER BY s.date DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function getMonthlyTeamAggregates($month, $year, $team_ids = null) {
+        $sql = "SELECT u.id as user_id, u.name as user_name,
+                       SUM(s.total_distance) as total_distance,
+                       SUM(s.allowance_earned) as total_allowance,
+                       COUNT(s.id) as active_days
+                FROM users u
+                LEFT JOIN travel_summary s ON u.id = s.user_id AND MONTH(s.date) = ? AND YEAR(s.date) = ?
+                WHERE 1=1";
+        
+        $params = [$month, $year];
+        if ($team_ids) {
+            $in = implode(',', array_fill(0, count($team_ids), '?'));
+            $sql .= " AND u.id IN ($in)";
+            $params = array_merge($params, $team_ids);
+        }
+
+        $sql .= " GROUP BY u.id, u.name ORDER BY total_distance DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

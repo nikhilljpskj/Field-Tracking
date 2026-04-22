@@ -15,12 +15,12 @@
                         <!-- Employee Filter -->
                         <?php if (!empty($users)): ?>
                             <div class="mr-md-3 mb-2 mb-md-0 d-flex flex-wrap">
-                                <div class="input-group shadow-sm mr-2 mb-2 mb-md-0" style="border-radius: 12px; overflow: hidden;">
+                                <div class="input-group shadow-sm mr-2 mb-2 mb-md-0" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2;">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text bg-white border-0 pl-3"><i class="fe fe-users text-primary"></i></span>
+                                        <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-users text-primary" style="font-size: 0.8rem;"></i></span>
                                     </div>
-                                    <select id="user-selector" class="form-control border-0 px-2" style="min-width: 200px; height: 42px; font-weight: 600;">
-                                        <option value="all">All Personnel (Team View)</option>
+                                    <select id="user-selector" class="form-control border-0 px-2" style="min-width: 180px; font-size: 0.85rem; font-weight: 600; height: 34px;">
+                                        <option value="all">All Personnel</option>
                                         <?php foreach($users as $u): ?>
                                             <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $selectedUser) ? 'selected' : ''; ?>>
                                                 <?php echo htmlspecialchars($u['name']); ?>
@@ -29,18 +29,18 @@
                                     </select>
                                 </div>
 
-                                <div class="input-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                                <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2;">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text bg-white border-0 pl-3"><i class="fe fe-calendar text-info"></i></span>
+                                        <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-calendar text-info" style="font-size: 0.8rem;"></i></span>
                                     </div>
-                                    <input type="date" id="date-selector" class="form-control border-0 px-2" value="<?php echo $selectedDate; ?>" style="width: 160px; height: 42px; font-weight: 600;">
+                                    <input type="date" id="date-selector" class="form-control border-0 px-2" value="<?php echo $selectedDate; ?>" style="width: 140px; font-size: 0.85rem; font-weight: 600; height: 34px;">
                                 </div>
                             </div>
                         <?php endif; ?>
                         
                         <div class="dropdown shadow-sm mb-2 mb-md-0">
-                            <button class="btn btn-dark dropdown-toggle font-weight-bold px-4 h-100 d-flex align-items-center" type="button" id="exportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 12px; height: 42px;">
-                                <i class="fe fe-download mr-2"></i> Export Data
+                            <button class="btn btn-dark dropdown-toggle font-weight-bold px-3 h-100 d-flex align-items-center" type="button" id="exportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 8px; height: 36px; font-size: 0.85rem;">
+                                <i class="fe fe-download mr-2"></i> Export
                             </button>
                             <div class="dropdown-menu dropdown-menu-right shadow border-0 py-3" aria-labelledby="exportDropdown" style="min-width: 300px; border-radius:12px;">
                                 <h6 class="dropdown-header text-uppercase text-primary font-weight-800" style="font-size:0.7rem; letter-spacing:0.05em;">Daily Logs (<?php echo $selectedUser === 'all' ? 'Team' : (isset($user['name']) ? $user['name'] : 'User'); ?>)</h6>

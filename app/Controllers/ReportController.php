@@ -198,24 +198,59 @@ class ReportController extends Controller {
     }
 
     public function monthly() {
-        $attendanceModel = new Attendance();
         $meetingModel = new Meeting();
         $travelModel = new Travel();
+        $userModel = new User();
         
+        $selectedUserId = $_GET['user_id'] ?? $_SESSION['user_id'];
         $month = $_GET['month'] ?? date('m');
         $year = $_GET['year'] ?? date('Y');
-        $userId = $_SESSION['user_id'];
         
-        $data = [
-            'title' => 'Monthly Performance Report',
-            'meetings' => $meetingModel->getMonthlyUserStats($userId, $month, $year), // Count vs Stats: stats is the list
-            'meeting_summary' => $meetingModel->getMonthlySummary($userId, $month, $year),
-            'travel' => $travelModel->getMonthlyUserTravel($userId, $month, $year),
-            'breakdown' => $travelModel->getMonthlyBreakdown($userId, $month, $year)
-        ];
-        // Rename meetings count for compatibility with view's usage if needed
-        $data['meetings_list'] = $data['meetings']; // The list of meetings
-        $data['meetings'] = $data['meeting_summary']; // The summary (count, active_days)
+        // RBAC Check
+        if ($selectedUserId !== $_SESSION['user_id']) {
+            $this->checkRole(['Admin', 'Manager']);
+        }
+
+        $users = [];
+        if (in_array($_SESSION['role'], ['Admin', 'Manager'])) {
+            if ($_SESSION['role'] == 'Manager') {
+                $users = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
+            } else {
+                $users = $userModel->getAll();
+            }
+        }
+
+        if ($selectedUserId === 'all') {
+            $teamIds = array_column($users, 'id');
+            $data = [
+                'title' => 'Team Performance Leadership - ' . date('F Y', mktime(0,0,0,$month,1,$year)),
+                'is_aggregate' => true,
+                'user_aggregates' => $meetingModel->getTeamMonthlyAggregates($month, $year, $teamIds),
+                'travel_aggregates' => $travelModel->getMonthlyTeamAggregates($month, $year, $teamIds),
+                'meetings_list' => $meetingModel->getMonthlyUserStats('all', $month, $year) // Global logs for the month
+            ];
+            // Filter global logs if Manager
+            if ($_SESSION['role'] == 'Manager') {
+                $data['meetings_list'] = array_filter($data['meetings_list'], function($m) use ($teamIds) {
+                    return in_array($m['user_id'], $teamIds);
+                });
+            }
+        } else {
+            $data = [
+                'title' => 'Monthly Performance - ' . date('F Y', mktime(0,0,0,$month,1,$year)),
+                'is_aggregate' => false,
+                'target_user' => $userModel->findById($selectedUserId),
+                'meetings' => $meetingModel->getMonthlySummary($selectedUserId, $month, $year),
+                'meetings_list' => $meetingModel->getMonthlyUserStats($selectedUserId, $month, $year),
+                'travel' => $travelModel->getMonthlyUserTravel($selectedUserId, $month, $year),
+                'breakdown' => $travelModel->getMonthlyBreakdown($selectedUserId, $month, $year)
+            ];
+        }
+
+        $data['users'] = $users;
+        $data['selectedUser'] = $selectedUserId;
+        $data['selectedMonth'] = $month;
+        $data['selectedYear'] = $year;
         
         $this->view('reports/monthly', $data);
     }
@@ -231,30 +266,46 @@ class ReportController extends Controller {
         $data = [];
         $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
         $date = $_GET['date'] ?? null;
+        $month = $_GET['month'] ?? date('m');
+        $year = $_GET['year'] ?? date('Y');
         $userModel = new User();
         $targetName = "My";
 
         if ($userId === 'all') {
             $this->checkRole(['Admin', 'Manager']);
             $targetName = "Team";
-            if ($_SESSION['role'] == 'Manager') {
-                $team = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
-                $teamIds = array_column($team, 'id');
-                if ($date) {
-                    $data = $meetingModel->getMeetingsByDate($date, 'all'); // Filtered for team in actual app can be refined, but broadly all is fine for admin/manager view
-                    // Further filter data for teamIds if needed
+            if ($type == 'monthly') {
+                $users_list = [];
+                if ($_SESSION['role'] == 'Manager') {
+                    $users_list = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
+                } else {
+                    $users_list = $userModel->getAll();
+                }
+                $teamIds = array_column($users_list, 'id');
+                $data = $meetingModel->getMonthlyUserStats('all', $month, $year);
+                if ($_SESSION['role'] == 'Manager') {
                     $data = array_filter($data, function($m) use ($teamIds) { return in_array($m['user_id'], $teamIds); });
-                } else {
-                    $data = $meetingModel->getTeamMeetings($teamIds);
                 }
+                $filename = "monthly_team_report_{$year}_{$month}";
             } else {
-                if ($date) {
-                    $data = $meetingModel->getMeetingsByDate($date, 'all');
+                if ($_SESSION['role'] == 'Manager') {
+                    $team = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
+                    $teamIds = array_column($team, 'id');
+                    if ($date) {
+                        $data = $meetingModel->getMeetingsByDate($date, 'all'); 
+                        $data = array_filter($data, function($m) use ($teamIds) { return in_array($m['user_id'], $teamIds); });
+                    } else {
+                        $data = $meetingModel->getTeamMeetings($teamIds);
+                    }
                 } else {
-                    $data = $meetingModel->getAllMeetings();
+                    if ($date) {
+                        $data = $meetingModel->getMeetingsByDate($date, 'all');
+                    } else {
+                        $data = $meetingModel->getAllMeetings();
+                    }
                 }
+                $filename = "{$type}_team_report_" . ($date ?: date('Y_m_d'));
             }
-            $filename = "{$type}_team_report_" . ($date ?: date('Y_m_d'));
         } else {
             // RBAC check if querying another user
             if ($userId != $_SESSION['user_id']) {
@@ -275,8 +326,8 @@ class ReportController extends Controller {
                 $data = $meetingModel->getWeeklyUserStats($userId, $startDate, $endDate);
                 $filename = "weekly_report_{$userId}_" . date('Y-m-d');
             } elseif ($type == 'monthly') {
-                $data = $meetingModel->getMonthlyUserStats($userId, date('m'), date('Y'));
-                $filename = "monthly_report_{$userId}_" . date('Y_m');
+                $data = $meetingModel->getMonthlyUserStats($userId, $month, $year);
+                $filename = "monthly_report_{$userId}_{$year}_{$month}";
             }
         }
 
@@ -322,9 +373,8 @@ class ReportController extends Controller {
             }
             fclose($output);
             exit;
-        } else {
             // PDF - Render print-friendly view
-            $this->view('reports/print', ['data' => $data, 'type' => $type, 'targetName' => $targetName]);
-        }
+            $period = date('F Y', mktime(0, 0, 0, $month, 1, $year));
+            $this->view('reports/print', ['data' => $data, 'type' => $type, 'targetName' => $targetName, 'period' => $period]);
     }
 }

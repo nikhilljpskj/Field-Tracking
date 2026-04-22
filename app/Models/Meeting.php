@@ -135,12 +135,61 @@ class Meeting extends Model {
     }
 
     public function getMonthlySummary($user_id, $month, $year) {
-        $stmt = $this->db->prepare("SELECT COUNT(*) as count, 
-                                    COUNT(DISTINCT DATE(meeting_time)) as active_days
-                                    FROM client_meetings 
-                                    WHERE user_id = ? AND MONTH(meeting_time) = ? AND YEAR(meeting_time) = ?");
-        $stmt->execute([$user_id, $month, $year]);
+        $sql = "SELECT COUNT(*) as count, 
+                       COUNT(DISTINCT DATE(meeting_time)) as active_days
+                FROM client_meetings 
+                WHERE MONTH(meeting_time) = ? AND YEAR(meeting_time) = ?";
+        
+        $params = [$month, $year];
+        if ($user_id !== 'all') {
+            $sql .= " AND user_id = ?";
+            $params[] = $user_id;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetch();
+    }
+
+    public function getMonthlyUserStats($user_id, $month, $year) {
+        $sql = "SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
+                FROM client_meetings m 
+                JOIN users u ON m.user_id = u.id
+                LEFT JOIN users au ON m.approved_by = au.id
+                LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
+                WHERE MONTH(m.meeting_time) = ? AND YEAR(m.meeting_time) = ?";
+        
+        $params = [$month, $year];
+        if ($user_id !== 'all') {
+            $sql .= " AND m.user_id = ?";
+            $params[] = $user_id;
+        }
+        $sql .= " ORDER BY m.meeting_time DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function getTeamMonthlyAggregates($month, $year, $team_ids = null) {
+        $sql = "SELECT u.id as user_id, u.name as user_name, 
+                       COUNT(m.id) as meeting_count,
+                       COUNT(DISTINCT DATE(m.meeting_time)) as active_days
+                FROM users u
+                LEFT JOIN client_meetings m ON u.id = m.user_id AND MONTH(m.meeting_time) = ? AND YEAR(m.meeting_time) = ?
+                WHERE 1=1";
+        
+        $params = [$month, $year];
+        if ($team_ids) {
+            $in = implode(',', array_fill(0, count($team_ids), '?'));
+            $sql .= " AND u.id IN ($in)";
+            $params = array_merge($params, $team_ids);
+        }
+
+        $sql .= " GROUP BY u.id, u.name ORDER BY meeting_count DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public function delete($id) {
