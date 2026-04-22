@@ -23,12 +23,33 @@ class Tracking extends Model {
         if (count($logs) < 2) return 0;
 
         $totalDistance = 0;
-        for ($i = 0; $i < count($logs) - 1; $i++) {
-            $totalDistance += $this->calculateHaversine(
-                $logs[$i]['latitude'], $logs[$i]['longitude'],
-                $logs[$i+1]['latitude'], $logs[$i+1]['longitude']
-            );
+        $prevLog = null;
+
+        foreach ($logs as $log) {
+            // 1. Filter by accuracy (if accuracy > 50m, it's likely noise / cell-tower based)
+            if (isset($log['accuracy']) && $log['accuracy'] > 50) continue;
+
+            if ($prevLog) {
+                $dist = $this->calculateHaversine(
+                    $prevLog['latitude'], $prevLog['longitude'],
+                    $log['latitude'], $log['longitude']
+                );
+
+                // 2. Ignore negligible movement (jitter while stationary)
+                if ($dist < 5) continue;
+
+                // 3. Velocity check (filter out massive GPS jumps)
+                $timeDiff = strtotime($log['logged_at']) - strtotime($prevLog['logged_at']);
+                if ($timeDiff > 0) {
+                    $speedKmh = ($dist / $timeDiff) * 3.6;
+                    if ($speedKmh > 120) continue; // Ignore jumps suggesting > 120km/h
+                }
+
+                $totalDistance += $dist;
+            }
+            $prevLog = $log;
         }
+
         return $totalDistance / 1000; // Return in KM
     }
 
