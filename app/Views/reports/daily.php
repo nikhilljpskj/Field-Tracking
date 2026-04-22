@@ -23,37 +23,42 @@
                 <div class="row">
                     <!-- Attendance Card -->
                     <div class="col-md-4 mb-4">
-                        <div class="card shadow-sm border-0 h-100">
+                        <div class="card shadow-sm border-0 h-100 overflow-hidden">
                             <div class="card-header bg-white border-0 py-3">
-                                <h6 class="card-title mb-0 text-muted text-uppercase small font-weight-bold">Shift Attendance</h6>
+                                <h6 class="card-title mb-0 text-primary text-uppercase small font-weight-bold"><i class="fe fe-clock mr-2"></i> Shift Attendance</h6>
                             </div>
                             <div class="card-body">
                                 <?php if($attendance): ?>
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="circle circle-sm bg-soft-success mr-3 text-success">
-                                            <i class="fe fe-log-in"></i>
+                                    <div class="p-3 bg-light rounded-lg mb-3">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="circle circle-sm bg-success text-white mr-3 shadow-sm">
+                                                <i class="fe fe-log-in"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block text-uppercase" style="font-size:0.65rem; letter-spacing:0.05em;">Checked In</small>
+                                                <span class="font-weight-bold text-dark" style="font-size:1.1rem;"><?php echo date('h:i A', strtotime($attendance['check_in_time'])); ?></span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <small class="text-muted d-block">Checked In</small>
-                                            <span class="font-weight-bold"><?php echo date('h:i A', strtotime($attendance['check_in_time'])); ?></span>
+                                        <div class="d-flex align-items-center">
+                                            <div class="circle circle-sm <?php echo $attendance['check_out_time'] ? 'bg-danger text-white' : 'bg-warning text-white'; ?> mr-3 shadow-sm">
+                                                <i class="fe fe-log-out"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block text-uppercase" style="font-size:0.65rem; letter-spacing:0.05em;">Checked Out</small>
+                                                <span class="font-weight-bold text-dark" style="font-size:1.1rem;"><?php echo $attendance['check_out_time'] ? date('h:i A', strtotime($attendance['check_out_time'])) : 'Active Now'; ?></span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="circle circle-sm <?php echo $attendance['check_out_time'] ? 'bg-soft-danger text-danger' : 'bg-soft-warning text-warning'; ?> mr-3">
-                                            <i class="fe fe-log-out"></i>
-                                        </div>
-                                        <div>
-                                            <small class="text-muted d-block">Checked Out</small>
-                                            <span class="font-weight-bold"><?php echo $attendance['check_out_time'] ? date('h:i A', strtotime($attendance['check_out_time'])) : 'Current Active'; ?></span>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 p-2 bg-light rounded shadow-none small text-muted">
-                                        <i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars($attendance['check_in_address']); ?>
+                                    <div class="small text-muted d-flex align-items-start px-2">
+                                        <i class="fe fe-map-pin mr-2 mt-1 text-primary"></i> 
+                                        <span><?php echo htmlspecialchars($attendance['check_in_address']); ?></span>
                                     </div>
                                 <?php else: ?>
-                                    <div class="text-center py-4">
-                                        <i class="fe fe-alert-circle fe-24 text-muted mb-2 d-block"></i>
-                                        <p class="text-muted small mb-0">No attendance logged yet.</p>
+                                    <div class="text-center py-5">
+                                        <div class="bg-light rounded-circle shadow-none mb-3 d-inline-flex align-items-center justify-content-center" style="width:60px; height:60px;">
+                                            <i class="fe fe-alert-circle fe-24 text-muted"></i>
+                                        </div>
+                                        <p class="text-muted font-weight-bold mb-0">No records found</p>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -62,19 +67,23 @@
 
                     <!-- Travel Card -->
                     <div class="col-md-4 mb-4">
-                        <div class="card shadow-sm border-0 h-100 bg-primary text-white">
+                        <div class="card shadow border-0 h-100 text-white" style="background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);">
                             <div class="card-header bg-transparent border-0 py-3">
-                                <h6 class="card-title mb-0 text-white-50 text-uppercase small font-weight-bold">Travel Allowance</h6>
+                                <h6 class="card-title mb-0 text-white-50 text-uppercase small font-weight-bold"><i class="fe fe-map mr-2"></i> Today's Travel</h6>
                             </div>
-                            <div class="card-body text-center py-4">
-                                <div class="h2 mb-1 font-weight-bold"><?php echo number_format($travel['total_distance'] ?? 0, 1); ?> <small class="h6">KM</small></div>
-                                <p class="text-white-50 small mb-4">Estimated Earnings Today</p>
-                                <div class="p-3 bg-white-10 rounded-lg">
-                                    <span class="h4 mb-0 font-weight-bold">₹<?php echo number_format($travel['allowance_earned'] ?? 0, 0); ?></span>
+                            <div class="card-body d-flex flex-column justify-content-center text-center">
+                                <div class="mb-2">
+                                    <span class="display-4 font-weight-bold"><?php echo number_format($travel['total_distance'] ?? 0, 1); ?></span>
+                                    <span class="h5 font-weight-normal opacity-75 ml-1">KM</span>
+                                </div>
+                                <p class="text-white-50 small mb-4 font-weight-600">Calculated Intelligence Audit</p>
+                                
+                                <div class="mx-auto px-4 py-2 bg-white-20 rounded-pill d-inline-block shadow-sm">
+                                    <span class="h5 mb-0 font-weight-bold">₹<?php echo number_format($travel['allowance_earned'] ?? 0, 0); ?> EARNED</span>
                                 </div>
                                 <div class="mt-3">
-                                    <span class="badge badge-pill bg-white-10 px-3 py-1 small">
-                                        Status: <?php echo $travel['status'] ?? 'Pending'; ?>
+                                    <span class="badge badge-pill bg-white-10 text-white px-3 py-1 font-weight-bold" style="font-size:0.7rem; letter-spacing:0.04em;">
+                                        STATUS: <?php echo strtoupper($travel['status'] ?? 'PENDING'); ?>
                                     </span>
                                 </div>
                             </div>
@@ -84,62 +93,75 @@
                     <!-- Meetings Summary -->
                     <div class="col-md-4 mb-4">
                         <div class="card shadow-sm border-0 h-100">
-                            <div class="card-header bg-white border-0 py-3">
-                                <h6 class="card-title mb-0 text-muted text-uppercase small font-weight-bold">Meeting Productivity</h6>
+                            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="card-title mb-0 text-success text-uppercase small font-weight-bold"><i class="fe fe-users mr-2"></i> Productivity</h6>
+                                <span class="badge badge-soft-success px-2 py-1"><?php echo count($meetings); ?> / 5 Done</span>
                             </div>
                             <div class="card-body">
-                                <div class="text-center py-3">
-                                    <div class="h2 mb-1 font-weight-bold"><?php echo count($meetings); ?></div>
-                                    <p class="text-muted small">Successful Interactions</p>
+                                <div class="text-center py-2 mb-4">
+                                    <div class="h1 mb-1 font-weight-bold text-dark"><?php echo count($meetings); ?></div>
+                                    <p class="text-muted small font-weight-bold text-uppercase" style="letter-spacing:0.05em;">Client Interactions</p>
                                 </div>
-                                <div class="progress progress-sm mb-3">
-                                    <div class="progress-bar bg-success" style="width: <?php echo min((count($meetings) / 5) * 100, 100); ?>%"></div>
+                                <div class="progress progress-sm mb-2 rounded-pill shadow-none bg-light" style="height: 8px;">
+                                    <div class="progress-bar bg-success rounded-pill" style="width: <?php echo min((count($meetings) / 5) * 100, 100); ?>%"></div>
                                 </div>
-                                <p class="small text-muted mb-0">Daily Target: 5 Meetings</p>
+                                <div class="d-flex justify-content-between text-muted x-small font-weight-bold mt-2">
+                                    <span style="font-size:0.65rem;">0</span>
+                                    <span style="font-size:0.65rem;">DAILY TARGET: 5</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Detailed Table -->
-                <div class="card shadow-sm border-0 overflow-hidden mb-4">
-                    <div class="card-header bg-white border-0 py-3">
-                        <h5 class="card-title mb-0">Meeting Logs</h5>
+                <div class="card shadow-sm border-0 overflow-hidden mb-4 rounded-lg">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-dark font-weight-bold"><i class="fe fe-activity mr-2 text-primary"></i> Interaction Log</h5>
+                        <div class="small text-muted font-weight-bold"><?php echo isset($meetings) ? count($meetings) : 0; ?> Entries Today</div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="bg-light text-muted small text-uppercase font-weight-bold">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead style="background: #fbfcfe;" class="text-muted small text-uppercase font-weight-bold">
                                     <tr>
-                                        <th class="pl-4">Time</th>
-                                        <th>Target / Outcome</th>
-                                        <th>Type</th>
-                                        <th class="pr-4 text-right">Approval</th>
+                                        <th class="pl-4 py-3 border-0">Timestamp</th>
+                                        <th class="border-0">Interaction Detail</th>
+                                        <th class="border-0">Type</th>
+                                        <th class="pr-4 text-right border-0">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dailyMeetBody">
                                     <?php if(empty($meetings)): ?>
-                                        <tr><td colspan="4" class="text-center py-5 text-muted">No meetings recorded today.</td></tr>
+                                        <tr><td colspan="4" class="text-center py-5 text-muted bg-white">No meetings recorded today.</td></tr>
                                     <?php else: ?>
                                         <?php foreach($meetings as $m): ?>
                                             <tr>
-                                                <td class="pl-4">
-                                                    <div class="font-weight-600"><?php echo date('h:i A', strtotime($m['meeting_time'])); ?></div>
-                                                    <small class="text-muted">Logged at interaction</small>
+                                                <td class="pl-4 py-3">
+                                                    <div class="text-dark font-weight-700" style="font-size:0.95rem;"><?php echo date('h:i A', strtotime($m['meeting_time'])); ?></div>
+                                                    <div class="text-muted" style="font-size:0.75rem;">Verified Entry</div>
                                                 </td>
-                                                <td>
-                                                    <div class="font-weight-600"><?php echo htmlspecialchars($m['client_name']); ?></div>
-                                                    <small class="text-muted"><?php echo htmlspecialchars($m['hospital_office_name']); ?></small>
-                                                    <p class="mb-0 mt-1 small text-dark"><?php echo htmlspecialchars($m['outcome']); ?></p>
+                                                <td class="py-3">
+                                                    <div class="font-weight-700 text-dark"><?php echo htmlspecialchars($m['client_name']); ?></div>
+                                                    <div class="small text-muted mb-1"><i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars($m['hospital_office_name']); ?></div>
+                                                    <div class="p-2 rounded bg-light border-0 small text-dark mt-2" style="font-style: italic; border-left: 3px solid #dee2e6 !important;">
+                                                        "<?php echo htmlspecialchars($m['outcome']); ?>"
+                                                    </div>
                                                 </td>
-                                                <td>
-                                                    <span class="badge badge-light px-2 py-1"><?php echo $m['meeting_type']; ?></span>
+                                                <td class="py-3">
+                                                    <span class="badge badge-soft-primary px-3 py-1 font-weight-700" style="font-size:0.7rem; border-radius:6px;"><?php echo strtoupper($m['meeting_type']); ?></span>
                                                 </td>
-                                                <td class="pr-4 text-right">
-                                                    <span class="dot <?php echo ($m['status'] == 'Approved') ? 'bg-success' : (($m['status'] == 'Rejected') ? 'bg-danger' : 'bg-warning'); ?> mr-1"></span>
-                                                    <span class="small font-weight-bold <?php echo ($m['status'] == 'Approved') ? 'text-success' : (($m['status'] == 'Rejected') ? 'text-danger' : 'text-warning'); ?>">
-                                                        <?php echo $m['status']; ?>
-                                                    </span>
+                                                <td class="pr-4 py-3 text-right">
+                                                    <?php 
+                                                        $statusClass = ($m['status'] == 'Approved') ? 'text-success' : (($m['status'] == 'Rejected') ? 'text-danger' : 'text-warning');
+                                                        $dotClass = ($m['status'] == 'Approved') ? 'bg-success' : (($m['status'] == 'Rejected') ? 'bg-danger' : 'bg-warning');
+                                                    ?>
+                                                    <div class="d-inline-flex align-items-center">
+                                                        <span class="dot <?php echo $dotClass; ?> mr-2 shadow-sm"></span>
+                                                        <span class="font-weight-800 <?php echo $statusClass; ?>" style="font-size:0.8rem; letter-spacing:0.02em;">
+                                                            <?php echo strtoupper($m['status']); ?>
+                                                        </span>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -147,8 +169,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
-                            <span class="text-muted small" id="dailyPageInfo"></span>
+                        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top bg-light-50">
+                            <span class="text-muted font-weight-600" style="font-size:0.85rem;" id="dailyPageInfo"></span>
                             <nav><ul class="pagination pagination-sm mb-0" id="dailyPagination"></ul></nav>
                         </div>
                     </div>
@@ -159,14 +181,18 @@
 </main>
 
 <style>
-.bg-soft-success { background-color: rgba(40, 167, 69, 0.1); }
-.bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); }
-.bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); }
-.bg-white-10 { background-color: rgba(255, 255, 255, 0.15); }
-.circle-sm { width: 32px; height: 32px; line-height: 32px; border-radius: 50%; display: inline-block; text-align: center; }
-.dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
-.font-weight-600 { font-weight: 600; }
-.bg-primary { background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%) !important; }
+.bg-soft-success { background-color: rgba(0, 184, 148, 0.12); color: #00b894; }
+.bg-soft-warning { background-color: rgba(253, 196, 39, 0.15); color: #f9a02e; }
+.bg-soft-danger { background-color: rgba(247, 37, 133, 0.12); color: #f72585; }
+.bg-soft-primary { background-color: rgba(67, 97, 238, 0.1); color: #4361ee; }
+.bg-white-10 { background-color: rgba(255, 255, 255, 0.12); }
+.bg-white-20 { background-color: rgba(255, 255, 255, 0.22); }
+.bg-light-50 { background-color: rgba(248, 249, 252, 0.5); }
+.circle-sm { width: 42px; height: 42px; line-height: 42px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; }
+.dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; }
+.font-weight-700 { font-weight: 700; }
+.font-weight-800 { font-weight: 800; }
+.x-small { font-size: 0.75rem; }
 </style>
 <script>
 (function(){

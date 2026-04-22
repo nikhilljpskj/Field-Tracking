@@ -329,64 +329,42 @@
                     </div></div>
                     </div>
 
-                    <!-- Summary Cards -->
-                    <div class="pc-summary-section mb-3">
-                        <div class="row no-gutters">
-                            <div class="col-6 col-md-3 p-1">
-                                <div class="pc-summary-card pc-summary-green">
-                                    <div class="pc-summary-icon"><i class="fe fe-arrow-up-circle"></i></div>
-                                    <div class="pc-summary-label">Gross Salary</div>
-                                    <div class="pc-summary-value" id="result_gross">₹ 0.00</div>
+                    <!-- Professional Summary Dashboard -->
+                    <div class="pc-summary-dashboard mb-4">
+                        <div class="pc-summary-main-card">
+                            <div class="pc-main-stats">
+                                <div class="pc-stat-item">
+                                    <span class="pc-stat-label">Gross Earnings</span>
+                                    <div class="pc-stat-value text-dark" id="result_gross">₹ 0.00</div>
+                                </div>
+                                <div class="pc-stat-divider"></div>
+                                <div class="pc-stat-item">
+                                    <span class="pc-stat-label text-danger">Total Deductions</span>
+                                    <div class="pc-stat-value text-danger" id="result_deductions">₹ 0.00</div>
+                                </div>
+                                <div class="pc-stat-divider"></div>
+                                <div class="pc-stat-item pc-stat-highlight">
+                                    <span class="pc-stat-label text-primary">Net Pay (Take Home)</span>
+                                    <div class="pc-stat-value text-primary" id="result_net">₹ 0.00</div>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-3 p-1">
-                                <div class="pc-summary-card pc-summary-red">
-                                    <div class="pc-summary-icon"><i class="fe fe-arrow-down-circle"></i></div>
-                                    <div class="pc-summary-label">Deductions</div>
-                                    <div class="pc-summary-value" id="result_deductions">₹ 0.00</div>
+                            
+                            <div class="pc-secondary-stats">
+                                <div class="pc-sec-item">
+                                    <span class="pc-sec-label">Monthly CTC</span>
+                                    <span class="pc-sec-value" id="result_monthly_ctc">₹ 0.00</span>
                                 </div>
-                            </div>
-                            <div class="col-6 col-md-3 p-1">
-                                <div class="pc-summary-card pc-summary-blue">
-                                    <div class="pc-summary-icon"><i class="fe fe-dollar-sign"></i></div>
-                                    <div class="pc-summary-label">Net / In-Hand</div>
-                                    <div class="pc-summary-value" id="result_net">₹ 0.00</div>
+                                <div class="pc-sec-item">
+                                    <span class="pc-sec-label">Annual CTC</span>
+                                    <span class="pc-sec-value font-weight-bold" id="result_annual_ctc">₹ 0.00</span>
                                 </div>
-                            </div>
-                            <div class="col-6 col-md-3 p-1">
-                                <div class="pc-summary-card pc-summary-orange">
-                                    <div class="pc-summary-icon"><i class="fe fe-briefcase"></i></div>
-                                    <div class="pc-summary-label">Employer Cost</div>
-                                    <div class="pc-summary-value" id="result_empr">₹ 0.00</div>
+                                <div class="pc-sec-item">
+                                    <span class="pc-sec-label">Employer Cost</span>
+                                    <span class="pc-sec-value" id="result_empr">₹ 0.00</span>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row no-gutters mt-1">
-                            <div class="col-6 col-md-4 p-1">
-                                <div class="pc-ctc-card">
-                                    <i class="fe fe-trending-up text-primary mr-2"></i>
-                                    <div>
-                                        <div class="pc-ctc-label">Monthly CTC</div>
-                                        <div class="pc-ctc-value text-primary" id="result_monthly_ctc">₹ 0.00</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-4 p-1">
-                                <div class="pc-ctc-card pc-ctc-dark">
-                                    <i class="fe fe-shield text-success mr-2"></i>
-                                    <div>
-                                        <div class="pc-ctc-label" style="color:#adb5bd;">Annual CTC</div>
-                                        <div class="pc-ctc-value text-white" id="result_annual_ctc">₹ 0.00</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4 p-1">
-                                <div class="pc-ctc-card">
-                                    <i class="fe fe-activity text-danger mr-2"></i>
-                                    <div>
-                                        <div class="pc-ctc-label">Taxable (Annual)</div>
-                                        <div class="pc-ctc-value text-dark" id="result_annual_taxable">₹ 0.00</div>
-                                    </div>
+                                <div class="pc-sec-item d-none d-sm-flex">
+                                    <span class="pc-sec-label">Taxable / yr</span>
+                                    <span class="pc-sec-value" id="result_annual_taxable">₹ 0.00</span>
                                 </div>
                             </div>
                         </div>
@@ -660,6 +638,7 @@
                     }
                     
                     let html = '';
+                    let mobileHtml = '';
                     const months = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                     data.history.forEach(p => {
                         const gross = parseFloat(p.gross_salary) || 0;
@@ -667,8 +646,9 @@
                         const lop = parseFloat(p.lop_deductions) || 0;
                         const deductions = gross - net;
                         const monthlyCTC = parseFloat(p.monthly_ctc) || 0;
-                        const breakdown = p.breakdown_json ? p.breakdown_json : null;
                         const safeRecord = JSON.stringify(p).replace(/'/g, "&apos;");
+                        
+                        // Desktop Row
                         html += `
                             <tr>
                                 <td class="pl-4">
@@ -696,8 +676,47 @@
                                 </td>
                             </tr>
                         `;
+
+                        // Mobile Card
+                        mobileHtml += `
+                            <div class="history-mobile-card">
+                                <div class="history-mobile-card-header">
+                                    <div>
+                                        <div class="font-weight-bold text-dark">${months[p.month]} ${p.year}</div>
+                                        <small class="text-muted">ID: #PAY-${p.id}</small>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="h6 mb-0 text-primary font-weight-bold">₹${net.toLocaleString('en-IN', {minimumFractionDigits:0})}</div>
+                                        <small class="text-muted">Net Payable</small>
+                                    </div>
+                                </div>
+                                <div class="row no-gutters mt-2 pt-2 border-top">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Gross</small>
+                                        <div class="small font-weight-bold text-success">₹${gross.toLocaleString('en-IN', {minimumFractionDigits:0})}</div>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <small class="text-muted d-block">Deductions</small>
+                                        <div class="small font-weight-bold text-danger">₹${deductions.toLocaleString('en-IN', {minimumFractionDigits:0})}</div>
+                                    </div>
+                                </div>
+                                <div class="history-mobile-actions">
+                                    <a href="payroll?action=payslip&id=${p.id}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fe fe-file-text mr-1"></i> Payslip
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-success" onclick='loadToCalculator(${safeRecord})'>
+                                        <i class="fe fe-upload-cloud mr-1"></i> Load
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-warning" onclick='loadRecordForEdit(${safeRecord})'>
+                                        <i class="fe fe-edit mr-1"></i> Edit
+                                    </button>
+                                </div>
+                            </div>
+                        `;
                     });
                     body.innerHTML = html;
+                    const cardBody = document.getElementById('history_card_body');
+                    if (cardBody) cardBody.innerHTML = mobileHtml;
                 } else {
                     body.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">${data.message}</td></tr>`;
                 }
@@ -1060,42 +1079,57 @@ body, .main-content { font-family: 'Inter', sans-serif; }
     white-space: nowrap;
 }
 
-/* ---- Summary Cards ---- */
-.pc-summary-section { }
-.pc-summary-card {
-    border-radius: 12px;
-    padding: 14px 12px;
-    text-align: center;
-    color: #fff;
-    min-height: 90px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+/* ---- Professional Summary Dashboard ---- */
+.pc-summary-dashboard {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #eef0f7;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    overflow: hidden;
 }
-.pc-summary-icon { font-size: 1.2rem; margin-bottom: 4px; opacity: 0.85; }
-.pc-summary-label { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; opacity: 0.85; margin-bottom: 3px; }
-.pc-summary-value { font-size: 1.05rem; font-weight: 700; }
-.pc-summary-green { background: linear-gradient(135deg, #00b894, #00cec9); }
-.pc-summary-red   { background: linear-gradient(135deg, #f72585, #b5179e); }
-.pc-summary-blue  { background: linear-gradient(135deg, #4361ee, #4895ef); }
-.pc-summary-orange{ background: linear-gradient(135deg, #f9a02e, #f77f00); }
-@media (max-width: 576px) {
-    .pc-summary-value { font-size: 0.9rem; }
-    .pc-summary-card { min-height: 78px; padding: 10px 8px; }
+.pc-summary-main-card { padding: 0; }
+.pc-main-stats {
+    display: flex;
+    background: #f8f9ff;
+    border-bottom: 1px solid #eef0f7;
+    padding: 20px;
+    align-items: center;
+    justify-content: space-around;
+}
+.pc-stat-item { text-align: center; flex: 1; }
+.pc-stat-label { 
+    display: block; 
+    font-size: 0.75rem; 
+    text-transform: uppercase; 
+    font-weight: 700; 
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    color: #6c757d;
+}
+.pc-stat-value { font-size: 1.25rem; font-weight: 800; }
+.pc-stat-divider { width: 1px; height: 40px; background: #e2e5f0; }
+
+.pc-stat-highlight {
+    background: rgba(67, 97, 238, 0.05);
+    padding: 10px;
+    border-radius: 12px;
 }
 
-/* ---- CTC Cards ---- */
-.pc-ctc-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-    border: 1px solid #eef0f7;
-    height: 100%;
+.pc-secondary-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 15px 20px;
 }
-.pc-ctc-dark { background: #1e2035; }
-.pc-ctc-label { font-size: 0.66rem; text-transform: uppercase; font-weight: 700; color: #6c757d; letter-spacing: 0.05em; }
-.pc-ctc-value { font-size: 1rem; font-weight: 700; margin-top: 2px; }
+.pc-sec-item { display: flex; flex-direction: column; padding: 0 10px; }
+.pc-sec-label { font-size: 0.65rem; color: #adb5bd; font-weight: 600; text-transform: uppercase; }
+.pc-sec-value { font-size: 0.88rem; color: #495057; }
+
+@media (max-width: 768px) {
+    .pc-main-stats { flex-direction: column; padding: 15px; }
+    .pc-stat-divider { width: 80%; height: 1px; margin: 12px 0; }
+    .pc-secondary-stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .pc-stat-value { font-size: 1.1rem; }
+}
 
 /* ---- Sticky Footer ---- */
 .pc-sticky-footer {
