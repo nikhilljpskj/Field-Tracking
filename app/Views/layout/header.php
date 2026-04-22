@@ -77,6 +77,105 @@
         </ul>
       </nav>
 
+<?php
+// ---- 60-Day Cleanup Warning Banner (Admin & HR only) ----
+if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'HR']) && isset($_SESSION['user_id'])):
+    try {
+        $db = Database::getInstance();
+        $cleanupSvc = new \App\Services\CleanupService($db->getConnection(), BASE_PATH);
+        $showBanner = false;
+        $cleanupSummary = null;
+
+        if (!$cleanupSvc->isDismissedToday((int)$_SESSION['user_id'])) {
+            $cleanupSummary = $cleanupSvc->getPendingDeletionSummary();
+            $showBanner = ($cleanupSummary['total'] > 0);
+        }
+    } catch (\Throwable $e) {
+        $showBanner = false;
+    }
+
+    if ($showBanner && $cleanupSummary):
+        $daysLeft = $cleanupSummary['earliest_deletion']
+            ? max(0, (int) ((strtotime($cleanupSummary['earliest_deletion']) - time()) / 86400))
+            : '< 10';
+?>
+<div class="cleanup-warn-banner" id="cleanupWarnBanner">
+    <div class="cleanup-warn-inner">
+        <div class="cleanup-warn-icon"><i class="fe fe-alert-triangle"></i></div>
+        <div class="cleanup-warn-body">
+            <strong>⏳ Scheduled Data Deletion — <?php echo $daysLeft; ?> day<?php echo $daysLeft != 1 ? 's' : ''; ?> remaining</strong>
+            <span class="ml-2 d-none d-sm-inline">
+                <?php
+                $parts = [];
+                if ($cleanupSummary['attendance'] > 0) $parts[] = $cleanupSummary['attendance'] . ' attendance record' . ($cleanupSummary['attendance'] > 1 ? 's' : '');
+                if ($cleanupSummary['meetings']   > 0) $parts[] = $cleanupSummary['meetings']   . ' meeting log' . ($cleanupSummary['meetings']   > 1 ? 's' : '');
+                echo implode(' &amp; ', $parts) . ' will be permanently deleted (60-day retention).';
+                if ($cleanupSummary['earliest_deletion']) {
+                    echo ' <strong>Earliest: ' . date('d M Y', strtotime($cleanupSummary['earliest_deletion'])) . '</strong>';
+                }
+                ?>
+            </span>
+        </div>
+        <div class="cleanup-warn-actions">
+            <button class="cleanup-btn-dismiss" id="cleanupDismissBtn" title="Dismiss for today">
+                <i class="fe fe-x"></i> <span class="d-none d-sm-inline">Dismiss for today</span>
+            </button>
+        </div>
+    </div>
+</div>
+<style>
+.cleanup-warn-banner {
+    position: sticky; top: 0; z-index: 1025;
+    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.35);
+    animation: bannerSlideIn 0.3s ease;
+}
+@keyframes bannerSlideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.cleanup-warn-inner {
+    display: flex; align-items: center;
+    max-width: 1400px; margin: 0 auto;
+    padding: 8px 20px; gap: 10px;
+}
+.cleanup-warn-icon { font-size: 1.1rem; flex-shrink: 0; }
+.cleanup-warn-body { flex: 1; line-height: 1.4; }
+.cleanup-warn-actions { flex-shrink: 0; }
+.cleanup-btn-dismiss {
+    background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.5);
+    color: #fff; border-radius: 6px; padding: 4px 12px;
+    font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    transition: background 0.2s;
+    display: flex; align-items: center; gap: 4px;
+}
+.cleanup-btn-dismiss:hover { background: rgba(255,255,255,0.4); }
+@media (max-width: 576px) {
+    .cleanup-warn-inner { padding: 8px 12px; }
+    .cleanup-warn-body { font-size: 0.76rem; }
+}
+</style>
+<script>
+document.getElementById('cleanupDismissBtn').addEventListener('click', function() {
+    fetch('cleanup-notify?action=dismiss', { method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.success) {
+            var banner = document.getElementById('cleanupWarnBanner');
+            banner.style.transition = 'opacity 0.3s, max-height 0.3s';
+            banner.style.opacity = '0';
+            banner.style.maxHeight = '0';
+            banner.style.overflow = 'hidden';
+            setTimeout(function() { banner.remove(); }, 350);
+        }
+    });
+});
+</script>
+<?php endif; ?>
+<?php endif; ?>
+
 <!-- Notification Modal -->
 <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-sm" role="document">

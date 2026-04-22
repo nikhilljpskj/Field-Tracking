@@ -54,8 +54,10 @@ $routes = [
     'attendance-history' => 'AttendanceController',
     'attendance-edit' => 'AttendanceController',
     'attendance-export' => 'AttendanceController',
-    'hospitals' => 'HospitalController',
-    'doctors' => 'DoctorController'
+    'hospitals'          => 'HospitalController',
+    'doctors'            => 'DoctorController',
+    'cleanup-notify'     => 'CleanupController',
+    'cleanup'            => 'CleanupController',
 ];
 
 if (array_key_exists($url, $routes)) {
