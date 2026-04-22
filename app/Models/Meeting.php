@@ -37,14 +37,22 @@ class Meeting extends Model {
     }
 
     public function getMonthlyUserStats($user_id, $month, $year) {
-        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
-                                    FROM client_meetings m 
-                                    JOIN users u ON m.user_id = u.id
-                                    LEFT JOIN users au ON m.approved_by = au.id
-                                    LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
-                                    WHERE m.user_id = ? AND MONTH(m.meeting_time) = ? AND YEAR(m.meeting_time) = ? 
-                                    ORDER BY m.meeting_time DESC");
-        $stmt->execute([$user_id, $month, $year]);
+        $sql = "SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
+                FROM client_meetings m 
+                JOIN users u ON m.user_id = u.id
+                LEFT JOIN users au ON m.approved_by = au.id
+                LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
+                WHERE MONTH(m.meeting_time) = ? AND YEAR(m.meeting_time) = ?";
+        
+        $params = [$month, $year];
+        if ($user_id !== 'all') {
+            $sql .= " AND m.user_id = ?";
+            $params[] = $user_id;
+        }
+        $sql .= " ORDER BY m.meeting_time DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -151,25 +159,6 @@ class Meeting extends Model {
         return $stmt->fetch();
     }
 
-    public function getMonthlyUserStats($user_id, $month, $year) {
-        $sql = "SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
-                FROM client_meetings m 
-                JOIN users u ON m.user_id = u.id
-                LEFT JOIN users au ON m.approved_by = au.id
-                LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
-                WHERE MONTH(m.meeting_time) = ? AND YEAR(m.meeting_time) = ?";
-        
-        $params = [$month, $year];
-        if ($user_id !== 'all') {
-            $sql .= " AND m.user_id = ?";
-            $params[] = $user_id;
-        }
-        $sql .= " ORDER BY m.meeting_time DESC";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
-    }
 
     public function getTeamMonthlyAggregates($month, $year, $team_ids = null) {
         $sql = "SELECT u.id as user_id, u.name as user_name, 

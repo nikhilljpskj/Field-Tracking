@@ -376,5 +376,6 @@ class ReportController extends Controller {
             // PDF - Render print-friendly view
             $period = date('F Y', mktime(0, 0, 0, $month, 1, $year));
             $this->view('reports/print', ['data' => $data, 'type' => $type, 'targetName' => $targetName, 'period' => $period]);
+        }
     }
 }

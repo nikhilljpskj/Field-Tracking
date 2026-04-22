@@ -129,6 +129,9 @@
                                                 <button type="button" class="btn btn-sm btn-light px-3" onclick="viewIntelligence(<?php echo $m['id']; ?>)" title="View Intelligence">
                                                     <i class="fe fe-eye text-primary"></i>
                                                 </button>
+                                                <button type="button" class="btn btn-sm btn-light px-3" onclick="triggerLocationPopup(<?php echo htmlspecialchars(json_encode($m)); ?>)" title="Verify Location">
+                                                    <i class="fe fe-map-pin text-info"></i>
+                                                </button>
                                                 <?php if($m['status'] == 'Pending'): ?>
                                                     <button type="button" onclick="openActionModal('approveMeeting', <?php echo $m['id']; ?>)" class="btn btn-sm btn-success px-3" style="font-weight:700;"><i class="fe fe-check mr-1"></i> Approve</button>
                                                     <button type="button" onclick="openActionModal('rejectMeeting', <?php echo $m['id']; ?>)" class="btn btn-sm btn-danger px-3" style="font-weight:700;"><i class="fe fe-x mr-1"></i> Reject</button>
@@ -311,8 +314,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="col-md-7 p-4">
                             <section class="mb-4">
                                 <label class="text-muted small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-home mr-2"></i>Location Intelligence</label>
-                                <h6 class="font-weight-800 text-dark mb-1" id="intel-hospital"></h6>
-                                <p class="small text-muted mb-0" id="intel-address"></p>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="font-weight-800 text-dark mb-1" id="intel-hospital"></h6>
+                                        <p class="small text-muted mb-0" id="intel-address"></p>
+                                    </div>
+                                    <button type="button" id="intel-map-btn" class="btn btn-sm btn-soft-primary rounded-circle" title="View Location Detail">
+                                        <i class="fe fe-map-pin"></i>
+                                    </button>
+                                </div>
                             </section>
                             
                             <section class="mb-4">
@@ -351,29 +361,54 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<!-- Verification Action Modal -->
-<div class="modal fade" id="actionModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title font-weight-bold" id="actionModalTitle">Verify Record</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form action="reports" method="POST" id="virtualActionForm">
-                <div class="modal-body">
-                    <input type="hidden" name="id" id="actionModalId">
-                    <p id="actionModalDesc" class="text-muted small">Please provide a reason or comment for this action. This will be saved in the audit logs.</p>
-                    <div class="form-group mb-0">
-                        <textarea name="reason" class="form-control bg-light border-0 px-3 py-2" rows="3" placeholder="Enter comments (optional)..." style="border-radius: 10px;"></textarea>
+<!-- Location Identity Gateway (Stage 1) -->
+<div class="modal fade" id="locationVerificationModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 400px;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <div class="bg-soft-primary d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 12px; color: #4361ee;">
+                        <i class="fe fe-map-pin h4 mb-0"></i>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4 font-weight-bold" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 font-weight-bold shadow-sm" id="actionModalBtn">Confirm Action</button>
+                <h6 class="font-weight-bold text-dark mb-2">Location Intelligence</h6>
+                <div class="p-3 bg-light rounded-lg mb-3 text-left">
+                    <label class="small text-muted font-weight-bold text-uppercase mb-1 d-block">Registered Address</label>
+                    <p id="verify-location-name" class="text-dark small mb-2 font-weight-600" style="line-height: 1.4;"></p>
+                    <label class="small text-muted font-weight-bold text-uppercase mb-1 d-block">GPS Coordinates</label>
+                    <p id="verify-location-coords" class="text-monospace text-primary small mb-0 font-weight-bold"></p>
                 </div>
-            </form>
+                
+                <div class="d-flex justify-content-center align-items-center" style="gap: 10px;">
+                    <button type="button" class="btn btn-sm btn-primary font-weight-bold px-3 py-2 shadow-sm" id="btn-show-interactive-map" style="border-radius: 8px;">
+                        <i class="fe fe-eye mr-1"></i> View Map
+                    </button>
+                    <a href="#" target="_blank" id="btn-external-gmap" class="btn btn-sm btn-outline-dark font-weight-bold px-3 py-2" style="border-radius: 8px;">
+                        Google Maps
+                    </a>
+                </div>
+                <button type="button" class="btn btn-link btn-sm text-muted mt-3 font-weight-bold" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Map Modal (Stage 2) -->
+<div class="modal fade" id="interactiveMapModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header bg-white border-bottom py-3">
+                <h6 class="modal-title font-weight-bold text-dark"><i class="fe fe-maximize-2 mr-2 text-primary"></i>Spatial Intelligence View</h6>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-0" style="height: 500px; position: relative;">
+                <div id="modal-interactive-map" style="width: 100%; height: 100%; background: #f8f9fa;"></div>
+                <div id="map-control-overlay" style="position: absolute; bottom: 20px; right: 20px; z-index: 100;">
+                   <a href="#" target="_blank" id="modal-external-gmap-btn" class="btn btn-white btn-sm shadow-sm font-weight-bold border rounded-pill">
+                       <i class="fe fe-external-link mr-1"></i> Open in GMap
+                   </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -415,69 +450,115 @@ function openActionModal(actionStr, recordId) {
     $('#actionModal').modal('show');
 }
 
-function viewIntelligence(id) {
-    const modal = $('#intelligenceModal');
-    const loading = $('#intel-loading');
-    const content = $('#intel-content');
-    
-    content.hide();
-    loading.show();
-    modal.modal('show');
-    
-    fetch('reports?action=getMeetingDetails&id=' + id)
-        .then(res => res.json())
-        .then(res => {
-            if (res.success) {
-                const m = res.data;
-                loading.hide();
-                content.fadeIn();
-                
-                document.getElementById('intel-session-info').textContent = `Verified Session ID: #FT-${m.id}`;
-                document.getElementById('intel-hospital').textContent = m.hospital_office_name;
-                document.getElementById('intel-address').textContent = m.address;
-                document.getElementById('intel-client').textContent = m.client_name;
-                document.getElementById('intel-type').textContent = m.meeting_type;
-                document.getElementById('intel-time').textContent = new Date(m.meeting_time).toLocaleString('en-IN', {
-                    day: '2-digit', month: 'short', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit', hour12: true
-                });
-                document.getElementById('intel-notes').textContent = m.notes || 'No detailed notes provided.';
-                document.getElementById('intel-outcome').textContent = m.outcome;
-                document.getElementById('intel-user').textContent = m.user_name;
-                document.getElementById('intel-approver').textContent = m.approver_name || 'Verification Pending';
-                
-                const selfie = document.getElementById('intel-selfie');
-                if (m.selfie_path) {
-                    selfie.src = m.selfie_path;
-                    document.getElementById('intel-selfie-container').style.display = 'block';
-                } else {
-                    document.getElementById('intel-selfie-container').style.display = 'none';
-                }
-                
-                // Controls logic
-                const controls = document.querySelector('.intel-controls');
-                const statusPill = document.getElementById('intel-status-pill');
-                
-                if (m.status === 'Pending') {
-                    controls.style.display = 'block';
-                    statusPill.innerHTML = '';
+    function viewIntelligence(id) {
+        const modal = $('#intelligenceModal');
+        const loading = $('#intel-loading');
+        const content = $('#intel-content');
+        
+        content.hide();
+        loading.show();
+        modal.modal('show');
+        
+        fetch('reports?action=getMeetingDetails&id=' + id)
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    const m = res.data;
+                    loading.hide();
+                    content.fadeIn();
                     
-                    document.getElementById('intel-approve-btn').onclick = () => openActionModal('approveMeeting', m.id);
-                    document.getElementById('intel-reject-btn').onclick = () => openActionModal('rejectMeeting', m.id);
+                    document.getElementById('intel-session-info').textContent = `Verified Session ID: #FT-${m.id}`;
+                    document.getElementById('intel-hospital').textContent = m.hospital_office_name;
+                    document.getElementById('intel-address').textContent = m.address;
+                    document.getElementById('intel-client').textContent = m.client_name;
+                    document.getElementById('intel-type').textContent = m.meeting_type;
+                    document.getElementById('intel-time').textContent = new Date(m.meeting_time).toLocaleString('en-IN', {
+                        day: '2-digit', month: 'short', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', hour12: true
+                    });
+                    document.getElementById('intel-notes').textContent = m.notes || 'No detailed notes provided.';
+                    document.getElementById('intel-outcome').textContent = m.outcome;
+                    document.getElementById('intel-user').textContent = m.user_name;
+                    document.getElementById('intel-approver').textContent = m.approver_name || 'Verification Pending';
+                    
+                    const selfie = document.getElementById('intel-selfie');
+                    if (m.selfie_path) {
+                        selfie.src = m.selfie_path;
+                        document.getElementById('intel-selfie-container').style.display = 'block';
+                    } else {
+                        document.getElementById('intel-selfie-container').style.display = 'none';
+                    }
+                    
+                    // Controls logic
+                    const controls = document.querySelector('.intel-controls');
+                    const statusPill = document.getElementById('intel-status-pill');
+                    
+                    if (m.status === 'Pending') {
+                        controls.style.display = 'block';
+                        statusPill.innerHTML = '';
+                        
+                        document.getElementById('intel-approve-btn').onclick = () => openActionModal('approveMeeting', m.id);
+                        document.getElementById('intel-reject-btn').onclick = () => openActionModal('rejectMeeting', m.id);
+                    } else {
+                        controls.style.display = 'none';
+                        const sClass = m.status === 'Approved' ? 'badge-success' : 'badge-danger';
+                        statusPill.innerHTML = `<span class="badge ${sClass} px-4 py-2 font-weight-bold" style="font-size: 1rem;">${m.status.toUpperCase()}</span>`;
+                    }
+
+                    // Map Trigger in Intelligence Modal
+                    document.getElementById('intel-map-btn').onclick = () => {
+                        modal.modal('hide');
+                        setTimeout(() => triggerLocationPopup(m), 400);
+                    };
                 } else {
-                    controls.style.display = 'none';
-                    const sClass = m.status === 'Approved' ? 'badge-success' : 'badge-danger';
-                    statusPill.innerHTML = `<span class="badge ${sClass} px-4 py-2 font-weight-bold" style="font-size: 1rem;">${m.status.toUpperCase()}</span>`;
+                    alert('Error loading meeting intelligence: ' + res.message);
+                    modal.modal('hide');
                 }
-            } else {
-                alert('Error loading meeting intelligence: ' + res.message);
+            })
+            .catch(err => {
+                console.error(err);
+                alert('A network error occurred while fetching intelligence.');
                 modal.modal('hide');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('A network error occurred while fetching intelligence.');
+            });
+    }
+
+    // --- Dynamic Location Verification Logic ---
+    let platform = new H.service.Platform({'apikey': window.HERE_API_KEY});
+    let modalMap, modalMarker;
+
+    window.triggerLocationPopup = (data) => {
+        const modal = $('#locationVerificationModal');
+        document.getElementById('verify-location-name').textContent = data.address || "Field Position Registered";
+        document.getElementById('verify-location-coords').textContent = `${data.latitude}, ${data.longitude}`;
+        
+        document.getElementById('btn-external-gmap').href = `https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
+        document.getElementById('btn-show-interactive-map').onclick = () => {
             modal.modal('hide');
-        });
-}
+            setTimeout(() => showInteractiveMap(parseFloat(data.latitude), parseFloat(data.longitude)), 300);
+        };
+        modal.modal('show');
+    };
+
+    window.showInteractiveMap = (lat, lng) => {
+        const modal = $('#interactiveMapModal');
+        document.getElementById('modal-external-gmap-btn').href = `https://www.google.com/maps?q=${lat},${lng}`;
+        modal.modal('show');
+        
+        setTimeout(() => {
+            const mapContainer = document.getElementById('modal-interactive-map');
+            if (!modalMap) {
+                const layers = platform.createDefaultLayers();
+                modalMap = new H.Map(mapContainer, layers.vector.normal.map, {
+                    zoom: 16, center: { lat, lng }
+                });
+                new H.mapevents.Behavior(new H.mapevents.MapEvents(modalMap));
+                H.ui.UI.createDefault(modalMap, layers);
+                modalMarker = new H.map.Marker({ lat, lng });
+                modalMap.addObject(modalMarker);
+            } else {
+                modalMap.setCenter({ lat, lng });
+                modalMarker.setGeometry({ lat, lng });
+            }
+        }, 350);
+    };
 </script>

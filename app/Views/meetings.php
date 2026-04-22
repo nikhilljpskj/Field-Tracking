@@ -465,24 +465,52 @@
     </div>
 </div>
 
-<!-- Location Verification Modal -->
+<!-- Location Identity Gateway (Stage 1) -->
 <div class="modal fade" id="locationVerificationModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 16px;">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 400px;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
             <div class="modal-body text-center p-4">
                 <div class="mb-3">
-                    <div class="bg-primary-light d-inline-flex align-items-center justify-content-center border border-primary" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(67,97,238,0.1); color: #4361ee;">
-                        <i class="fe fe-map-pin h3 mb-0"></i>
+                    <div class="bg-soft-primary d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 12px; color: #4361ee;">
+                        <i class="fe fe-map-pin h4 mb-0"></i>
                     </div>
                 </div>
-                <h5 class="font-weight-bold text-dark mb-2">Location Identity</h5>
-                <p id="verify-location-name" class="text-muted small mb-4" style="line-height: 1.5;"></p>
+                <h6 class="font-weight-bold text-dark mb-2">Location Intelligence</h6>
+                <div class="p-3 bg-light rounded-lg mb-3 text-left">
+                    <label class="small text-muted font-weight-bold text-uppercase mb-1 d-block">Registered Address</label>
+                    <p id="verify-location-name" class="text-dark small mb-2 font-weight-600" style="line-height: 1.4;"></p>
+                    <label class="small text-muted font-weight-bold text-uppercase mb-1 d-block">GPS Coordinates</label>
+                    <p id="verify-location-coords" class="text-monospace text-primary small mb-0 font-weight-bold"></p>
+                </div>
                 
-                <div class="d-flex flex-column gap-2" style="gap: 8px;">
-                    <button type="button" class="btn btn-primary btn-block font-weight-bold py-2 shadow-sm" id="confirm-map-redirect" style="border-radius: 8px;">
-                        <i class="fe fe-navigation-2 mr-2"></i> Show on Map
+                <div class="d-flex justify-content-center align-items-center" style="gap: 10px;">
+                    <button type="button" class="btn btn-sm btn-primary font-weight-bold px-3 py-2 shadow-sm" id="btn-show-interactive-map" style="border-radius: 8px;">
+                        <i class="fe fe-eye mr-1"></i> View Map
                     </button>
-                    <button type="button" class="btn btn-light btn-block font-weight-bold py-2 text-muted" data-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                    <a href="#" target="_blank" id="btn-external-gmap" class="btn btn-sm btn-outline-dark font-weight-bold px-3 py-2" style="border-radius: 8px;">
+                        Google Maps
+                    </a>
+                </div>
+                <button type="button" class="btn btn-link btn-sm text-muted mt-3 font-weight-bold" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Map Modal (Stage 2) -->
+<div class="modal fade" id="interactiveMapModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header bg-white border-bottom py-3">
+                <h6 class="modal-title font-weight-bold text-dark"><i class="fe fe-maximize-2 mr-2 text-primary"></i>Spatial Intelligence View</h6>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-0" style="height: 500px; position: relative;">
+                <div id="modal-interactive-map" style="width: 100%; height: 100%; background: #f8f9fa;"></div>
+                <div id="map-control-overlay" style="position: absolute; bottom: 20px; right: 20px; z-index: 100;">
+                   <a href="#" target="_blank" id="modal-external-gmap-btn" class="btn btn-white btn-sm shadow-sm font-weight-bold border rounded-pill">
+                       <i class="fe fe-external-link mr-1"></i> Open in GMap
+                   </a>
                 </div>
             </div>
         </div>
@@ -707,16 +735,49 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#meetingDetailModal').modal('show');
     };
 
+    let modalMap, modalMarker;
+
     window.triggerLocationPopup = (data) => {
         const modal = $('#locationVerificationModal');
         document.getElementById('verify-location-name').textContent = data.address || "Field Position Registered";
+        document.getElementById('verify-location-coords').textContent = `${data.latitude}, ${data.longitude}`;
         
-        document.getElementById('confirm-map-redirect').onclick = () => {
+        // External GMap Link
+        document.getElementById('btn-external-gmap').href = `https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
+        
+        // Internal Map Trigger
+        document.getElementById('btn-show-interactive-map').onclick = () => {
             modal.modal('hide');
-            window.focusMeeting(parseFloat(data.latitude), parseFloat(data.longitude));
+            setTimeout(() => showInteractiveMap(parseFloat(data.latitude), parseFloat(data.longitude)), 300);
         };
         
         modal.modal('show');
+    };
+
+    window.showInteractiveMap = (lat, lng) => {
+        const modal = $('#interactiveMapModal');
+        const mapContainer = document.getElementById('modal-interactive-map');
+        document.getElementById('modal-external-gmap-btn').href = `https://www.google.com/maps?q=${lat},${lng}`;
+        
+        modal.modal('show');
+        
+        // Small delay to ensure modal is rendered for HERE map engine
+        setTimeout(() => {
+            if (!modalMap) {
+                const layers = platform.createDefaultLayers();
+                modalMap = new H.Map(mapContainer, layers.vector.normal.map, {
+                    zoom: 16,
+                    center: { lat: lat, lng: lng }
+                });
+                new H.mapevents.Behavior(new H.mapevents.MapEvents(modalMap));
+                H.ui.UI.createDefault(modalMap, layers);
+                modalMarker = new H.map.Marker({ lat: lat, lng: lng });
+                modalMap.addObject(modalMarker);
+            } else {
+                modalMap.setCenter({ lat: lat, lng: lng });
+                modalMarker.setGeometry({ lat: lat, lng: lng });
+            }
+        }, 350);
     };
 });
 </script>
