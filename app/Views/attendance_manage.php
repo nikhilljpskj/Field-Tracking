@@ -18,7 +18,7 @@
                 <?php endif; ?>
 
                 <div class="card shadow-sm border-0">
-                    <div class="card-body p-0">
+                    <div class="card-body px-4 pb-4">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="bg-light text-muted small text-uppercase font-weight-bold">

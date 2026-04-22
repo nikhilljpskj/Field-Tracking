@@ -30,9 +30,9 @@
                             <div class="card-header bg-primary py-3" style="border-radius: 12px 12px 0 0;">
                                 <h5 class="card-title mb-0 font-weight-bold text-white"><i class="fe fe-map-pin mr-2"></i>Site Visit Assignments</h5>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body px-4 pb-4">
                                 <div class="table-responsive">
-                                    <table class="table table-hover mb-0 datatables ms-3" id="visitTable">
+                                    <table class="table table-hover mb-0 datatables" id="visitTable">
                                         <thead class="tm-thead">
                                             <tr>
                                                 <th>Executive</th>
@@ -85,9 +85,9 @@
                             <div class="card-header bg-dark py-3" style="border-radius: 12px 12px 0 0;">
                                 <h5 class="card-title mb-0 font-weight-bold text-white"><i class="fe fe-briefcase mr-2"></i>In-House Task Delegation</h5>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body px-4 pb-4">
                                 <div class="table-responsive">
-                                    <table class="table table-hover mb-0 datatables ms-3" id="inhouseTable">
+                                    <table class="table table-hover mb-0 datatables" id="inhouseTable">
                                         <thead class="tm-thead">
                                             <tr>
                                                 <th>Assignee</th>
