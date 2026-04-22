@@ -34,6 +34,9 @@ class MeetingController extends Controller {
         $doctorModel = new \App\Models\Doctor();
         $doctors = $doctorModel->getAll();
 
+        $userModel = new \App\Models\User();
+        $users = $userModel->getAll();
+
         $data = [
             'title' => 'Intelligence Hub - Client Interactions',
             'meetings' => $meetings,
@@ -42,7 +45,8 @@ class MeetingController extends Controller {
                 'approved_today' => $approved_today,
                 'unique_clients' => $unique_clients
             ],
-            'doctors' => $doctors
+            'doctors' => $doctors,
+            'users' => $users
         ];
         $this->view('meetings', $data);
     }

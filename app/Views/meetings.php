@@ -124,6 +124,49 @@
 
     /* ---- Feed Pagination bar ---- */
     #feedPagination .page-link { font-size: 0.75rem; padding: 4px 9px; border-radius: 6px !important; }
+
+    /* ---- High Fidelity Filtering Bar ---- */
+    .filter-bar {
+        background: #fdfdfd;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    
+    .filter-input-group {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border: 1.5px solid #eef0f2;
+        border-radius: 8px;
+        padding: 0 12px;
+        height: 40px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .filter-input-group:focus-within {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .filter-input-group input, .filter-input-group select {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #495057;
+        width: 100%;
+        margin-left: 8px;
+    }
+    
+    .filter-input-group i { color: #adb5bd; font-size: 0.9rem; }
 </style>
 
 <main role="main" class="main-content">
@@ -263,6 +306,28 @@
                 </div>
                 <nav><ul class="pagination pagination-sm mb-0" id="feedPagination"></ul></nav>
             </div>
+
+            <!-- Precision Filtering Bar -->
+            <div class="filter-bar shadow-sm">
+                <div class="filter-input-group" style="flex: 1; min-width: 200px;">
+                    <i class="fe fe-search"></i>
+                    <input type="text" id="feedSearch" placeholder="Search by client, hospital, or activity...">
+                </div>
+                
+                <div class="filter-input-group" style="width: 220px;">
+                    <i class="fe fe-user text-primary"></i>
+                    <select id="employeeFilter">
+                        <option value="all">All Personnel</option>
+                        <?php if(!empty($users)): foreach($users as $u): ?>
+                            <option value="<?php echo htmlspecialchars($u['name']); ?>"><?php echo htmlspecialchars($u['name']); ?></option>
+                        <?php endforeach; endif; ?>
+                    </select>
+                </div>
+                
+                <div class="text-muted small d-none d-lg-block">
+                    <i class="fe fe-filter mr-1"></i> Filtering results in real-time
+                </div>
+            </div>
             <div id="feedItemsWrapper">
 
             <?php if(empty($meetings)): ?>
@@ -309,7 +374,7 @@
 
                         <div class="strip-actions border-left pl-3 ml-2 d-flex flex-column align-items-center justify-content-center" style="gap:6px;min-width:48px;">
                              <?php if($m['latitude']): ?>
-                                <button class="feed-action-btn feed-action-map" onclick="event.stopPropagation(); focusMeeting(<?php echo $m['latitude']; ?>, <?php echo $m['longitude']; ?>)" title="Pinpoint on Map">
+                                <button class="feed-action-btn feed-action-map" onclick="event.stopPropagation(); triggerLocationPopup(<?php echo htmlspecialchars(json_encode($m)); ?>)" title="Verify Location">
                                     <i class="fe fe-map-pin"></i>
                                     <span class="feed-action-label">Map</span>
                                 </button>
@@ -393,14 +458,36 @@
                         <button type="button" class="btn btn-danger px-4 font-weight-bold rounded-pill audit-btn" id="modal-reject-btn">Reject</button>
                     </div>
                 <?php endif; ?>
-                <button type="button" class="btn btn-primary px-4 font-weight-bold rounded-pill" id="modal-map-link">View GPS Trace</button>
+                <button type="button" class="btn btn-primary px-4 font-weight-bold rounded-pill" id="modal-location-trigger-btn">View GPS Trace</button>
                 <button type="button" class="btn btn-outline-secondary px-4 font-weight-bold rounded-pill" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Photo Capture Modal -->
+<!-- Location Verification Modal -->
+<div class="modal fade" id="locationVerificationModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px;">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <div class="bg-primary-light d-inline-flex align-items-center justify-content-center border border-primary" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(67,97,238,0.1); color: #4361ee;">
+                        <i class="fe fe-map-pin h3 mb-0"></i>
+                    </div>
+                </div>
+                <h5 class="font-weight-bold text-dark mb-2">Location Identity</h5>
+                <p id="verify-location-name" class="text-muted small mb-4" style="line-height: 1.5;"></p>
+                
+                <div class="d-flex flex-column gap-2" style="gap: 8px;">
+                    <button type="button" class="btn btn-primary btn-block font-weight-bold py-2 shadow-sm" id="confirm-map-redirect" style="border-radius: 8px;">
+                        <i class="fe fe-navigation-2 mr-2"></i> Show on Map
+                    </button>
+                    <button type="button" class="btn btn-light btn-block font-weight-bold py-2 text-muted" data-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="photoModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content bg-dark">
@@ -604,9 +691,9 @@ document.addEventListener('DOMContentLoaded', function() {
             img.style.display = 'none'; no.style.display = 'block';
         }
 
-        document.getElementById('modal-map-link').onclick = () => {
+        document.getElementById('modal-location-trigger-btn').onclick = () => {
              $('#meetingDetailModal').modal('hide');
-             window.focusMeeting(parseFloat(data.latitude), parseFloat(data.longitude));
+             triggerLocationPopup(data);
         };
 
         if(document.getElementById('modal-approve-btn')) {
@@ -619,11 +706,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         $('#meetingDetailModal').modal('show');
     };
+
+    window.triggerLocationPopup = (data) => {
+        const modal = $('#locationVerificationModal');
+        document.getElementById('verify-location-name').textContent = data.address || "Field Position Registered";
+        
+        document.getElementById('confirm-map-redirect').onclick = () => {
+            modal.modal('hide');
+            window.focusMeeting(parseFloat(data.latitude), parseFloat(data.longitude));
+        };
+        
+        modal.modal('show');
+    };
 });
 </script>
 
 <script>
-/* ---- Global Interaction Feed Paginator ---- */
+/* ---- Global Interaction Feed Paginator & Filter ---- */
 (function () {
     const PER_PAGE = 10;
     let page = 1;
@@ -632,13 +731,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const rows = Array.from(wrapper.querySelectorAll('.interaction-strip'));
     if (!rows.length) return;
 
+    const searchInput = document.getElementById('feedSearch');
+    const employeeFilter = document.getElementById('employeeFilter');
+
+    function applyFilters() {
+        const search = searchInput.value.toLowerCase();
+        const employee = employeeFilter.value;
+
+        return rows.filter(r => {
+            const text = (r.innerText || r.textContent).toLowerCase();
+            const staffName = r.querySelector('.strip-meta .small.text-primary').textContent;
+            
+            const matchesSearch = text.includes(search);
+            const matchesEmployee = (employee === 'all' || staffName === employee);
+            
+            return matchesSearch && matchesEmployee;
+        });
+    }
+
     function render() {
-        const total  = rows.length;
+        const filteredRows = applyFilters();
+        const total  = filteredRows.length;
         const pages  = Math.max(1, Math.ceil(total / PER_PAGE));
+        
+        // Safety check for page bounds
+        if (page > pages) page = pages;
+        if (page < 1) page = 1;
+
         const start  = (page - 1) * PER_PAGE;
         const end    = Math.min(start + PER_PAGE, total);
 
-        rows.forEach((r, i) => r.style.display = (i >= start && i < end) ? '' : 'none');
+        // Hide all, then show filtered
+        rows.forEach(r => r.style.display = 'none');
+        filteredRows.forEach((r, i) => {
+            if (i >= start && i < end) r.style.display = '';
+        });
 
         const info = document.getElementById('feedPageInfo');
         if (info) info.textContent = total > PER_PAGE ? `Showing ${start + 1}–${end} of ${total} records` : `${total} record${total !== 1 ? 's' : ''}`;
@@ -669,6 +796,9 @@ document.addEventListener('DOMContentLoaded', function() {
         next.addEventListener('click', e => { e.preventDefault(); if (page < pages) { page++; render(); } });
         ul.appendChild(next);
     }
+
+    searchInput.addEventListener('input', () => { page = 1; render(); });
+    employeeFilter.addEventListener('change', () => { page = 1; render(); });
 
     render();
 })();
