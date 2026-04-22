@@ -279,6 +279,10 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     font-size: 0.9rem; font-weight: 600;
     cursor: pointer; transition: all 0.2s;
 }
+.premium-select option {
+    color: #1e293b;
+    background: #fff;
+}
 .select-wrapper { position: relative; }
 .select-icon { position: absolute; left: 15px; top: 50%; translate: 0 -50%; opacity: 0.5; }
 .premium-btn {
