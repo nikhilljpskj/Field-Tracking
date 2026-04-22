@@ -32,7 +32,7 @@
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover mb-0 datatables" id="visitTable">
+                                    <table class="table table-hover mb-0 datatables ms-3" id="visitTable">
                                         <thead class="tm-thead">
                                             <tr>
                                                 <th>Executive</th>
@@ -87,7 +87,7 @@
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover mb-0 datatables" id="inhouseTable">
+                                    <table class="table table-hover mb-0 datatables ms-3" id="inhouseTable">
                                         <thead class="tm-thead">
                                             <tr>
                                                 <th>Assignee</th>
