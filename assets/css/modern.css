@@ -166,16 +166,6 @@ body {
         width: 100% !important;
     }
 
-    /* Fixed Topnav on Mobile */
-    .topnav {
-        position: fixed !important;
-        top: 0;
-        z-index: 1040;
-    }
-
-    .wrapper {
-        padding-top: 60px;
-    }
 
     /* Overlay for Mobile Sidebar */
     .sidebar-overlay {
