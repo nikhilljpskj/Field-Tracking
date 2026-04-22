@@ -5,17 +5,17 @@
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 class="h3 mb-0 page-title">Work & Visit Assignments</h2>
-                        <p class="text-muted">Direct executives to specific hospitals, or assign internal jobs.</p>
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+                    <div class="mb-2 mb-sm-0">
+                        <h2 class="h3 mb-0 page-title">Work &amp; Visit Assignments</h2>
+                        <p class="text-muted small mb-0">Direct executives to hospitals, or assign internal jobs.</p>
                     </div>
-                    <div>
-                        <button type="button" class="btn btn-secondary shadow-sm mr-2" data-toggle="modal" data-target="#assignInhouseModal">
-                            <i class="fe fe-briefcase mr-1"></i> Assign In-House Task
+                    <div class="tm-header-actions">
+                        <button type="button" class="tm-btn tm-btn-secondary" data-toggle="modal" data-target="#assignInhouseModal">
+                            <i class="fe fe-briefcase"></i><span>In-House Task</span>
                         </button>
-                        <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#assignTaskModal">
-                            <i class="fe fe-plus-circle mr-1"></i> Assign New Visit
+                        <button type="button" class="tm-btn tm-btn-primary" data-toggle="modal" data-target="#assignTaskModal">
+                            <i class="fe fe-plus-circle"></i><span>Assign Visit</span>
                         </button>
                     </div>
                 </div>
@@ -33,48 +33,43 @@
                             <div class="card-body p-0">
                                 <div class="table-responsive">
                                     <table class="table table-hover mb-0 datatables" id="visitTable">
-                                        <thead class="bg-light text-muted small text-uppercase font-weight-bold">
+                                        <thead class="tm-thead">
                                             <tr>
-                                                <th class="pl-4">Executive</th>
+                                                <th>Executive</th>
                                                 <th>Hospital / Office</th>
                                                 <th>Visit Date</th>
                                                 <th>Priority</th>
                                                 <th>Status</th>
-                                                <th class="text-right pr-4">Action</th>
+                                                <th class="text-right">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php foreach($tasks as $t): ?>
-                                            <tr>
-                                                <td class="pl-4 font-weight-600"><?php echo htmlspecialchars($t['executive_name']); ?></td>
+                                            <tr class="tm-row">
+                                                <td><span class="tm-name"><?php echo htmlspecialchars($t['executive_name']); ?></span></td>
                                                 <td>
-                                                    <div class="d-flex flex-column">
-                                                        <span class="text-dark font-weight-500"><?php echo htmlspecialchars($t['hospital_office_name']); ?></span>
-                                                        <small class="text-muted"><?php echo htmlspecialchars($t['location_desc']); ?></small>
-                                                    </div>
+                                                    <div class="tm-hospital"><?php echo htmlspecialchars($t['hospital_office_name']); ?></div>
+                                                    <div class="tm-location"><i class="fe fe-map-pin fe-10 mr-1"></i><?php echo htmlspecialchars($t['location_desc']); ?></div>
                                                 </td>
-                                                <td><?php echo date('M d, Y', strtotime($t['visit_date'])); ?></td>
+                                                <td><span class="tm-date"><?php echo date('d M Y', strtotime($t['visit_date'])); ?></span></td>
                                                 <td>
-                                                    <?php 
-                                                    $priorityClass = 'bg-secondary';
-                                                    if($t['priority'] == 'High') $priorityClass = 'bg-danger';
-                                                    if($t['priority'] == 'Medium') $priorityClass = 'bg-warning';
+                                                    <?php
+                                                    $pc = ['Low'=>'tm-chip-info','Medium'=>'tm-chip-warning','High'=>'tm-chip-danger'];
+                                                    $pClass = $pc[$t['priority']] ?? 'tm-chip-info';
                                                     ?>
-                                                    <span class="badge <?php echo $priorityClass; ?> text-white px-2 py-1"><?php echo $t['priority']; ?></span>
+                                                    <span class="tm-chip <?php echo $pClass; ?>"><?php echo $t['priority']; ?></span>
                                                 </td>
                                                 <td>
-                                                    <?php 
-                                                    $statusClass = 'text-muted';
-                                                    if($t['status'] == 'Completed') $statusClass = 'text-success font-weight-bold';
-                                                    if($t['status'] == 'In Progress') $statusClass = 'text-primary font-weight-bold';
-                                                    if($t['status'] == 'Cancelled') $statusClass = 'text-danger';
+                                                    <?php
+                                                    $sc = ['Pending'=>'tm-stat-muted','Completed'=>'tm-stat-success','In Progress'=>'tm-stat-primary','Cancelled'=>'tm-stat-danger'];
+                                                    $sClass = $sc[$t['status']] ?? 'tm-stat-muted';
                                                     ?>
-                                                    <span class="<?php echo $statusClass; ?>">
-                                                        <i class="fe fe-circle fe-10 mr-1"></i> <?php echo $t['status']; ?>
+                                                    <span class="tm-status <?php echo $sClass; ?>">
+                                                        <span class="tm-status-dot"></span><?php echo $t['status']; ?>
                                                     </span>
                                                 </td>
-                                                <td class="text-right pr-4">
-                                                    <a href="tasks?action=delete&id=<?php echo $t['id']; ?>" class="btn btn-sm btn-outline-danger shadow-sm border" onclick="return confirm('Remove this visit assignment?')" title="Delete Visit">
+                                                <td class="text-right">
+                                                    <a href="tasks?action=delete&id=<?php echo $t['id']; ?>" class="tm-icon-btn tm-icon-danger" onclick="return confirm('Remove this visit assignment?')" title="Delete Visit">
                                                         <i class="fe fe-trash-2"></i>
                                                     </a>
                                                 </td>
@@ -93,49 +88,52 @@
                             <div class="card-body p-0">
                                 <div class="table-responsive">
                                     <table class="table table-hover mb-0 datatables" id="inhouseTable">
-                                        <thead class="bg-light text-muted small text-uppercase font-weight-bold">
+                                        <thead class="tm-thead">
                                             <tr>
-                                                <th class="pl-4">Assignee</th>
+                                                <th>Assignee</th>
                                                 <th>Task Definition</th>
                                                 <th>Deadline</th>
                                                 <th>Status</th>
-                                                <th class="text-right pr-4">Oversight</th>
+                                                <th class="text-right">Oversight</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php foreach($inhouseTasks as $ih): ?>
-                                            <tr>
-                                                <td class="pl-4 font-weight-600 font-weight-bold"><?php echo htmlspecialchars($ih['assignee_name']); ?></td>
+                                            <tr class="tm-row">
+                                                <td><span class="tm-name"><?php echo htmlspecialchars($ih['assignee_name']); ?></span></td>
                                                 <td>
-                                                    <div class="d-flex flex-column" style="max-width:300px;">
-                                                        <span class="text-dark font-weight-bold"><?php echo htmlspecialchars($ih['task_name']); ?></span>
-                                                        <small class="text-muted text-truncate"><?php echo htmlspecialchars($ih['requirements']); ?></small>
-                                                    </div>
+                                                    <div class="tm-hospital"><?php echo htmlspecialchars($ih['task_name']); ?></div>
+                                                    <div class="tm-location"><?php echo htmlspecialchars(mb_strimwidth($ih['requirements'], 0, 80, '...')); ?></div>
                                                 </td>
                                                 <td>
-                                                    <span class="<?php echo (strtotime($ih['deadline']) < time() && !in_array($ih['status'], ['Completed', 'Pending Approval'])) ? 'text-danger font-weight-bold' : ''; ?>">
-                                                        <?php echo date('M d, Y H:i', strtotime($ih['deadline'])); ?>
+                                                    <?php $isOvd = strtotime($ih['deadline']) < time() && !in_array($ih['status'], ['Completed', 'Pending Approval']); ?>
+                                                    <span class="tm-date <?php echo $isOvd ? 'tm-date-overdue' : ''; ?>">
+                                                        <?php echo date('d M Y', strtotime($ih['deadline'])); ?>
+                                                        <?php if($isOvd): ?><span class="tm-overdue-chip">OVERDUE</span><?php endif; ?>
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <?php 
-                                                    $bh = 'badge-secondary';
-                                                    if($ih['status'] == 'Accepted') $bh = 'badge-primary';
-                                                    if($ih['status'] == 'Partial Submitted') $bh = 'badge-info text-white';
-                                                    if($ih['status'] == 'Pending Approval') $bh = 'badge-warning text-dark';
-                                                    if($ih['status'] == 'Revision Requested') $bh = 'badge-danger text-white';
-                                                    if($ih['status'] == 'Completed') $bh = 'badge-success';
-                                                    if($ih['status'] == 'Overdue') $bh = 'badge-danger';
+                                                    <?php
+                                                    $bmap = [
+                                                        'Pending'           => 'tm-chip-muted',
+                                                        'Accepted'          => 'tm-chip-primary',
+                                                        'Partial Submitted' => 'tm-chip-info',
+                                                        'Pending Approval'  => 'tm-chip-warning',
+                                                        'Revision Requested'=> 'tm-chip-danger',
+                                                        'Completed'         => 'tm-chip-success',
+                                                        'Overdue'           => 'tm-chip-danger',
+                                                    ];
+                                                    $bClass = $bmap[$ih['status']] ?? 'tm-chip-muted';
                                                     ?>
-                                                    <span class="badge <?php echo $bh; ?> px-2 py-1"><?php echo $ih['status']; ?></span>
+                                                    <span class="tm-chip <?php echo $bClass; ?>"><?php echo $ih['status']; ?></span>
                                                 </td>
-                                                <td class="text-right pr-4">
-                                                    <div class="btn-group">
-                                                        <button class="btn btn-sm btn-white border shadow-sm text-primary" data-task="<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES, 'UTF-8'); ?>" onclick="openViewEditInhouseModal(this)" title="View/Edit Details">
+                                                <td class="text-right">
+                                                    <div class="d-flex justify-content-end" style="gap:6px;">
+                                                        <button class="tm-icon-btn tm-icon-primary" data-task="<?php echo htmlspecialchars(json_encode($ih), ENT_QUOTES, 'UTF-8'); ?>" onclick="openViewEditInhouseModal(this)" title="View/Edit Details">
                                                             <i class="fe fe-eye"></i>
                                                         </button>
                                                         <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
-                                                            <a href="tasks?action=deleteInhouse&id=<?php echo $ih['id']; ?>" class="btn btn-sm btn-outline-danger shadow-sm border ml-1" onclick="return confirm('Permanently delete this task and its associated files?');" title="Delete Task">
+                                                            <a href="tasks?action=deleteInhouse&id=<?php echo $ih['id']; ?>" class="tm-icon-btn tm-icon-danger" onclick="return confirm('Permanently delete this task and its associated files?');" title="Delete Task">
                                                                 <i class="fe fe-trash-2"></i>
                                                             </a>
                                                         <?php endif; ?>
@@ -265,6 +263,158 @@
 </main>
 
 <style>
+/* ── Token variables ── */
+:root {
+    --tm-primary: #4361ee;
+    --tm-success: #10b981;
+    --tm-danger:  #dc3545;
+    --tm-warning: #f59e0b;
+    --tm-info:    #17a2b8;
+    --tm-muted:   #6c757d;
+    --tm-border:  #e8edf5;
+    --tm-bg:      #f8fafd;
+    --tm-radius:  10px;
+}
+
+/* ── Header Actions ── */
+.tm-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.tm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+.tm-btn:hover { opacity: 0.88; transform: scale(1.02); }
+.tm-btn-primary  { background: var(--tm-primary); color: #fff; }
+.tm-btn-secondary{ background: #f1f3ff; color: var(--tm-primary); border: 1.5px solid rgba(67,97,238,0.25); }
+@media (max-width: 576px) {
+    .tm-header-actions { width: 100%; margin-top: 10px; }
+    .tm-btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 8px 10px; }
+}
+
+/* ── Table Overrides ── */
+.tm-thead th {
+    padding: 12px 16px !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    background: var(--tm-bg);
+    border-bottom: 2px solid var(--tm-border) !important;
+    white-space: nowrap;
+}
+.tm-row td {
+    padding: 14px 16px !important;
+    vertical-align: middle;
+    border-color: var(--tm-border) !important;
+}
+.tm-row:hover { background: #f8f9ff !important; }
+
+.tm-name {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #1e293b;
+}
+.tm-hospital {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+.tm-location {
+    font-size: 0.72rem;
+    color: #64748b;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tm-date {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+}
+.tm-date-overdue { color: var(--tm-danger) !important; }
+.tm-overdue-chip {
+    display: inline-block;
+    background: rgba(220,53,69,0.1);
+    color: var(--tm-danger);
+    font-size: 0.58rem;
+    font-weight: 800;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 5px;
+    letter-spacing: 0.06em;
+}
+
+/* ── Status & Priority Chips ── */
+.tm-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.tm-chip-primary { background: rgba(67,97,238,0.1);   color: var(--tm-primary); }
+.tm-chip-success { background: rgba(16,185,129,0.1);  color: var(--tm-success); }
+.tm-chip-danger  { background: rgba(220,53,69,0.1);   color: var(--tm-danger);  }
+.tm-chip-warning { background: rgba(245,158,11,0.1);  color: var(--tm-warning); }
+.tm-chip-info    { background: rgba(23,162,184,0.1);  color: var(--tm-info);    }
+.tm-chip-muted   { background: rgba(108,117,125,0.1); color: var(--tm-muted);   }
+
+.tm-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.tm-status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: currentColor;
+}
+.tm-stat-success { color: var(--tm-success); }
+.tm-stat-primary { color: var(--tm-primary); }
+.tm-stat-danger  { color: var(--tm-danger);  }
+.tm-stat-muted   { color: var(--tm-muted);   }
+
+/* ── Icon Action Buttons ── */
+.tm-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.15s, transform 0.1s;
+    text-decoration: none;
+}
+.tm-icon-btn:hover { transform: scale(1.1); text-decoration: none; }
+.tm-icon-primary { background: rgba(67,97,238,0.1);  color: var(--tm-primary); }
+.tm-icon-primary:hover { background: rgba(67,97,238,0.2); }
+.tm-icon-danger  { background: rgba(220,53,69,0.1);  color: var(--tm-danger); }
+.tm-icon-danger:hover  { background: rgba(220,53,69,0.2); }
+
+/* ── Legacy compat ── */
 .font-weight-600 { font-weight: 600; }
 .font-weight-500 { font-weight: 500; }
 </style>

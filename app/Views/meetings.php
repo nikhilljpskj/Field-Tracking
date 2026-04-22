@@ -87,6 +87,43 @@
         border-color: #4361ee;
         box-shadow: 0 4px 12px rgba(67, 97, 238, 0.08);
     }
+
+    /* ---- Feed Action Buttons ---- */
+    .feed-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 10px;
+        padding: 7px 10px;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s;
+        gap: 2px;
+        min-width: 44px;
+        text-decoration: none;
+    }
+    .feed-action-btn:hover { transform: scale(1.07); box-shadow: 0 4px 12px rgba(0,0,0,0.12); opacity: 0.92; }
+    .feed-action-label {
+        font-size: 0.6rem; font-weight: 700;
+        letter-spacing: 0.04em; text-transform: uppercase; line-height: 1;
+    }
+    .feed-action-map {
+        background: rgba(67,97,238,0.10);
+        color: #4361ee;
+        border: 1.5px solid rgba(67,97,238,0.2);
+    }
+    .feed-action-map:hover { background: rgba(67,97,238,0.18); }
+    .feed-action-delete {
+        background: rgba(220,53,69,0.08);
+        color: #dc3545;
+        border: 1.5px solid rgba(220,53,69,0.2);
+    }
+    .feed-action-delete:hover { background: rgba(220,53,69,0.18); }
+
+    /* ---- Feed Pagination bar ---- */
+    #feedPagination .page-link { font-size: 0.75rem; padding: 4px 9px; border-radius: 6px !important; }
 </style>
 
 <main role="main" class="main-content">
@@ -220,12 +257,13 @@
         <!-- THE INTELLIGENCE FEED (Scrollable Right) -->
         <section class="intelligence-feed">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="text-uppercase small font-weight-bold text-muted mb-0">Global Interaction Feed</h5>
-                <div class="btn-group btn-group-sm shadow-sm">
-                    <button class="btn btn-white active border">All Records</button>
-                    <button class="btn btn-white border">Pending Audit</button>
+                <div>
+                    <h5 class="text-uppercase small font-weight-bold text-muted mb-0">Global Interaction Feed</h5>
+                    <span class="text-muted" style="font-size:0.72rem;" id="feedPageInfo"></span>
                 </div>
+                <nav><ul class="pagination pagination-sm mb-0" id="feedPagination"></ul></nav>
             </div>
+            <div id="feedItemsWrapper">
 
             <?php if(empty($meetings)): ?>
                 <div class="text-center py-5 text-muted italic">The Intelligence Feed is currently empty.</div>
@@ -269,21 +307,26 @@
                             </div>
                         </div>
 
-                        <div class="strip-actions border-left pl-4 ml-2">
+                        <div class="strip-actions border-left pl-3 ml-2 d-flex flex-column align-items-center justify-content-center" style="gap:6px;min-width:48px;">
                              <?php if($m['latitude']): ?>
-                                <button class="btn btn-sm btn-white shadow-sm rounded-circle border p-2" onclick="event.stopPropagation(); focusMeeting(<?php echo $m['latitude']; ?>, <?php echo $m['longitude']; ?>)" title="Pinpoint Map View">
-                                    <i class="fe fe-map-pin text-primary"></i>
+                                <button class="feed-action-btn feed-action-map" onclick="event.stopPropagation(); focusMeeting(<?php echo $m['latitude']; ?>, <?php echo $m['longitude']; ?>)" title="Pinpoint on Map">
+                                    <i class="fe fe-map-pin"></i>
+                                    <span class="feed-action-label">Map</span>
                                 </button>
                              <?php endif; ?>
-                             <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
-                                <button class="btn btn-sm btn-danger shadow-sm rounded-circle border-0 p-2 ml-1" onclick="event.stopPropagation(); if(confirm('Permanently delete this meeting log and its associated selfie?')) window.location.href='meetings?action=delete&id=<?php echo $m['id']; ?>'" title="Delete Record">
-                                    <i class="fe fe-trash-2 text-white"></i>
+                             <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
+                                <?php if($_SESSION['role'] === 'Admin'): ?>
+                                <button class="feed-action-btn feed-action-delete" onclick="event.stopPropagation(); if(confirm('Permanently delete this meeting log and its associated selfie?')) window.location.href='meetings?action=delete&id=<?php echo $m['id']; ?>'" title="Delete Record">
+                                    <i class="fe fe-trash-2"></i>
+                                    <span class="feed-action-label">Delete</span>
                                 </button>
+                                <?php endif; ?>
                              <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
+            </div><!-- /feedItemsWrapper -->
         </section>
     </div>
 </main>
@@ -577,6 +620,58 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#meetingDetailModal').modal('show');
     };
 });
+</script>
+
+<script>
+/* ---- Global Interaction Feed Paginator ---- */
+(function () {
+    const PER_PAGE = 10;
+    let page = 1;
+    const wrapper = document.getElementById('feedItemsWrapper');
+    if (!wrapper) return;
+    const rows = Array.from(wrapper.querySelectorAll('.interaction-strip'));
+    if (!rows.length) return;
+
+    function render() {
+        const total  = rows.length;
+        const pages  = Math.max(1, Math.ceil(total / PER_PAGE));
+        const start  = (page - 1) * PER_PAGE;
+        const end    = Math.min(start + PER_PAGE, total);
+
+        rows.forEach((r, i) => r.style.display = (i >= start && i < end) ? '' : 'none');
+
+        const info = document.getElementById('feedPageInfo');
+        if (info) info.textContent = total > PER_PAGE ? `Showing ${start + 1}–${end} of ${total} records` : `${total} record${total !== 1 ? 's' : ''}`;
+
+        const ul = document.getElementById('feedPagination');
+        if (!ul) return;
+        ul.innerHTML = '';
+
+        if (pages <= 1) return; // No pagination needed
+
+        const prev = document.createElement('li');
+        prev.className = 'page-item' + (page === 1 ? ' disabled' : '');
+        prev.innerHTML = '<a class="page-link" href="#">&laquo;</a>';
+        prev.addEventListener('click', e => { e.preventDefault(); if (page > 1) { page--; render(); } });
+        ul.appendChild(prev);
+
+        for (let i = 1; i <= pages; i++) {
+            const li = document.createElement('li');
+            li.className = 'page-item' + (i === page ? ' active' : '');
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.addEventListener('click', e => { e.preventDefault(); page = i; render(); });
+            ul.appendChild(li);
+        }
+
+        const next = document.createElement('li');
+        next.className = 'page-item' + (page === pages ? ' disabled' : '');
+        next.innerHTML = '<a class="page-link" href="#">&raquo;</a>';
+        next.addEventListener('click', e => { e.preventDefault(); if (page < pages) { page++; render(); } });
+        ul.appendChild(next);
+    }
+
+    render();
+})();
 </script>
 
 <?php include 'layout/footer.php'; ?>
