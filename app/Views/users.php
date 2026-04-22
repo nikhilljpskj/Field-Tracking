@@ -150,39 +150,39 @@
     <!-- Add User Modal -->
     <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white border-0">
-                    <h5 class="modal-title font-weight-bold" id="userModalLabel">Register New User</h5>
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="userModalLabel"><i class="fe fe-user-plus mr-2"></i>Register New User</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <form action="users?action=create" method="POST">
-                    <div class="modal-body p-4">
+                    <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Full Name</label>
-                                <input type="text" name="name" class="form-control form-control-lg bg-light border-0" placeholder="e.g. Rahul Sharma" required>
+                                <label>Full Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="e.g. Rahul Sharma" required>
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Email Address</label>
-                                <input type="email" name="email" class="form-control form-control-lg bg-light border-0" placeholder="rahul@example.com" required>
+                                <label>Email Address</label>
+                                <input type="email" name="email" class="form-control" placeholder="rahul@example.com" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Password</label>
-                                <input type="password" name="password" class="form-control form-control-lg bg-light border-0" required>
+                                <label>Password</label>
+                                <input type="password" name="password" class="form-control" required>
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Phone Number</label>
-                                <input type="text" name="phone" class="form-control form-control-lg bg-light border-0" placeholder="+91 0000000000">
+                                <label>Phone Number</label>
+                                <input type="text" name="phone" class="form-control" placeholder="+91 0000000000">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">User Role</label>
-                                <select name="role_id" class="form-control form-control-lg bg-light border-0">
+                                <label>User Role</label>
+                                <select name="role_id" class="form-control">
                                     <?php foreach($roles as $role): ?>
                                         <option value="<?php echo $role['id']; ?>" <?php echo $role['name'] == 'Executive' ? 'selected' : ''; ?>>
                                             <?php echo $role['name']; ?>
@@ -191,8 +191,8 @@
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Reporting Manager</label>
-                                <select name="manager_id" class="form-control form-control-lg bg-light border-0">
+                                <label>Reporting Manager</label>
+                                <select name="manager_id" class="form-control">
                                     <option value="">No Manager (Independent)</option>
                                     <?php foreach($managers as $manager): ?>
                                         <option value="<?php echo $manager['id']; ?>"><?php echo htmlspecialchars($manager['name']); ?></option>
@@ -201,8 +201,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 p-4">
-                        <button type="button" class="btn btn-light px-4" data-dismiss="modal">Cancel</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary px-5 shadow-sm">Create User Account</button>
                     </div>
                 </form>

@@ -413,11 +413,11 @@
     <!-- Payroll History Modal -->
     <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header border-0" style="background: linear-gradient(135deg, #4361ee, #3a0ca3); color: #fff;">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
                     <div>
                         <h5 class="modal-title mb-0" id="historyModalLabel"><i class="fe fe-clock mr-2"></i> Payroll History</h5>
-                        <small class="opacity-75" id="history_employee_name" style="opacity:0.8;">Employee</small>
+                        <small class="opacity-75" id="history_employee_name">Employee</small>
                     </div>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>

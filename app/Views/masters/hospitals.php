@@ -76,27 +76,27 @@
 <!-- Add Hospital Modal -->
 <div class="modal fade" id="addHospitalModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title font-weight-bold">Register Hospital/Office</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fe fe-plus-circle mr-2"></i>Register Hospital/Office</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form action="hospitals?action=add" method="POST">
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <div class="form-group">
-                        <label class="font-weight-bold small text-muted text-uppercase">Facility Name</label>
-                        <input type="text" name="name" class="form-control border-0 bg-light" required placeholder="e.g. Apollo Hospital / Tech Park" style="height: 45px; border-radius: 10px;">
+                        <label>Facility Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. Apollo Hospital / Tech Park">
                     </div>
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold small text-muted text-uppercase">City / Area / Exact Address (Optional)</label>
-                        <textarea name="address" class="form-control border-0 bg-light px-3 py-2" rows="3" placeholder="Enter full address details..." style="border-radius: 10px;"></textarea>
+                        <label>City / Area / Exact Address (Optional)</label>
+                        <textarea name="address" class="form-control" rows="3" placeholder="Enter full address details..."></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0 pr-4 pb-4">
-                    <button type="button" class="btn btn-light rounded-pill px-4 font-weight-bold" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 font-weight-bold shadow-sm">Save Facility</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Facility</button>
                 </div>
             </form>
         </div>

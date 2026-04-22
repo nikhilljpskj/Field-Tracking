@@ -155,19 +155,19 @@
     <!-- Assignment Modal -->
     <div class="modal fade" id="assignTaskModal" tabindex="-1" role="dialog" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white border-0">
-                    <h5 class="modal-title font-weight-bold" id="assignTaskModalLabel">Assign New Visit</h5>
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="assignTaskModalLabel"><i class="fe fe-map-pin mr-2"></i>Assign New Visit</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <form action="tasks?action=create" method="POST">
-                    <div class="modal-body p-4">
+                    <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Select Executive</label>
-                                <select name="assigned_to" class="form-control form-control-lg bg-light border-0" required>
+                                <label>Select Executive</label>
+                                <select name="assigned_to" class="form-control" required>
                                     <option value="">-- Choose Member --</option>
                                     <?php foreach($team as $member): ?>
                                         <option value="<?php echo $member['id']; ?>"><?php echo htmlspecialchars($member['name']); ?> (<?php echo $member['email']; ?>)</option>
@@ -175,24 +175,24 @@
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Hospital / Office Name</label>
-                                <input type="text" name="hospital_name" class="form-control form-control-lg bg-light border-0" placeholder="e.g. City General Hospital" required>
+                                <label>Hospital / Office Name</label>
+                                <input type="text" name="hospital_name" class="form-control" placeholder="e.g. City General Hospital" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12 form-group">
-                                <label class="font-weight-600">Exact Location / Address</label>
-                                <input type="text" name="location" class="form-control form-control-lg bg-light border-0" placeholder="Street, Area, etc." required>
+                                <label>Exact Location / Address</label>
+                                <input type="text" name="location" class="form-control" placeholder="Street, Area, etc." required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Visit Date</label>
-                                <input type="date" name="visit_date" class="form-control form-control-lg bg-light border-0" value="<?php echo date('Y-m-d'); ?>" required>
+                                <label>Visit Date</label>
+                                <input type="date" name="visit_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="font-weight-600">Priority Level</label>
-                                <select name="priority" class="form-control form-control-lg bg-light border-0">
+                                <label>Priority Level</label>
+                                <select name="priority" class="form-control">
                                     <option value="Low">Low</option>
                                     <option value="Medium" selected>Medium</option>
                                     <option value="High">High</option>
@@ -200,16 +200,16 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="font-weight-600">Target Description / Specific Goal</label>
-                            <textarea name="target" class="form-control form-control-lg bg-light border-0" rows="2" placeholder="What should be achieved during this visit?"></textarea>
+                            <label>Target Description / Specific Goal</label>
+                            <textarea name="target" class="form-control" rows="2" placeholder="What should be achieved during this visit?"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="font-weight-600">Additional Internal Notes</label>
-                            <textarea name="notes" class="form-control form-control-lg bg-light border-0" rows="2"></textarea>
+                            <label>Additional Internal Notes</label>
+                            <textarea name="notes" class="form-control" rows="2"></textarea>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 p-4">
-                        <button type="button" class="btn btn-light px-4" data-dismiss="modal">Cancel</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary px-5 shadow-sm">Assign Visit</button>
                     </div>
                 </form>
@@ -220,16 +220,16 @@
     <!-- Inhouse Assignment Modal -->
     <div class="modal fade" id="assignInhouseModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <form action="tasks?action=createInhouse" method="POST" enctype="multipart/form-data" class="modal-content shadow-lg border-0">
-                <div class="modal-header bg-dark text-white border-0">
-                    <h5 class="modal-title font-weight-bold"><i class="fe fe-briefcase mr-2"></i>Delegate Internal Task</h5>
+            <form action="tasks?action=createInhouse" method="POST" enctype="multipart/form-data" class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="fe fe-briefcase mr-2"></i>Delegate Internal Task</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <div class="form-group">
-                        <label class="font-weight-bold text-muted small text-uppercase">Assign To (Employee)</label>
+                        <label>Assign To (Employee)</label>
                         <select name="assigned_to" class="form-control" required>
                             <?php foreach($team as $u): ?>
                                 <option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?> <?php echo ($u['id'] == $_SESSION['user_id']) ? '(Self)' : ''; ?></option>
@@ -237,24 +237,24 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="font-weight-bold text-muted small text-uppercase">Task Definition</label>
+                        <label>Task Definition</label>
                         <input type="text" name="task_name" class="form-control" required placeholder="e.g. Design Dashboard Prototypes">
                     </div>
                     <div class="form-group">
-                        <label class="font-weight-bold text-muted small text-uppercase">Comprehensive Requirements</label>
+                        <label>Comprehensive Requirements</label>
                         <textarea name="requirements" class="form-control" rows="3" required placeholder="List out all steps, expected outputs, etc."></textarea>
                     </div>
                     <div class="form-group">
-                        <label class="font-weight-bold text-muted small text-uppercase">Strict Deadline</label>
+                        <label>Strict Deadline</label>
                         <input type="datetime-local" name="deadline" class="form-control" required>
                     </div>
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold text-muted small text-uppercase">Attach Brief/Spec PDF</label>
+                        <label>Attach Brief/Spec PDF</label>
                         <input type="file" name="attachment" class="form-control-file" accept=".pdf,.doc,.docx,.png,.jpg">
                     </div>
                 </div>
-                <div class="modal-footer bg-light border-0">
-                    <button type="submit" class="btn btn-dark shadow-sm w-100"><i class="fe fe-send mr-1"></i> Formally Assign Work</button>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary shadow-sm w-100"><i class="fe fe-send mr-1"></i> Formally Assign Work</button>
                 </div>
             </form>
         </div>
@@ -422,14 +422,14 @@
 <!-- View / Edit Detail Modal -->
 <div class="modal fade" id="viewEditInhouseModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-primary text-white border-bottom border-primary" style="border-bottom-width: 4px !important;">
-                <h5 class="modal-title font-weight-bold"><i class="fe fe-cpu mr-2"></i>Task Intelligence & Operations</h5>
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fe fe-cpu mr-2"></i>Task Intelligence & Operations</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-4 bg-light">
+            <div class="modal-body bg-light">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <small class="text-uppercase text-muted font-weight-bold">Assigned By</small>

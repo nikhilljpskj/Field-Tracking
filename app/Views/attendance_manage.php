@@ -179,9 +179,9 @@
 <!-- Attendance Detail Modal -->
 <div class="modal fade" id="attendanceDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-primary text-white border-0">
-                <h5 class="modal-title font-weight-bold"><i class="fe fe-clipboard mr-2"></i>Attendance Audit Detail</h5>
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fe fe-clipboard mr-2"></i>Attendance Audit Detail</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

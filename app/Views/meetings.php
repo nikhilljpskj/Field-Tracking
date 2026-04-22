@@ -334,9 +334,9 @@
 <!-- Details Modal -->
 <div class="modal fade" id="meetingDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-            <div class="modal-header bg-dark text-white p-4">
-                <h5 class="modal-title font-weight-bold">Intelligence Audit Report</h5>
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fe fe-cpu mr-2"></i>Intelligence Audit Report</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body p-0">
@@ -403,12 +403,12 @@
 <!-- Photo Capture Modal -->
 <div class="modal fade" id="photoModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg bg-dark" style="border-radius: 12px;">
-            <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title text-white font-weight-bold">Precision Verification Capture</h6>
+        <div class="modal-content bg-dark">
+            <div class="modal-header bg-dark text-white">
+                <h6 class="modal-title font-weight-bold"><i class="fe fe-camera mr-2"></i>Precision Verification Capture</h6>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
-            <div class="modal-body p-3">
+            <div class="modal-body">
                 <div class="rounded border border-secondary shadow-sm overflow-hidden" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000;">
                     <video id="video-selfie" width="100%" height="100%" autoplay playsinline style="object-fit: cover;"></video>
                     <canvas id="canvas-selfie" style="display:none;"></canvas>

@@ -78,27 +78,27 @@
 <!-- Add Doctor Modal -->
 <div class="modal fade" id="addDoctorModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title font-weight-bold">Register Doctor/POC</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fe fe-plus-circle mr-2"></i>Register Doctor/POC</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form action="doctors?action=add" method="POST">
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <div class="form-group">
-                        <label class="font-weight-bold small text-muted text-uppercase">Full Name</label>
-                        <input type="text" name="name" class="form-control border-0 bg-light" required placeholder="e.g. John Smith" style="height: 45px; border-radius: 10px;">
+                        <label>Full Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. John Smith">
                     </div>
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold small text-muted text-uppercase">Phone Number (Optional)</label>
-                        <input type="tel" name="phone" class="form-control border-0 bg-light" placeholder="e.g. +91 9876543210" style="height: 45px; border-radius: 10px;">
+                        <label>Phone Number (Optional)</label>
+                        <input type="tel" name="phone" class="form-control" placeholder="e.g. +91 9876543210">
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0 pr-4 pb-4">
-                    <button type="button" class="btn btn-light rounded-pill px-4 font-weight-bold" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 font-weight-bold shadow-sm">Save Doctor</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Doctor</button>
                 </div>
             </form>
         </div>
