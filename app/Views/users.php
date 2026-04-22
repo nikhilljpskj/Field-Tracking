@@ -212,6 +212,20 @@
 </main>
 
 <style>
+.table thead th {
+    padding: 18px 24px !important;
+    background: #334155 !important;
+    color: #fff !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border: none !important;
+}
+.table tbody td {
+    padding: 20px 24px !important;
+    vertical-align: middle;
+}
+.table tbody tr:hover { background-color: #f1f5ff !important; }
 .badge-soft-primary { background-color: rgba(67, 97, 238, 0.1); }
 .badge-soft-danger  { background-color: rgba(247, 37, 133, 0.1); }
 .badge-soft-warning { background-color: rgba(255, 190, 11, 0.1); }

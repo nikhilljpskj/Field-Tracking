@@ -41,11 +41,7 @@
               <i class="fe fe-sun fe-16"></i>
             </a>
           </li> -->
-          <li class="nav-item">
-            <a class="nav-link text-muted my-2" href="./#" data-toggle="modal" data-target=".modal-shortcut">
-              <span class="fe fe-grid fe-16"></span>
-            </a>
-          </li>
+          <!-- Removed Grid shortcut as per request -->
           <?php 
             $notifModel = new \App\Models\Notification();
             $unreadCount = $notifModel->getCount($_SESSION['user_id']);

@@ -26,9 +26,9 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="card shadow-sm border-0 mb-4">
-                            <div class="card-header bg-white border-0 py-3">
-                                <h5 class="card-title mb-0 font-weight-bold text-primary"><i class="fe fe-map-pin mr-2"></i>Site Visit Assignments</h5>
+                        <div class="card shadow-sm border-0 mb-5">
+                            <div class="card-header bg-primary py-3" style="border-radius: 12px 12px 0 0;">
+                                <h5 class="card-title mb-0 font-weight-bold text-white"><i class="fe fe-map-pin mr-2"></i>Site Visit Assignments</h5>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
@@ -82,8 +82,8 @@
                         </div>
 
                         <div class="card shadow-sm border-0 mb-5">
-                            <div class="card-header bg-white border-0 py-3">
-                                <h5 class="card-title mb-0 font-weight-bold text-dark"><i class="fe fe-briefcase mr-2"></i>In-House Task Delegation</h5>
+                            <div class="card-header bg-dark py-3" style="border-radius: 12px 12px 0 0;">
+                                <h5 class="card-title mb-0 font-weight-bold text-white"><i class="fe fe-briefcase mr-2"></i>In-House Task Delegation</h5>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
@@ -306,22 +306,23 @@
 
 /* ── Table Overrides ── */
 .tm-thead th {
-    padding: 12px 16px !important;
-    font-size: 0.7rem;
-    font-weight: 700;
+    padding: 16px 24px !important;
+    font-size: 0.72rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #64748b;
-    background: var(--tm-bg);
-    border-bottom: 2px solid var(--tm-border) !important;
+    letter-spacing: 0.08em;
+    color: #475569;
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0 !important;
     white-space: nowrap;
 }
 .tm-row td {
-    padding: 14px 16px !important;
+    padding: 20px 24px !important;
     vertical-align: middle;
-    border-color: var(--tm-border) !important;
+    border-color: #f1f5f9 !important;
 }
-.tm-row:hover { background: #f8f9ff !important; }
+.tm-row:hover { background: #f1f5ff !important; transform: scale(1.002); }
+.tm-row { transition: all 0.2s ease; }
 
 .tm-name {
     font-weight: 700;
