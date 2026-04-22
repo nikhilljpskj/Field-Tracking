@@ -33,7 +33,7 @@
                                     </tr>
                                 </thead>
                                 
-                                <tbody>
+                                <tbody id="attLogBody">
                                     <?php foreach($records as $r): ?>
                                     <tr>
                                         <td class="pl-4">
@@ -127,6 +127,10 @@
 
                             </table>
                         </div>
+                        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+                            <span class="text-muted small" id="attLogPageInfo"></span>
+                            <nav><ul class="pagination pagination-sm mb-0" id="attLogPagination"></ul></nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,6 +144,35 @@
 .font-weight-500 { font-weight: 500; }
 .op-1 { opacity: 0.1; }
 </style>
+<script>
+(function(){
+    const PER_PAGE = 10;
+    let page = 1;
+    const tbody = document.getElementById('attLogBody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    function render() {
+        const total = rows.length, pages = Math.max(1, Math.ceil(total / PER_PAGE));
+        const start = (page - 1) * PER_PAGE, end = Math.min(start + PER_PAGE, total);
+        rows.forEach((r, i) => r.style.display = (i >= start && i < end) ? '' : 'none');
+        document.getElementById('attLogPageInfo').textContent = total ? `Showing ${start+1}–${end} of ${total} records` : '';
+        const ul = document.getElementById('attLogPagination');
+        ul.innerHTML = '';
+        const prev = document.createElement('li'); prev.className = 'page-item' + (page===1?' disabled':'');
+        prev.innerHTML = '<a class="page-link" href="#">&laquo;</a>';
+        prev.addEventListener('click', e => { e.preventDefault(); if(page>1){page--;render();} }); ul.appendChild(prev);
+        for(let i=1;i<=pages;i++) {
+            const li = document.createElement('li'); li.className = 'page-item'+(i===page?' active':'');
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.addEventListener('click', e => { e.preventDefault(); page=i; render(); }); ul.appendChild(li);
+        }
+        const next = document.createElement('li'); next.className = 'page-item'+(page===pages?' disabled':'');
+        next.innerHTML = '<a class="page-link" href="#">&raquo;</a>';
+        next.addEventListener('click', e => { e.preventDefault(); if(page<pages){page++;render();} }); ul.appendChild(next);
+    }
+    render();
+})();
+</script>
 
 <?php include 'layout/footer.php'; ?>
 

@@ -117,7 +117,7 @@
                                         <th class="pr-4 text-right">Approval</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="dailyMeetBody">
                                     <?php if(empty($meetings)): ?>
                                         <tr><td colspan="4" class="text-center py-5 text-muted">No meetings recorded today.</td></tr>
                                     <?php else: ?>
@@ -147,6 +147,10 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+                            <span class="text-muted small" id="dailyPageInfo"></span>
+                            <nav><ul class="pagination pagination-sm mb-0" id="dailyPagination"></ul></nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,5 +168,32 @@
 .font-weight-600 { font-weight: 600; }
 .bg-primary { background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%) !important; }
 </style>
+<script>
+(function(){
+    const PER_PAGE = 10; let page = 1;
+    const tbody = document.getElementById('dailyMeetBody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.querySelector('td[colspan]'));
+    if (!rows.length) return;
+    function render() {
+        const total = rows.length, pages = Math.max(1, Math.ceil(total / PER_PAGE));
+        const start = (page-1)*PER_PAGE, end = Math.min(start+PER_PAGE, total);
+        Array.from(tbody.querySelectorAll('tr')).forEach(r => r.style.display = rows.includes(r) ? 'none' : '');
+        rows.forEach((r,i) => r.style.display = (i>=start && i<end) ? '' : 'none');
+        document.getElementById('dailyPageInfo').textContent = `Showing ${start+1}–${end} of ${total}`;
+        const ul = document.getElementById('dailyPagination'); ul.innerHTML = '';
+        const prev = document.createElement('li'); prev.className='page-item'+(page===1?' disabled':'');
+        prev.innerHTML='<a class="page-link" href="#">&laquo;</a>';
+        prev.addEventListener('click',e=>{e.preventDefault();if(page>1){page--;render();}}); ul.appendChild(prev);
+        for(let i=1;i<=pages;i++){const li=document.createElement('li');li.className='page-item'+(i===page?' active':'');
+            li.innerHTML=`<a class="page-link" href="#">${i}</a>`;
+            li.addEventListener('click',e=>{e.preventDefault();page=i;render();});ul.appendChild(li);}
+        const next=document.createElement('li');next.className='page-item'+(page===pages?' disabled':'');
+        next.innerHTML='<a class="page-link" href="#">&raquo;</a>';
+        next.addEventListener('click',e=>{e.preventDefault();if(page<pages){page++;render();}});ul.appendChild(next);
+    }
+    render();
+})();
+</script>
 
 <?php include dirname(__DIR__).'/layout/footer.php'; ?>
