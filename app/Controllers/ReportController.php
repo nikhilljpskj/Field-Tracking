@@ -34,6 +34,7 @@ class ReportController extends Controller {
         $userModel = new User();
         
         $userId = $_GET['user_id'] ?? 'all';
+        $selectedDate = $_GET['date'] ?? null;
         $users = [];
 
         if ($_SESSION['role'] == 'Manager') {
@@ -43,27 +44,54 @@ class ReportController extends Controller {
             
             // Further filter if a specific user in the team is selected
             if ($userId !== 'all' && in_array($userId, $teamIds)) {
-                $meetings = $meetingModel->getUserMeetings($userId);
+                if ($selectedDate) {
+                    $meetings = $meetingModel->getMeetingsByDate($selectedDate, $userId);
+                } else {
+                    $meetings = $meetingModel->getUserMeetings($userId);
+                }
                 $allTravel = $travelModel->getTeamSummaries($teamIds);
-                $travelSummaries = array_filter($allTravel, function($t) use ($userId) {
-                    return $t['user_id'] == $userId;
+                $travelSummaries = array_filter($allTravel, function($t) use ($userId, $selectedDate) {
+                    $userMatch = $t['user_id'] == $userId;
+                    $dateMatch = $selectedDate ? ($t['date'] == $selectedDate) : true;
+                    return $userMatch && $dateMatch;
                 });
             } else {
-                $meetings = $meetingModel->getTeamMeetings($teamIds);
-                $travelSummaries = $travelModel->getTeamSummaries($teamIds);
+                if ($selectedDate) {
+                    $meetings = array_filter($meetingModel->getMeetingsByDate($selectedDate, 'all'), function($m) use ($teamIds) {
+                        return in_array($m['user_id'], $teamIds);
+                    });
+                } else {
+                    $meetings = $meetingModel->getTeamMeetings($teamIds);
+                }
+                $allTravel = $travelModel->getTeamSummaries($teamIds);
+                $travelSummaries = array_filter($allTravel, function($t) use ($selectedDate) {
+                    return $selectedDate ? ($t['date'] == $selectedDate) : true;
+                });
             }
         } else {
             $users = $userModel->getAll();
             if ($userId !== 'all') {
-                $meetings = $meetingModel->getUserMeetings($userId);
-                // The Travel getTravelSummary is for a specific date, to keep format matched with manage page:
+                if ($selectedDate) {
+                    $meetings = $meetingModel->getMeetingsByDate($selectedDate, $userId);
+                } else {
+                    $meetings = $meetingModel->getUserMeetings($userId);
+                }
                 $allTravel = $travelModel->getAllSummaries();
-                $travelSummaries = array_filter($allTravel, function($t) use ($userId) {
-                    return $t['user_id'] == $userId;
+                $travelSummaries = array_filter($allTravel, function($t) use ($userId, $selectedDate) {
+                    $userMatch = $t['user_id'] == $userId;
+                    $dateMatch = $selectedDate ? ($t['date'] == $selectedDate) : true;
+                    return $userMatch && $dateMatch;
                 });
             } else {
-                $meetings = $meetingModel->getAllMeetings();
-                $travelSummaries = $travelModel->getAllSummaries();
+                if ($selectedDate) {
+                    $meetings = $meetingModel->getMeetingsByDate($selectedDate, 'all');
+                } else {
+                    $meetings = $meetingModel->getAllMeetings();
+                }
+                $allTravel = $travelModel->getAllSummaries();
+                $travelSummaries = array_filter($allTravel, function($t) use ($selectedDate) {
+                    return $selectedDate ? ($t['date'] == $selectedDate) : true;
+                });
             }
         }
         
@@ -72,7 +100,8 @@ class ReportController extends Controller {
             'meetings' => $meetings,
             'travelSummaries' => $travelSummaries,
             'users' => $users,
-            'selectedUser' => $userId
+            'selectedUser' => $userId,
+            'selectedDate' => $selectedDate
         ];
         $this->view('reports/manage', $data);
     }
@@ -154,22 +183,41 @@ class ReportController extends Controller {
         $this->redirect('reports');
     }
 
-    public function weekly() {
+    public function getMeetingDetails() {
+        if (!isset($_GET['id'])) {
+            echo json_encode(['success' => false, 'message' => 'ID missing']);
+            return;
+        }
+        $meetingModel = new Meeting();
+        $meeting = $meetingModel->getById($_GET['id']);
+        if ($meeting) {
+            echo json_encode(['success' => true, 'data' => $meeting]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Meeting not found']);
+        }
+    }
+
+    public function monthly() {
         $attendanceModel = new Attendance();
         $meetingModel = new Meeting();
         $travelModel = new Travel();
         
-        // Last 7 days
-        $startDate = date('Y-m-d', strtotime('-7 days'));
-        $endDate = date('Y-m-d');
+        $month = $_GET['month'] ?? date('m');
+        $year = $_GET['year'] ?? date('Y');
+        $userId = $_SESSION['user_id'];
         
         $data = [
-            'title' => 'Weekly Performance Report',
-            'meetings' => $meetingModel->getWeeklyUserStats($_SESSION['user_id'], $startDate, $endDate),
-            'travel' => $travelModel->getWeeklyUserTravel($_SESSION['user_id'], $startDate, $endDate),
-            'range' => ['start' => $startDate, 'end' => $endDate]
+            'title' => 'Monthly Performance Report',
+            'meetings' => $meetingModel->getMonthlyUserStats($userId, $month, $year), // Count vs Stats: stats is the list
+            'meeting_summary' => $meetingModel->getMonthlySummary($userId, $month, $year),
+            'travel' => $travelModel->getMonthlyUserTravel($userId, $month, $year),
+            'breakdown' => $travelModel->getMonthlyBreakdown($userId, $month, $year)
         ];
-        $this->view('reports/weekly', $data);
+        // Rename meetings count for compatibility with view's usage if needed
+        $data['meetings_list'] = $data['meetings']; // The list of meetings
+        $data['meetings'] = $data['meeting_summary']; // The summary (count, active_days)
+        
+        $this->view('reports/monthly', $data);
     }
 
     public function export() {
@@ -182,6 +230,7 @@ class ReportController extends Controller {
         
         $data = [];
         $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
+        $date = $_GET['date'] ?? null;
         $userModel = new User();
         $targetName = "My";
 
@@ -191,17 +240,21 @@ class ReportController extends Controller {
             if ($_SESSION['role'] == 'Manager') {
                 $team = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
                 $teamIds = array_column($team, 'id');
-                if ($type == 'daily') {
-                    $data = $meetingModel->getTeamMeetings($teamIds);
+                if ($date) {
+                    $data = $meetingModel->getMeetingsByDate($date, 'all'); // Filtered for team in actual app can be refined, but broadly all is fine for admin/manager view
+                    // Further filter data for teamIds if needed
+                    $data = array_filter($data, function($m) use ($teamIds) { return in_array($m['user_id'], $teamIds); });
                 } else {
-                    // Quick patch for monthly team data (using teamIds in SQL conceptually or fetching all and filtering)
-                    // Currently we don't have getMonthlyTeamStats, so we use getTeamMeetings directly as a broad export
                     $data = $meetingModel->getTeamMeetings($teamIds);
                 }
             } else {
-                $data = $meetingModel->getAllMeetings();
+                if ($date) {
+                    $data = $meetingModel->getMeetingsByDate($date, 'all');
+                } else {
+                    $data = $meetingModel->getAllMeetings();
+                }
             }
-            $filename = "{$type}_team_report_" . date('Y_m_d');
+            $filename = "{$type}_team_report_" . ($date ?: date('Y_m_d'));
         } else {
             // RBAC check if querying another user
             if ($userId != $_SESSION['user_id']) {
@@ -210,7 +263,10 @@ class ReportController extends Controller {
                 $targetName = $targetUser['name'];
             }
             
-            if ($type == 'daily') {
+            if ($date) {
+                $data = $meetingModel->getMeetingsByDate($date, $userId);
+                $filename = "daily_report_{$userId}_{$date}";
+            } elseif ($type == 'daily') {
                 $data = $meetingModel->getUserMeetings($userId);
                 $filename = "daily_report_{$userId}_" . date('Y-m-d');
             } elseif ($type == 'weekly') {
@@ -241,9 +297,27 @@ class ReportController extends Controller {
             
             $output = fopen('php://output', 'w');
             if (!empty($data)) {
-                fputcsv($output, array_keys($data[0]));
+                // Customized Header for Premium Export
+                fputcsv($output, [
+                    'S.No', 'Employee Name', 'Client/Hospital', 'Category', 
+                    'Visit Date/Time (IST)', 'Outcome', 'Location Address', 
+                    'Status', 'Approved By', 'Comments'
+                ]);
+                
+                $i = 1;
                 foreach ($data as $row) {
-                    fputcsv($output, $row);
+                    fputcsv($output, [
+                        $i++,
+                        $row['user_name'] ?? 'N/A',
+                        $row['client_name'] . ' (' . $row['hospital_office_name'] . ')',
+                        $row['visit_category'],
+                        date('d M Y - h:i A', strtotime($row['meeting_time'])),
+                        $row['outcome'],
+                        $row['address'],
+                        $row['status'],
+                        $row['approver_name'] ?? 'N/A',
+                        $row['admin_comments'] ?? ''
+                    ]);
                 }
             }
             fclose($output);

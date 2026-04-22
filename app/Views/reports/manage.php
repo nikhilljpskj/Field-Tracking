@@ -14,19 +14,26 @@
                     <div class="d-flex align-items-center flex-wrap">
                         <!-- Employee Filter -->
                         <?php if (!empty($users)): ?>
-                            <div class="mr-md-3 mb-2 mb-md-0">
-                                <div class="input-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                            <div class="mr-md-3 mb-2 mb-md-0 d-flex flex-wrap">
+                                <div class="input-group shadow-sm mr-2 mb-2 mb-md-0" style="border-radius: 12px; overflow: hidden;">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text bg-white border-0 pl-3"><i class="fe fe-users text-primary"></i></span>
                                     </div>
-                                    <select id="user-selector" class="form-control border-0 px-2" style="min-width: 220px; height: 42px; font-weight: 600;">
+                                    <select id="user-selector" class="form-control border-0 px-2" style="min-width: 200px; height: 42px; font-weight: 600;">
                                         <option value="all">All Personnel (Team View)</option>
                                         <?php foreach($users as $u): ?>
                                             <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $selectedUser) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($u['name']); ?> — <?php echo $u['role_name'] ?? ($u['role'] ?? 'Staff'); ?>
+                                                <?php echo htmlspecialchars($u['name']); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
+                                </div>
+
+                                <div class="input-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-0 pl-3"><i class="fe fe-calendar text-info"></i></span>
+                                    </div>
+                                    <input type="date" id="date-selector" class="form-control border-0 px-2" value="<?php echo $selectedDate; ?>" style="width: 160px; height: 42px; font-weight: 600;">
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -36,19 +43,19 @@
                                 <i class="fe fe-download mr-2"></i> Export Data
                             </button>
                             <div class="dropdown-menu dropdown-menu-right shadow border-0 py-3" aria-labelledby="exportDropdown" style="min-width: 300px; border-radius:12px;">
-                                <h6 class="dropdown-header text-uppercase text-primary font-weight-800" style="font-size:0.7rem; letter-spacing:0.05em;">Daily Logs (<?php echo $selectedUser === 'all' ? 'Team' : 'User'; ?>)</h6>
-                                <a class="dropdown-item py-2" href="reports?action=export&type=daily&user_id=<?php echo $selectedUser; ?>&category=Meeting&format=csv">
+                                <h6 class="dropdown-header text-uppercase text-primary font-weight-800" style="font-size:0.7rem; letter-spacing:0.05em;">Daily Logs (<?php echo $selectedUser === 'all' ? 'Team' : (isset($user['name']) ? $user['name'] : 'User'); ?>)</h6>
+                                <a class="dropdown-item py-2" href="reports?action=export&type=daily&user_id=<?php echo $selectedUser; ?>&date=<?php echo $selectedDate; ?>&category=Meeting&format=csv">
                                     <i class="fe fe-file-text mr-3 text-success"></i> Meetings & Activity (Excel)
                                 </a>
-                                <a class="dropdown-item py-2" target="_blank" href="reports?action=export&type=daily&user_id=<?php echo $selectedUser; ?>&category=Meeting&format=pdf">
+                                <a class="dropdown-item py-2" target="_blank" href="reports?action=export&type=daily&user_id=<?php echo $selectedUser; ?>&date=<?php echo $selectedDate; ?>&category=Meeting&format=pdf">
                                     <i class="fe fe-printer mr-3 text-danger"></i> Meetings & Activity (PDF)
                                 </a>
                                 <div class="dropdown-divider mx-3"></div>
                                 <h6 class="dropdown-header text-uppercase text-primary font-weight-800" style="font-size:0.7rem; letter-spacing:0.05em;">Monthly Records (<?php echo $selectedUser === 'all' ? 'Team' : 'User'; ?>)</h6>
-                                <a class="dropdown-item py-2" href="reports?action=export&type=monthly&user_id=<?php echo $selectedUser; ?>&category=Meeting&format=csv">
+                                <a class="dropdown-item py-2" href="reports?action=export&type=monthly&user_id=<?php echo $selectedUser; ?>&format=csv">
                                     <i class="fe fe-list mr-3 text-success"></i> Comprehensive (Excel)
                                 </a>
-                                <a class="dropdown-item py-2" target="_blank" href="reports?action=export&type=monthly&user_id=<?php echo $selectedUser; ?>&category=Meeting&format=pdf">
+                                <a class="dropdown-item py-2" target="_blank" href="reports?action=export&type=monthly&user_id=<?php echo $selectedUser; ?>&format=pdf">
                                     <i class="fe fe-layers mr-3 text-danger"></i> Comprehensive (PDF)
                                 </a>
                             </div>
@@ -119,6 +126,9 @@
                                         </td>
                                         <td class="text-right pr-4 py-3">
                                             <div class="btn-group shadow-sm rounded-lg overflow-hidden">
+                                                <button type="button" class="btn btn-sm btn-light px-3" onclick="viewIntelligence(<?php echo $m['id']; ?>)" title="View Intelligence">
+                                                    <i class="fe fe-eye text-primary"></i>
+                                                </button>
                                                 <?php if($m['status'] == 'Pending'): ?>
                                                     <button type="button" onclick="openActionModal('approveMeeting', <?php echo $m['id']; ?>)" class="btn btn-sm btn-success px-3" style="font-weight:700;"><i class="fe fe-check mr-1"></i> Approve</button>
                                                     <button type="button" onclick="openActionModal('rejectMeeting', <?php echo $m['id']; ?>)" class="btn btn-sm btn-danger px-3" style="font-weight:700;"><i class="fe fe-x mr-1"></i> Reject</button>
@@ -256,6 +266,91 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>
 
+<!-- Intelligence Detail Modal -->
+<div class="modal fade" id="intelligenceModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header bg-primary text-white py-4 border-0">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white-20 rounded-circle p-2 mr-3">
+                        <i class="fe fe-activity fe-24"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-white mb-0">Meeting Intelligence Detail</h5>
+                        <p class="modal-subtitle text-white-50 mb-0 small" id="intel-session-info">Verifying field session...</p>
+                    </div>
+                </div>
+                <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="intel-loading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div>
+                </div>
+                
+                <div id="intel-content" style="display:none;">
+                    <div class="row no-gutters">
+                        <div class="col-md-5 bg-light p-4 d-flex flex-column align-items-center justify-content-center text-center">
+                            <div id="intel-selfie-container" class="mb-3">
+                                <img src="" id="intel-selfie" class="img-fluid rounded-lg shadow" style="max-height: 300px; border: 4px solid #fff;">
+                            </div>
+                            <div class="badge badge-soft-primary px-3 py-1 font-weight-bold mb-2" id="intel-type"></div>
+                            <div class="text-dark font-weight-800" id="intel-time" style="font-size: 1.1rem;"></div>
+                            <div class="small text-muted mb-4">India Standard Time (IST)</div>
+                            
+                            <div class="w-100 p-3 bg-white rounded-lg shadow-sm text-left">
+                                <label class="text-muted small font-weight-bold text-uppercase mb-1">Assigned Personnel</label>
+                                <div class="font-weight-700 text-dark" id="intel-user"></div>
+                                <hr class="my-2 opacity-50">
+                                <label class="text-muted small font-weight-bold text-uppercase mb-1">Approval Authority</label>
+                                <div class="font-weight-700 text-primary" id="intel-approver">No authority assigned</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-7 p-4">
+                            <section class="mb-4">
+                                <label class="text-muted small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-home mr-2"></i>Location Intelligence</label>
+                                <h6 class="font-weight-800 text-dark mb-1" id="intel-hospital"></h6>
+                                <p class="small text-muted mb-0" id="intel-address"></p>
+                            </section>
+                            
+                            <section class="mb-4">
+                                <label class="text-muted small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-user mr-2"></i>In-Person Contact</label>
+                                <div class="font-weight-700 text-dark" id="intel-client"></div>
+                            </section>
+                            
+                            <section class="mb-4 p-3 bg-soft-info rounded-lg">
+                                <label class="text-info small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-message-square mr-2"></i>Executive Summary/Notes</label>
+                                <p class="text-dark font-weight-500 mb-0" id="intel-notes" style="font-style: italic; line-height: 1.5;"></p>
+                            </section>
+                            
+                            <section class="mb-4">
+                                <label class="text-muted small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-trending-up mr-2"></i>Actionable Outcome</label>
+                                <p class="text-dark font-weight-700" id="intel-outcome"></p>
+                            </section>
+                            
+                            <div id="intel-action-footer" class="mt-5">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div id="intel-status-pill"></div>
+                                    <div class="intel-controls" style="display:none;">
+                                        <button type="button" id="intel-approve-btn" class="btn btn-success btn-lg rounded-pill px-5 font-weight-bold shadow">
+                                            <i class="fe fe-check-circle mr-2"></i> Approve
+                                        </button>
+                                        <button type="button" id="intel-reject-btn" class="btn btn-outline-danger btn-lg rounded-pill px-4 font-weight-bold ml-2">
+                                            Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Verification Action Modal -->
 <div class="modal fade" id="actionModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -286,16 +381,24 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const userSelector = document.getElementById('user-selector');
-    if (userSelector) {
-        userSelector.addEventListener('change', function() {
-            window.location.href = 'reports?user_id=' + this.value;
-        });
+    const dateSelector = document.getElementById('date-selector');
+
+    function applyFilters() {
+        const userId = userSelector ? userSelector.value : 'all';
+        const date = dateSelector ? dateSelector.value : '';
+        window.location.href = `reports?user_id=${userId}&date=${date}`;
     }
+
+    if (userSelector) userSelector.addEventListener('change', applyFilters);
+    if (dateSelector) dateSelector.addEventListener('change', applyFilters);
 });
 
 function openActionModal(actionStr, recordId) {
     const isApproval = actionStr.includes('approve');
     const isMeeting = actionStr.includes('Meeting');
+    
+    // Auto-hide intelligence modal if it's open
+    $('#intelligenceModal').modal('hide');
     
     document.getElementById('actionModalId').value = recordId;
     document.getElementById('virtualActionForm').action = 'reports?action=' + actionStr;
@@ -310,5 +413,71 @@ function openActionModal(actionStr, recordId) {
     submitBtn.className = isApproval ? 'btn btn-success rounded-pill px-4 font-weight-bold shadow-sm' : 'btn btn-danger rounded-pill px-4 font-weight-bold shadow-sm';
     
     $('#actionModal').modal('show');
+}
+
+function viewIntelligence(id) {
+    const modal = $('#intelligenceModal');
+    const loading = $('#intel-loading');
+    const content = $('#intel-content');
+    
+    content.hide();
+    loading.show();
+    modal.modal('show');
+    
+    fetch('reports?action=getMeetingDetails&id=' + id)
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                const m = res.data;
+                loading.hide();
+                content.fadeIn();
+                
+                document.getElementById('intel-session-info').textContent = `Verified Session ID: #FT-${m.id}`;
+                document.getElementById('intel-hospital').textContent = m.hospital_office_name;
+                document.getElementById('intel-address').textContent = m.address;
+                document.getElementById('intel-client').textContent = m.client_name;
+                document.getElementById('intel-type').textContent = m.meeting_type;
+                document.getElementById('intel-time').textContent = new Date(m.meeting_time).toLocaleString('en-IN', {
+                    day: '2-digit', month: 'short', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hour12: true
+                });
+                document.getElementById('intel-notes').textContent = m.notes || 'No detailed notes provided.';
+                document.getElementById('intel-outcome').textContent = m.outcome;
+                document.getElementById('intel-user').textContent = m.user_name;
+                document.getElementById('intel-approver').textContent = m.approver_name || 'Verification Pending';
+                
+                const selfie = document.getElementById('intel-selfie');
+                if (m.selfie_path) {
+                    selfie.src = m.selfie_path;
+                    document.getElementById('intel-selfie-container').style.display = 'block';
+                } else {
+                    document.getElementById('intel-selfie-container').style.display = 'none';
+                }
+                
+                // Controls logic
+                const controls = document.querySelector('.intel-controls');
+                const statusPill = document.getElementById('intel-status-pill');
+                
+                if (m.status === 'Pending') {
+                    controls.style.display = 'block';
+                    statusPill.innerHTML = '';
+                    
+                    document.getElementById('intel-approve-btn').onclick = () => openActionModal('approveMeeting', m.id);
+                    document.getElementById('intel-reject-btn').onclick = () => openActionModal('rejectMeeting', m.id);
+                } else {
+                    controls.style.display = 'none';
+                    const sClass = m.status === 'Approved' ? 'badge-success' : 'badge-danger';
+                    statusPill.innerHTML = `<span class="badge ${sClass} px-4 py-2 font-weight-bold" style="font-size: 1rem;">${m.status.toUpperCase()}</span>`;
+                }
+            } else {
+                alert('Error loading meeting intelligence: ' + res.message);
+                modal.modal('hide');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('A network error occurred while fetching intelligence.');
+            modal.modal('hide');
+        });
 }
 </script>

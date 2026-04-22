@@ -25,8 +25,10 @@ class Meeting extends Model {
     }
 
     public function getWeeklyUserStats($user_id, $start, $end) {
-        $stmt = $this->db->prepare("SELECT m.*, d.name as referenced_doctor_name 
+        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
                                     FROM client_meetings m 
+                                    JOIN users u ON m.user_id = u.id
+                                    LEFT JOIN users au ON m.approved_by = au.id
                                     LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
                                     WHERE m.user_id = ? AND m.meeting_time BETWEEN ? AND ? 
                                     ORDER BY m.meeting_time DESC");
@@ -35,8 +37,10 @@ class Meeting extends Model {
     }
 
     public function getMonthlyUserStats($user_id, $month, $year) {
-        $stmt = $this->db->prepare("SELECT m.*, d.name as referenced_doctor_name 
+        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
                                     FROM client_meetings m 
+                                    JOIN users u ON m.user_id = u.id
+                                    LEFT JOIN users au ON m.approved_by = au.id
                                     LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
                                     WHERE m.user_id = ? AND MONTH(m.meeting_time) = ? AND YEAR(m.meeting_time) = ? 
                                     ORDER BY m.meeting_time DESC");
@@ -45,8 +49,10 @@ class Meeting extends Model {
     }
 
     public function getUserMeetings($user_id) {
-        $stmt = $this->db->prepare("SELECT m.*, d.name as referenced_doctor_name 
+        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
                                     FROM client_meetings m 
+                                    JOIN users u ON m.user_id = u.id
+                                    LEFT JOIN users au ON m.approved_by = au.id
                                     LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
                                     WHERE m.user_id = ? ORDER BY m.meeting_time DESC");
         $stmt->execute([$user_id]);
@@ -61,9 +67,10 @@ class Meeting extends Model {
     public function getTeamMeetings($team_ids) {
         if (empty($team_ids)) return [];
         $in = implode(',', array_fill(0, count($team_ids), '?'));
-        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, d.name as referenced_doctor_name 
+        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
                                     FROM client_meetings m 
                                     JOIN users u ON m.user_id = u.id 
+                                    LEFT JOIN users au ON m.approved_by = au.id
                                     LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
                                     WHERE m.user_id IN ($in) 
                                     ORDER BY m.meeting_time DESC");
@@ -72,9 +79,10 @@ class Meeting extends Model {
     }
 
     public function getAllMeetings($limit = 100) {
-        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, d.name as referenced_doctor_name 
+        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
                                     FROM client_meetings m 
                                     JOIN users u ON m.user_id = u.id 
+                                    LEFT JOIN users au ON m.approved_by = au.id
                                     LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
                                     ORDER BY m.meeting_time DESC LIMIT ?");
         $stmt->execute([$limit]);
@@ -96,13 +104,34 @@ class Meeting extends Model {
     }
 
     public function getById($id) {
-        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, d.name as referenced_doctor_name 
+        $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
                                     FROM client_meetings m 
                                     JOIN users u ON m.user_id = u.id 
+                                    LEFT JOIN users au ON m.approved_by = au.id
                                     LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
                                     WHERE m.id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
+    }
+
+    public function getMeetingsByDate($date, $user_id = 'all') {
+        $sql = "SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
+                FROM client_meetings m 
+                JOIN users u ON m.user_id = u.id 
+                LEFT JOIN users au ON m.approved_by = au.id
+                LEFT JOIN doctors d ON m.referenced_doctor_id = d.id
+                WHERE DATE(m.meeting_time) = ?";
+        
+        $params = [$date];
+        if ($user_id !== 'all') {
+            $sql .= " AND m.user_id = ?";
+            $params[] = $user_id;
+        }
+        $sql .= " ORDER BY m.meeting_time DESC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public function getMonthlySummary($user_id, $month, $year) {

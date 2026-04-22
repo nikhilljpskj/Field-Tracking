@@ -105,6 +105,9 @@
                             <td class="text-center">
                                 <?php $status = $m['status'] ?? 'Pending'; ?>
                                 <span class="badge-status status-<?php echo $status; ?>"><?php echo $status; ?></span>
+                                <?php if ($status === 'Approved' && !empty($m['approver_name'])): ?>
+                                    <div class="small text-muted mt-1" style="font-size: 10px;">By: <?php echo htmlspecialchars($m['approver_name']); ?></div>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
