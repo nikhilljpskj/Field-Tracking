@@ -329,80 +329,85 @@
                     </div></div>
                     </div>
 
-                    <!-- Professional Summary Dashboard -->
-                    <div class="pc-summary-dashboard mb-4">
-                        <div class="pc-summary-main-card">
-                            <div class="pc-main-stats">
-                                <div class="pc-stat-item">
-                                    <span class="pc-stat-label">Gross Earnings</span>
-                                    <div class="pc-stat-value text-dark" id="result_gross">₹ 0.00</div>
-                                </div>
-                                <div class="pc-stat-divider"></div>
-                                <div class="pc-stat-item">
-                                    <span class="pc-stat-label text-danger">Total Deductions</span>
-                                    <div class="pc-stat-value text-danger" id="result_deductions">₹ 0.00</div>
-                                </div>
-                                <div class="pc-stat-divider"></div>
-                                <div class="pc-stat-item pc-stat-highlight">
-                                    <span class="pc-stat-label text-primary">Net Pay (Take Home)</span>
-                                    <div class="pc-stat-value text-primary" id="result_net">₹ 0.00</div>
-                                </div>
-                            </div>
-                            
-                            <div class="pc-secondary-stats">
-                                <div class="pc-sec-item">
-                                    <span class="pc-sec-label">Monthly CTC</span>
-                                    <span class="pc-sec-value" id="result_monthly_ctc">₹ 0.00</span>
-                                </div>
-                                <div class="pc-sec-item">
-                                    <span class="pc-sec-label">Annual CTC</span>
-                                    <span class="pc-sec-value font-weight-bold" id="result_annual_ctc">₹ 0.00</span>
-                                </div>
-                                <div class="pc-sec-item">
-                                    <span class="pc-sec-label">Employer Cost</span>
-                                    <span class="pc-sec-value" id="result_empr">₹ 0.00</span>
-                                </div>
-                                <div class="pc-sec-item d-none d-sm-flex">
-                                    <span class="pc-sec-label">Taxable / yr</span>
-                                    <span class="pc-sec-value" id="result_annual_taxable">₹ 0.00</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <input type="hidden" name="total_ctc" id="total_ctc_hidden">
                 </form>
+            </div><!-- End Col-11 -->
+        </div><!-- End Row -->
 
-                <!-- Mobile-Friendly Sticky Footer -->
-                <div class="pc-sticky-footer" id="payrollFooter">
-                    <div class="pc-footer-actions">
-                        <button type="button" class="pc-footer-btn pc-btn-save" onclick="saveDraft()" id="saveDraftBtn">
-                            <i class="fe fe-save"></i>
-                            <span class="pc-btn-label">Save Draft</span>
-                        </button>
-                        <button type="button" class="pc-footer-btn pc-btn-pdf" onclick="exportPDF()">
-                            <i class="fe fe-file-text"></i>
-                            <span class="pc-btn-label">PDF</span>
-                        </button>
-                        <button type="button" class="pc-footer-btn pc-btn-csv" onclick="exportCSV()">
-                            <i class="fe fe-download"></i>
-                            <span class="pc-btn-label">CSV</span>
-                        </button>
-                    </div>
-                    <div class="pc-footer-totals">
-                        <div class="pc-footer-stat">
-                            <span class="pc-footer-stat-label">Net</span>
-                            <span class="pc-footer-stat-value text-primary" id="sticky_net">₹ 0</span>
+        <!-- Full Width Summary Dashboard -->
+        <div class="row">
+            <div class="col-12">
+                <div class="pc-summary-dashboard full-width mb-5 shadow-lg">
+                    <div class="pc-summary-main-card">
+                        <div class="pc-main-stats">
+                            <div class="pc-stat-item">
+                                <span class="pc-stat-label">Gross Earnings</span>
+                                <div class="pc-stat-value text-dark" id="result_gross">₹ 0.00</div>
+                            </div>
+                            <div class="pc-stat-divider"></div>
+                            <div class="pc-stat-item">
+                                <span class="pc-stat-label text-danger">Total Deductions</span>
+                                <div class="pc-stat-value text-danger" id="result_deductions">₹ 0.00</div>
+                            </div>
+                            <div class="pc-stat-divider"></div>
+                            <div class="pc-stat-item pc-stat-highlight">
+                                <span class="pc-stat-label text-primary">Net Pay (Take Home)</span>
+                                <div class="pc-stat-value text-primary" id="result_net">₹ 0.00</div>
+                            </div>
                         </div>
-                        <div class="pc-footer-stat d-none d-sm-flex">
-                            <span class="pc-footer-stat-label">CTC/yr</span>
-                            <span class="pc-footer-stat-value text-dark" id="sticky_ctc">₹ 0</span>
+                        
+                        <div class="pc-secondary-stats">
+                            <div class="pc-sec-item">
+                                <span class="pc-sec-label">Monthly CTC</span>
+                                <span class="pc-sec-value" id="result_monthly_ctc">₹ 0.00</span>
+                            </div>
+                            <div class="pc-sec-item">
+                                <span class="pc-sec-label">Annual CTC</span>
+                                <span class="pc-sec-value font-weight-bold" id="result_annual_ctc">₹ 0.00</span>
+                            </div>
+                            <div class="pc-sec-item">
+                                <span class="pc-sec-label">Employer Cost</span>
+                                <span class="pc-sec-value" id="result_empr">₹ 0.00</span>
+                            </div>
+                            <div class="pc-sec-item d-none d-lg-flex">
+                                <span class="pc-sec-label">Taxable / yr</span>
+                                <span class="pc-sec-value" id="result_annual_taxable">₹ 0.00</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div style="height: 90px;"></div>
             </div>
         </div>
+
+        <!-- Mobile-Friendly Sticky Footer -->
+        <div class="pc-sticky-footer" id="payrollFooter">
+            <div class="pc-footer-actions">
+                <button type="button" class="pc-footer-btn pc-btn-save" onclick="saveDraft()" id="saveDraftBtn">
+                    <i class="fe fe-save"></i>
+                    <span class="pc-btn-label">Save Draft</span>
+                </button>
+                <button type="button" class="pc-footer-btn pc-btn-pdf" onclick="exportPDF()">
+                    <i class="fe fe-file-text"></i>
+                    <span class="pc-btn-label">PDF</span>
+                </button>
+                <button type="button" class="pc-footer-btn pc-btn-csv" onclick="exportCSV()">
+                    <i class="fe fe-download"></i>
+                    <span class="pc-btn-label">CSV</span>
+                </button>
+            </div>
+            <div class="pc-footer-totals">
+                <div class="pc-footer-stat">
+                    <span class="pc-footer-stat-label">Net</span>
+                    <span class="pc-footer-stat-value text-primary" id="sticky_net">₹ 0</span>
+                </div>
+                <div class="pc-footer-stat d-none d-sm-flex">
+                    <span class="pc-footer-stat-label">CTC/yr</span>
+                    <span class="pc-footer-stat-value text-dark" id="sticky_ctc">₹ 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extra Spacer to prevent Footer Overlap -->
+        <div style="height: 140px;"></div>
     </div>
 
     <!-- Payroll History Modal -->
@@ -1082,53 +1087,59 @@ body, .main-content { font-family: 'Inter', sans-serif; }
 /* ---- Professional Summary Dashboard ---- */
 .pc-summary-dashboard {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 20px;
     border: 1px solid #eef0f7;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
     overflow: hidden;
+}
+.pc-summary-dashboard.full-width {
+    margin-left: -5px;
+    margin-right: -5px;
 }
 .pc-summary-main-card { padding: 0; }
 .pc-main-stats {
     display: flex;
     background: #f8f9ff;
     border-bottom: 1px solid #eef0f7;
-    padding: 20px;
+    padding: 24px;
     align-items: center;
     justify-content: space-around;
 }
 .pc-stat-item { text-align: center; flex: 1; }
 .pc-stat-label { 
     display: block; 
-    font-size: 0.75rem; 
+    font-size: 0.78rem; 
     text-transform: uppercase; 
     font-weight: 700; 
     letter-spacing: 0.05em;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     color: #6c757d;
 }
-.pc-stat-value { font-size: 1.25rem; font-weight: 800; }
-.pc-stat-divider { width: 1px; height: 40px; background: #e2e5f0; }
+.pc-stat-value { font-size: 1.5rem; font-weight: 800; }
+.pc-stat-divider { width: 1px; height: 50px; background: #e2e5f0; }
 
 .pc-stat-highlight {
     background: rgba(67, 97, 238, 0.05);
-    padding: 10px;
+    padding: 12px;
     border-radius: 12px;
 }
 
 .pc-secondary-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    padding: 15px 20px;
+    padding: 20px 30px;
+    background: #fff;
 }
-.pc-sec-item { display: flex; flex-direction: column; padding: 0 10px; }
-.pc-sec-label { font-size: 0.65rem; color: #adb5bd; font-weight: 600; text-transform: uppercase; }
-.pc-sec-value { font-size: 0.88rem; color: #495057; }
+.pc-sec-item { display: flex; flex-direction: column; padding: 0 15px; }
+.pc-sec-label { font-size: 0.68rem; color: #adb5bd; font-weight: 600; text-transform: uppercase; }
+.pc-sec-value { font-size: 1rem; color: #495057; font-weight: 600; }
 
 @media (max-width: 768px) {
-    .pc-main-stats { flex-direction: column; padding: 15px; }
-    .pc-stat-divider { width: 80%; height: 1px; margin: 12px 0; }
-    .pc-secondary-stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .pc-stat-value { font-size: 1.1rem; }
+    .pc-main-stats { flex-direction: column; padding: 20px; gap: 15px; }
+    .pc-stat-divider { display: none; }
+    .pc-secondary-stats { grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+    .pc-stat-value { font-size: 1.3rem; }
+    .pc-summary-dashboard.full-width { margin-left: 0; margin-right: 0; }
 }
 
 /* ---- Sticky Footer ---- */
