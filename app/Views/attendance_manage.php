@@ -218,6 +218,24 @@
         border-radius: 10px;
         transition: all 0.2s;
     }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start !important;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+        .dashboard-header .d-flex.gap-3 {
+            flex-direction: column;
+            width: 100%;
+            gap: 0.75rem !important;
+        }
+        .dashboard-header button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 
 <main role="main" class="main-content">
@@ -236,8 +254,9 @@
         </div>
     </div>
 
+
     <!-- Analytics Snapshot -->
-    <div class="row mb-4">
+    <div class="row mb-5">
         <?php 
             $onDuty = 0; $coverage = 0; $verificationHits = 0;
             foreach($records as $r) {
@@ -279,137 +298,120 @@
                     <i class="fe fe-activity"></i>
                 </div>
                 <div class="h3 font-weight-bold mb-0 text-white"><?php echo count($records); ?></div>
-                <div class="small text-muted-white font-weight-bold text-uppercase mt-1" style="opacity:0.8;">Total Interactions</div>
+                <div class="small text-muted font-weight-bold text-uppercase mt-1" style="opacity:0.8;">Total Interactions</div>
             </div>
         </div>
     </div>
 
-    <!-- Filter Drawer -->
-    <form class="filter-drawer shadow-sm" method="GET" action="attendance">
-        <div class="filter-group">
-            <label>Executive Name</label>
-            <select name="user_id" class="filter-control">
-                <option value="">All Personnel</option>
-                <?php foreach($users as $u): ?>
-                    <option value="<?php echo $u['id']; ?>" <?php echo ($filters['user_id'] == $u['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($u['name']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>From Date</label>
-            <input type="date" name="date_from" class="filter-control" value="<?php echo $filters['date_from']; ?>">
-        </div>
-        <div class="filter-group">
-            <label>To Date</label>
-            <input type="date" name="date_to" class="filter-control" value="<?php echo $filters['date_to']; ?>">
-        </div>
-        <div class="filter-group" style="flex: 1.5;">
-            <label>Search Intelligence</label>
-            <input type="text" name="search" class="filter-control" placeholder="Search by address, name..." value="<?php echo htmlspecialchars($filters['search']); ?>">
-        </div>
-        <div class="d-flex" style="gap: 8px;">
-            <button type="submit" class="btn btn-primary px-4 font-weight-bold" style="height:45px; border-radius:10px;">Apply</button>
-            <a href="attendance" class="btn btn-light px-4 d-flex align-items-center" style="height:45px; border-radius:10px;"><i class="fe fe-refresh-cw"></i></a>
-        </div>
-    </form>
-
-    <?php if(isset($_SESSION['flash_success'])): ?>
-        <div class="alert alert-success border-0 shadow-sm mb-4"><?php echo $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
-    <?php endif; ?>
-
-    <!-- Main Data Table -->
-    <div class="premium-table-container shadow-sm mb-5">
-        <table class="table premium-table mb-0" id="attendanceTable">
-            <thead>
-                <tr>
-                    <th>Associate</th>
-                    <th>Intelligence Log</th>
-                    <th>In-Transit</th>
-                    <th>Out-Transit</th>
-                    <th>Verification</th>
-                    <th>Status</th>
-                    <th class="text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if(empty($records)): ?>
-                    <tr><td colspan="7" class="text-center py-5 text-muted italic">No attendance intelligence recorded for the selected criteria.</td></tr>
-                <?php else: ?>
-                    <?php foreach($records as $r): ?>
-                        <tr data-record='<?php echo json_encode($r); ?>'>
-                            <td>
-                                <div class="avatar-stack">
-                                    <div class="avatar-circle">
-                                        <?php echo strtoupper(substr($r['user_name'], 0, 1)); ?>
-                                    </div>
-                                    <div>
-                                        <div class="font-weight-bold text-dark"><?php echo htmlspecialchars($r['user_name']); ?></div>
-                                        <div class="small text-muted"><?php echo htmlspecialchars($r['user_phone'] ?? 'ID: #'.$r['user_id']); ?></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="font-weight-bold small"><?php echo date('d M Y', strtotime($r['check_in_time'])); ?></div>
-                                <div class="text-muted small italic"><?php echo date('l', strtotime($r['check_in_time'])); ?></div>
-                            </td>
-                            <td>
-                                <div class="small font-weight-bold text-primary"><?php echo date('h:i A', strtotime($r['check_in_time'])); ?></div>
-                                <div class="text-muted small text-truncate" style="max-width: 150px;" title="<?php echo htmlspecialchars($r['check_in_address']); ?>">
-                                    <i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars($r['check_in_address']); ?>
-                                </div>
-                            </td>
-                            <td>
-                                <?php if($r['check_out_time']): ?>
-                                    <div class="small font-weight-bold text-dark"><?php echo date('h:i A', strtotime($r['check_out_time'])); ?></div>
-                                    <div class="text-muted small text-truncate" style="max-width: 150px;" title="<?php echo htmlspecialchars($r['check_out_address']); ?>">
-                                        <i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars($r['check_out_address']); ?>
-                                    </div>
-                                <?php else: ?>
-                                    <span class="text-muted small italic">Still In-Transit</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <div class="v-stack">
-                                    <div class="v-item <?php echo $r['check_in_photo'] ? 'active' : ''; ?>" title="Check-In Photo" onclick="viewAudit(<?php echo $r['id']; ?>)">
-                                        <i class="fe fe-camera"></i>
-                                    </div>
-                                    <div class="v-item <?php echo $r['odometer_photo'] ? 'active' : ''; ?>" title="Odometer Log" onclick="viewAudit(<?php echo $r['id']; ?>)">
-                                        <i class="fe fe-activity"></i>
-                                    </div>
-                                    <div class="v-item <?php echo $r['check_out_photo'] ? 'active' : ''; ?>" title="Check-Out Photo" onclick="viewAudit(<?php echo $r['id']; ?>)">
-                                        <i class="fe fe-shield"></i>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <?php if(!$r['check_out_time']): ?>
-                                    <div class="status-pill border border-success text-success" style="background: rgba(16,185,129,0.05);">
-                                        <span class="status-pulse pulse-active"></span>
-                                        Log Active
-                                    </div>
-                                <?php else: ?>
-                                    <div class="status-pill border border-light text-muted">
-                                        <i class="fe fe-check-circle"></i> Complete
-                                    </div>
-                                <?php endif; ?>
-                            </td>
-                            <td class="text-right">
-                                <div class="action-btn-group justify-content-end">
-                                    <button class="btn btn-icon-square btn-light text-primary" onclick="viewAudit(<?php echo $r['id']; ?>)" title="Audit Details">
-                                        <i class="fe fe-eye"></i>
-                                    </button>
-                                    <a href="attendance-edit?id=<?php echo $r['id']; ?>" class="btn btn-icon-square btn-light text-dark" title="Correction">
-                                        <i class="fe fe-edit-3"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+    <!-- Main Data Table Container -->
+    <div class="card shadow-sm border-0 mb-5" style="border-radius: 20px; overflow: hidden;">
+        <div class="card-header bg-white border-0 py-4 px-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <h4 class="h5 font-weight-bold mb-0 text-dark">Intelligence Logs</h4>
+            
+            <form class="d-flex flex-wrap align-items-center mt-3 mt-md-0" style="gap: 10px;" method="GET" action="attendance">
+                <select name="user_id" class="form-control form-control-sm border-0 shadow-sm px-3" style="width: 150px; height: 36px; border-radius: 8px; background: #f8f9fa; font-weight: 600;">
+                    <option value="">All Staff</option>
+                    <?php foreach($users as $u): ?>
+                        <option value="<?php echo $u['id']; ?>" <?php echo ($filters['user_id'] == $u['id']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($u['name']); ?>
+                        </option>
                     <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </select>
+                <input type="date" name="date_from" class="form-control form-control-sm border-0 shadow-sm px-2" style="width: 130px; height: 36px; border-radius: 8px; background: #f8f9fa; font-weight: 600;" value="<?php echo $filters['date_from']; ?>">
+                <button type="submit" class="btn btn-primary btn-sm px-3" style="height: 36px; border-radius: 8px;"><i class="fe fe-filter"></i></button>
+            </form>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table premium-table mb-0" id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Associate</th>
+                        <th>Log Detail</th>
+                        <th>In-Transit</th>
+                        <th>Out-Transit</th>
+                        <th>Verification</th>
+                        <th>Status</th>
+                        <th class="text-right">Intelligence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if(empty($records)): ?>
+                        <tr><td colspan="7" class="text-center py-5 text-muted italic">No attendance intelligence recorded for the selected criteria.</td></tr>
+                    <?php else: ?>
+                        <?php foreach($records as $r): ?>
+                            <tr data-record='<?php echo json_encode($r); ?>'>
+                                <td>
+                                    <div class="avatar-stack">
+                                        <div class="avatar-circle">
+                                            <?php echo strtoupper(substr($r['user_name'], 0, 1)); ?>
+                                        </div>
+                                        <div>
+                                            <div class="font-weight-bold text-dark"><?php echo htmlspecialchars($r['user_name']); ?></div>
+                                            <div class="small text-muted">ID: #<?php echo $r['user_id']; ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold small text-dark"><?php echo date('d M Y', strtotime($r['check_in_time'])); ?></div>
+                                    <div class="text-muted small"><?php echo date('l', strtotime($r['check_in_time'])); ?></div>
+                                </td>
+                                <td>
+                                    <div class="small font-weight-bold text-primary"><?php echo date('h:i A', strtotime($r['check_in_time'])); ?></div>
+                                    <div class="text-muted small text-truncate" style="max-width: 140px;" title="<?php echo htmlspecialchars($r['check_in_address']); ?>">
+                                        <i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars($r['check_in_address']); ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <?php if($r['check_out_time']): ?>
+                                        <div class="small font-weight-bold text-dark"><?php echo date('h:i A', strtotime($r['check_out_time'])); ?></div>
+                                        <div class="text-muted small text-truncate" style="max-width: 140px;" title="<?php echo htmlspecialchars($r['check_out_address']); ?>">
+                                            <i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars($r['check_out_address']); ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-muted small italic">Still On-Duty</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="v-stack">
+                                        <div class="v-item <?php echo $r['check_in_photo'] ? 'active' : ''; ?>" title="Check-In Verification" onclick="viewAudit(<?php echo $r['id']; ?>)">
+                                            <i class="fe fe-user"></i>
+                                        </div>
+                                        <div class="v-item <?php echo $r['odometer_photo'] ? 'active' : ''; ?>" title="Odometer Telemetry" onclick="viewAudit(<?php echo $r['id']; ?>)">
+                                            <i class="fe fe-activity"></i>
+                                        </div>
+                                        <div class="v-item <?php echo $r['check_out_photo'] ? 'active' : ''; ?>" title="Completion Verify" onclick="viewAudit(<?php echo $r['id']; ?>)">
+                                            <i class="fe fe-check-circle"></i>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <?php if(!$r['check_out_time']): ?>
+                                        <div class="status-pill border border-success text-success" style="background: rgba(16,185,129,0.05); font-size: 0.65rem;">
+                                            <span class="status-pulse pulse-active"></span> ACTIVE
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="status-pill border border-light text-muted" style="font-size: 0.65rem;">
+                                            <i class="fe fe-pocket mr-1"></i> ARCHIVED
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-right">
+                                    <div class="action-btn-group justify-content-end">
+                                        <button class="btn btn-icon-square btn-light text-primary shadow-sm" onclick="viewAudit(<?php echo $r['id']; ?>)" title="Detailed Audit">
+                                            <i class="fe fe-eye"></i>
+                                        </button>
+                                        <a href="attendance-edit?id=<?php echo $r['id']; ?>" class="btn btn-icon-square btn-light text-dark shadow-sm" title="Modify Record">
+                                            <i class="fe fe-edit-3"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </main>
 
@@ -426,51 +428,69 @@
                     <div class="col-md-7 p-0 bg-light" style="height: 600px;">
                         <div id="audit-map" style="width:100%; height:100%;"></div>
                     </div>
-                    <div class="col-md-5 p-4 bg-white" style="height: 600px; overflow-y: auto;">
+                    <div class="col-md-5 p-4 bg-white d-flex flex-column" style="height: 600px;">
                         <div class="mb-4">
                             <h4 id="audit-user" class="font-weight-bold text-dark mb-1"></h4>
                             <p id="audit-date" class="text-muted small font-weight-bold text-uppercase"></p>
                         </div>
 
-                        <div class="row mb-4">
-                            <div class="col-6">
+                        <div class="row mb-4 overflow-auto flex-grow-1">
+                            <div class="col-6 mb-3">
                                 <label class="small text-muted font-weight-bold text-uppercase mb-2 d-block">Check-In Verification</label>
-                                <div id="check-in-asset" class="rounded overflow-hidden border shadow-sm" style="height: 200px; background: #eee;">
-                                    <img src="" class="w-100 h-100 object-fit-cover audit-img">
+                                <div id="check-in-asset" class="rounded overflow-hidden border shadow-sm" style="height: 160px; background: #eee;">
+                                    <img src="" class="w-100 h-100 object-fit-cover audit-img cursor-pointer" onclick="window.open(this.src)">
                                 </div>
                                 <div id="check-in-odometer" class="mt-2 text-primary font-weight-bold small"></div>
                             </div>
-                            <div class="col-6">
-                                <label class="small text-muted font-weight-bold text-uppercase mb-2 d-block">Check-Out Verification</label>
-                                <div id="check-out-asset" class="rounded overflow-hidden border shadow-sm" style="height: 200px; background: #eee;">
-                                    <img src="" class="w-100 h-100 object-fit-cover audit-img">
+                            <div class="col-6 mb-3">
+                                <label class="small text-muted font-weight-bold text-uppercase mb-2 d-block">Completion Verify</label>
+                                <div id="check-out-asset" class="rounded overflow-hidden border shadow-sm" style="height: 160px; background: #eee;">
+                                    <img src="" class="w-100 h-100 object-fit-cover audit-img cursor-pointer" onclick="window.open(this.src)">
                                 </div>
                                 <div id="check-out-odometer" class="mt-2 text-primary font-weight-bold small"></div>
                             </div>
+                            
+                            <div class="col-12">
+                                <div class="p-3 rounded-lg bg-light border mb-4">
+                                    <label class="small text-muted font-weight-bold text-uppercase d-block mb-1">Telemetry Intelligence</label>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Accuracy Protocol</span>
+                                        <span class="small font-weight-bold text-success"><i class="fe fe-check-circle mr-1"></i>GPS Secure</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Session Duration</span>
+                                        <span id="audit-duration" class="small font-weight-bold text-dark">--</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="small text-muted">Travel Offset</span>
+                                        <span id="audit-distance" class="small font-weight-bold text-primary">-- km</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-soft-primary p-3 rounded-lg mb-2" style="background: rgba(67,97,238,0.05); border-left: 4px solid var(--p-primary);">
+                                    <label class="small text-primary font-weight-bold text-uppercase d-block mb-1">Registered Logistics</label>
+                                    <div id="audit-address" class="small text-dark font-weight-500" style="line-height: 1.4;"></div>
+                                </div>
+                                
+                                <div id="external-maps-links" class="mt-3 d-flex flex-wrap gap-2">
+                                    <a id="gmap-cin" href="#" target="_blank" class="btn btn-xs btn-outline-info text-decoration-none mr-2 mb-2" style="font-size: 11px;">
+                                        <i class="fe fe-external-link"></i> GMap In
+                                    </a>
+                                    <a id="gmap-cout" href="#" target="_blank" class="btn btn-xs btn-outline-info text-decoration-none mb-2" style="font-size: 11px;">
+                                        <i class="fe fe-external-link"></i> GMap Out
+                                    </a>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="p-3 rounded-lg bg-light border mb-4">
-                            <label class="small text-muted font-weight-bold text-uppercase d-block mb-1">Telemetry Data</label>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="small text-muted">Check-In Accuracy</span>
-                                <span class="small font-weight-bold text-dark">High Precision (GPS)</span>
+                        <div class="mt-auto border-top pt-3">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-block font-weight-bold shadow-sm" data-dismiss="modal" style="border-radius: 10px;">Dismiss</button>
+                                <a href="#" id="audit-edit-btn" class="btn btn-primary btn-block font-weight-bold shadow-sm mt-0" style="border-radius: 10px;">Adjust</a>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="small text-muted">Distance Traveled</span>
-                                <span id="audit-distance" class="small font-weight-bold text-primary">Calculating...</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-soft-primary p-3 rounded-lg mb-4" style="background: rgba(67,97,238,0.05);">
-                            <label class="small text-primary font-weight-bold text-uppercase d-block mb-1">Registered Address</label>
-                            <div id="audit-address" class="small text-dark font-weight-500"></div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer bg-light p-3">
-                <button type="button" class="btn btn-outline-secondary font-weight-bold px-4" data-dismiss="modal">Close Audit</button>
-                <a href="#" id="audit-edit-btn" class="btn btn-primary font-weight-bold px-4">Correct Record</a>
             </div>
         </div>
     </div>
@@ -492,10 +512,10 @@
 </div>
 
 <script>
-    let platform = new H.service.Platform({'apikey': window.HERE_API_KEY });
-    let auditMap, globalTrackingMap;
-    let auditMarkerIn, auditMarkerOut;
+    // Global Constants
     const records = <?php echo json_encode($records); ?>;
+    let platform, auditMap, globalTrackingMap;
+    let auditMarkerIn, auditMarkerOut;
 
     window.viewAudit = (id) => {
         const record = records.find(r => r.id == id);
@@ -506,6 +526,15 @@
         document.getElementById('audit-address').textContent = record.check_in_address;
         document.getElementById('audit-edit-btn').href = 'attendance-edit?id=' + record.id;
         
+        // GMap Links
+        document.getElementById('gmap-cin').href = `https://www.google.com/maps/search/?api=1&query=${record.check_in_lat},${record.check_in_lng}`;
+        if(record.check_out_lat) {
+            document.getElementById('gmap-cout').href = `https://www.google.com/maps/search/?api=1&query=${record.check_out_lat},${record.check_out_lng}`;
+            document.getElementById('gmap-cout').style.display = 'inline-block';
+        } else {
+            document.getElementById('gmap-cout').style.display = 'none';
+        }
+
         // Photos
         const cinImg = document.querySelector('#check-in-asset img');
         cinImg.src = record.check_in_photo || 'assets/images/placeholder.jpg';
@@ -516,7 +545,16 @@
         document.getElementById('check-in-odometer').textContent = record.odometer_reading ? 'Reading: ' + record.odometer_reading + ' km' : 'No Reading';
         document.getElementById('check-out-odometer').textContent = record.check_out_odometer_reading ? 'Reading: ' + record.check_out_odometer_reading + ' km' : 'No Reading';
 
-        // Distance
+        // Duration & Distance
+        if(record.check_out_time) {
+            const cin = new Date(record.check_in_time);
+            const cout = new Date(record.check_out_time);
+            const diff = Math.abs(cout - cin) / 36e5;
+            document.getElementById('audit-duration').textContent = diff.toFixed(1) + ' Hours';
+        } else {
+            document.getElementById('audit-duration').textContent = 'Calculating...';
+        }
+
         if(record.odometer_reading && record.check_out_odometer_reading) {
             document.getElementById('audit-distance').textContent = (record.check_out_odometer_reading - record.odometer_reading).toFixed(2) + ' km';
         } else {
@@ -527,6 +565,10 @@
 
         // Map Initialization
         setTimeout(() => {
+            if(typeof H === 'undefined') {
+                console.warn("HERE Maps SDK not ready");
+                return;
+            }
             if(!auditMap) {
                 const defaultLayers = platform.createDefaultLayers();
                 auditMap = new H.Map(document.getElementById('audit-map'), defaultLayers.vector.normal.map, {
@@ -546,44 +588,23 @@
             if(record.check_out_lat) {
                 auditMarkerOut = new H.map.Marker({lat: parseFloat(record.check_out_lat), lng: parseFloat(record.check_out_lng)});
                 auditMap.addObject(auditMarkerOut);
-                auditMap.getViewModel().setLookAtData({bounds: auditMap.getObjects().reduce((acc, obj) => acc.extend(obj.getGeometry().getLatLngBound()), new H.geo.Rect(record.check_in_lat, record.check_in_lng, record.check_in_lat, record.check_in_lng))});
+                try {
+                    let minLat = Math.min(record.check_in_lat, record.check_out_lat);
+                    let minLng = Math.min(record.check_in_lng, record.check_out_lng);
+                    let maxLat = Math.max(record.check_in_lat, record.check_out_lat);
+                    let maxLng = Math.max(record.check_in_lng, record.check_out_lng);
+                    auditMap.getViewModel().setLookAtData({
+                        bounds: new H.geo.Rect(maxLat, minLng, minLat, maxLng)
+                    });
+                } catch(e) {}
             } else {
                 auditMap.setCenter({lat: parseFloat(record.check_in_lat), lng: parseFloat(record.check_in_lng)});
                 auditMap.setZoom(16);
             }
-        }, 300);
+        }, 400);
     };
 
-    document.getElementById('btn-global-map').onclick = () => {
-        $('#globalMapModal').modal('show');
-        setTimeout(() => {
-            if(!globalTrackingMap) {
-                const defaultLayers = platform.createDefaultLayers();
-                globalTrackingMap = new H.Map(document.getElementById('global-tracking-map'), defaultLayers.vector.normal.map, {
-                    zoom: 12,
-                    center: { lat: 20.5937, lng: 78.9629 } // India Center
-                });
-                new H.mapevents.Behavior(new H.mapevents.MapEvents(globalTrackingMap));
-                H.ui.UI.createDefault(globalTrackingMap, defaultLayers);
-            }
-            
-            globalTrackingMap.removeObjects(globalTrackingMap.getObjects());
-            const group = new H.map.Group();
-
-            records.forEach(r => {
-                if(r.check_in_lat && r.check_in_lng) {
-                    const marker = new H.map.Marker({lat: parseFloat(r.check_in_lat), lng: parseFloat(r.check_in_lng)});
-                    marker.setData(`<b>${r.user_name}</b><br>${r.check_in_time}<br><button class="btn btn-xs btn-primary mt-1" onclick="viewAudit(${r.id})">Details</button>`);
-                    group.addObject(marker);
-                }
-            });
-
-            globalTrackingMap.addObject(group);
-            globalTrackingMap.getViewModel().setLookAtData({bounds: group.getBoundingBox()});
-        }, 300);
-    };
-
-    function exportRecords() {
+    window.exportRecords = () => {
         let csv = 'Associate,Date,Check-In Time,Check-In Address,Check-Out Time,Check-Out Address,Status\n';
         records.forEach(r => {
             csv += `"${r.user_name}","${r.check_in_time}","${r.check_in_time}","${r.check_in_address}","${r.check_out_time || 'Active'}","${r.check_out_address || '-'}","${r.check_out_time ? 'Complete' : 'Active'}"\n`;
@@ -597,7 +618,48 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-    }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if(typeof H === 'undefined') {
+            console.error("HERE Maps SDK not loaded");
+            return;
+        }
+        platform = new H.service.Platform({'apikey': window.HERE_API_KEY });
+
+        document.getElementById('btn-global-map').onclick = () => {
+            $('#globalMapModal').modal('show');
+            setTimeout(() => {
+                if(!globalTrackingMap) {
+                    const defaultLayers = platform.createDefaultLayers();
+                    globalTrackingMap = new H.Map(document.getElementById('global-tracking-map'), defaultLayers.vector.normal.map, {
+                        zoom: 5,
+                        center: { lat: 20.5937, lng: 78.9629 } // India Center
+                    });
+                    new H.mapevents.Behavior(new H.mapevents.MapEvents(globalTrackingMap));
+                    H.ui.UI.createDefault(globalTrackingMap, defaultLayers);
+                }
+                
+                globalTrackingMap.removeObjects(globalTrackingMap.getObjects());
+                const group = new H.map.Group();
+
+                records.forEach(r => {
+                    if(r.check_in_lat && r.check_in_lng) {
+                        const marker = new H.map.Marker({lat: parseFloat(r.check_in_lat), lng: parseFloat(r.check_in_lng)});
+                        marker.setData(`<b>${r.user_name}</b><br>${r.check_in_time}<br><button class="btn btn-xs btn-primary mt-1" onclick="viewAudit(${r.id})">Details</button>`);
+                        group.addObject(marker);
+                    }
+                });
+
+                globalTrackingMap.addObject(group);
+                try {
+                    globalTrackingMap.getViewModel().setLookAtData({bounds: group.getBoundingBox()});
+                } catch(e) {
+                    globalTrackingMap.setCenter({ lat: 20.5937, lng: 78.9629 });
+                }
+            }, 400);
+        };
+    });
 </script>
 
 <?php include 'layout/footer.php'; ?>

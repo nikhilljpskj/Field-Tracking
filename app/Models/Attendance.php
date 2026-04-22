@@ -4,9 +4,10 @@ namespace App\Models;
 use App\Core\Model;
 
 class Attendance extends Model {
-    public function getTodayAttendance($user_id) {
-        $stmt = $this->db->prepare("SELECT * FROM attendance WHERE user_id = ? AND DATE(created_at) = CURDATE() ORDER BY created_at DESC LIMIT 1");
-        $stmt->execute([$user_id]);
+    public function getTodayAttendance($user_id, $date = null) {
+        $date = $date ?: date('Y-m-d');
+        $stmt = $this->db->prepare("SELECT * FROM attendance WHERE user_id = ? AND DATE(check_in_time) = ? ORDER BY check_in_time DESC LIMIT 1");
+        $stmt->execute([$user_id, $date]);
         return $stmt->fetch();
     }
 

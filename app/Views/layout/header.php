@@ -20,8 +20,15 @@
     <link rel="stylesheet" href="css/app-light.css" id="lightTheme">
     <!-- Modern Design Overrides -->
     <link rel="stylesheet" href="assets/css/modern.css">
-    <!-- HERE Maps JS API CSS -->
+    <!-- HERE Maps JS API -->
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+    <script>
+      window.HERE_API_KEY = "<?php echo \App\Core\Config::get('HERE_API_KEY'); ?>";
+    </script>
     <link rel="stylesheet" href="css/app-dark.css" id="darkTheme" disabled>
     <script src="js/jquery.min.js"></script>
   </head>

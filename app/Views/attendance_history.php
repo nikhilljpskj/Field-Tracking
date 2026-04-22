@@ -259,15 +259,14 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     width: 60px; height: 60px;
     background: rgba(255,255,255,0.1);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.2);
     border-radius: 18px;
     display: flex; align-items: center; justify-content: center;
     font-size: 1.5rem; color: #fff;
 }
-.hero-glass-title { font-size: 1.5rem; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
-.hero-breadcrumb { font-size: 0.8rem; opacity: 0.6; }
-.hero-breadcrumb a { color: #fff; text-decoration: none; }
-.hero-breadcrumb .active { color: #fff; opacity: 1; }
+.hero-glass-title { font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -0.5px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.hero-breadcrumb { font-size: 0.85rem; opacity: 0.8; }
+.hero-breadcrumb a { color: #fff !important; text-decoration: none; font-weight: 600; }
+.hero-breadcrumb .active { color: #fff !important; opacity: 1; font-weight: 600; }
 
 .hero-actions { display: flex; align-items: center; gap: 15px; }
 .premium-select {
@@ -405,12 +404,7 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 .table-responsive::-webkit-scrollbar { height: 6px; }
 .table-responsive::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-@media (max-width: 991px) {
-    .premium-hero { padding: 20px; }
-    .hero-actions { justify-content: flex-start; margin-top: 20px; }
-}
-</style>
-Icon Buttons ── */
+/* ── Icon Buttons ── */
 .ah-icon-btn {
     display: inline-flex; align-items: center; justify-content: center;
     width: 32px; height: 32px; border-radius: 8px;
@@ -419,9 +413,9 @@ Icon Buttons ── */
     text-decoration: none;
 }
 .ah-icon-btn:hover { transform: scale(1.1); }
-.ah-icon-primary { background: rgba(67,97,238,0.1); color: var(--ah-primary); }
+.ah-icon-primary { background: rgba(67,97,238,0.1); color: var(--p-primary); }
 .ah-icon-primary:hover { background: rgba(67,97,238,0.2); }
-.ah-icon-danger  { background: rgba(220,53,69,0.1); color: var(--ah-danger); }
+.ah-icon-danger  { background: rgba(220,53,69,0.1); color: var(--p-danger); }
 .ah-icon-danger:hover  { background: rgba(220,53,69,0.2); }
 
 /* ── FullCalendar Overrides ── */
@@ -443,7 +437,7 @@ Icon Buttons ── */
     font-size: 0.78rem; color: #adb5bd;
     padding: 10px !important; text-decoration: none !important; font-weight: 600;
 }
-.fc-daygrid-day.fc-day-today { background-color: #f4f6f9 !important; border: 2px solid #5d87ff !important; }
+.fc-daygrid-day.fc-day-today { background-color: #f4f6f9 !important; border: 2px solid var(--p-primary) !important; }
 .status-badge-present {
     background-color: #dcfce7 !important; border-radius: 4px; border: none;
     padding: 3px 8px; color: #166534 !important; font-weight: 800;
@@ -462,14 +456,12 @@ Icon Buttons ── */
 
 /* ── Mobile ── */
 @media (max-width: 576px) {
-    .ah-hero { padding: 14px 16px; }
-    .ah-hero-title { font-size: 0.95rem; }
+    .premium-hero { padding: 15px !important; }
+    .hero-glass-title { font-size: 1.25rem !important; }
+    .hero-glass-icon { width: 45px; height: 45px; font-size: 1.2rem; }
     .ah-hero-controls { width: 100%; }
-    .ah-select { min-width: 0; flex: 1; }
-    .ah-toggle-btn span { display: none; }
-    .ah-toggle-btn { padding: 5px 9px; }
-    .ah-card { padding: 12px; }
-    .ah-addr { max-width: 130px; }
+    .stats-card { padding: 15px; }
+    .stats-value { font-size: 1.2rem; }
 }
 </style>
 

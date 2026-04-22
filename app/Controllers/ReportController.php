@@ -9,20 +9,36 @@ use App\Models\User;
 
 class ReportController extends Controller {
     public function index() {
-        // If Manager or Admin, show team reports, else show daily personal report
-        if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])) {
-            return $this->manage();
-        }
-
         $attendanceModel = new Attendance();
         $meetingModel = new Meeting();
         $travelModel = new Travel();
+        $userModel = new User();
+
+        $selectedUserId = $_GET['user_id'] ?? $_SESSION['user_id'];
+        $selectedDate = $_GET['date'] ?? date('Y-m-d');
+        
+        if ($selectedUserId !== $_SESSION['user_id']) {
+            $this->checkRole(['Admin', 'Manager']);
+        }
+
+        $users = [];
+        if (in_array($_SESSION['role'], ['Admin', 'Manager'])) {
+            if ($_SESSION['role'] == 'Manager') {
+                $users = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
+            } else {
+                $users = $userModel->getAll();
+            }
+        }
 
         $data = [
-            'title' => 'Daily Report - Sales Tracking',
-            'attendance' => $attendanceModel->getTodayAttendance($_SESSION['user_id']),
-            'meetings' => $meetingModel->getUserMeetings($_SESSION['user_id']),
-            'travel' => $travelModel->getTravelSummary($_SESSION['user_id'], date('Y-m-d'))
+            'title' => 'Daily Performance Radar',
+            'attendance' => $attendanceModel->getTodayAttendance($selectedUserId, $selectedDate),
+            'meetings' => $meetingModel->getMeetingsByDate($selectedDate, $selectedUserId),
+            'travel' => $travelModel->getTravelSummary($selectedUserId, $selectedDate),
+            'users' => $users,
+            'selectedUserId' => $selectedUserId,
+            'selectedDate' => $selectedDate,
+            'here_api_key' => \App\Core\Config::get('HERE_API_KEY')
         ];
         $this->view('reports/daily', $data);
     }

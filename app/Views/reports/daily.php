@@ -5,18 +5,47 @@
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-12 col-md-11 col-lg-10">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 class="h3 mb-0 page-title">Daily Activity Summary</h2>
-                        <p class="text-muted">A comprehensive view of your field actions for today, <?php echo date('d M Y'); ?>.</p>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                    <div class="mb-3 mb-md-0">
+                        <h2 class="h3 mb-0 page-title font-weight-bold">Daily Performance Radar</h2>
+                        <p class="text-muted mb-0">Operational intelligence for <?php echo date('d M Y', strtotime($selectedDate)); ?>.</p>
                     </div>
-                    <div class="btn-group">
-                        <a href="reports?action=export&type=daily&format=csv" class="btn btn-outline-success font-weight-600">
-                            <i class="fe fe-file-text mr-1"></i> Excel
-                        </a>
-                        <a href="reports?action=export&type=daily&format=pdf" class="btn btn-outline-danger font-weight-600">
-                            <i class="fe fe-file mr-1"></i> PDF
-                        </a>
+
+                    <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                        <!-- Compact Filter System -->
+                        <form action="reports" method="GET" class="d-flex align-items-center" style="gap: 8px;">
+                            <input type="hidden" name="action" value="index">
+                            
+                            <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2; width: auto;">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-calendar text-primary" style="font-size: 0.8rem;"></i></span>
+                                </div>
+                                <input type="date" name="date" class="form-control border-0 px-2" value="<?php echo $selectedDate; ?>" style="font-size: 0.85rem; font-weight: 600; height: 34px; width: 140px;" onchange="this.form.submit()">
+                            </div>
+
+                            <?php if(!empty($users)): ?>
+                            <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2; width: auto;">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-users text-info" style="font-size: 0.8rem;"></i></span>
+                                </div>
+                                <select name="user_id" class="form-control border-0 px-2" style="min-width: 160px; font-size: 0.85rem; font-weight: 600; height: 34px;" onchange="this.form.submit()">
+                                    <option value="<?php echo $_SESSION['user_id']; ?>">Myself</option>
+                                    <?php foreach($users as $u): ?>
+                                        <option value="<?php echo $u['id']; ?>" <?php echo $u['id'] == $selectedUserId ? 'selected' : ''; ?>><?php echo htmlspecialchars($u['name']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <?php endif; ?>
+                        </form>
+
+                        <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                            <a href="reports?action=export&type=daily&format=csv&date=<?php echo $selectedDate; ?>&user_id=<?php echo $selectedUserId; ?>" class="btn btn-white btn-sm border-0 font-weight-600 px-3" style="height: 36px; line-height: 24px;">
+                                <i class="fe fe-download mr-1"></i> CSV
+                            </a>
+                            <a href="reports?action=export&type=daily&format=pdf&date=<?php echo $selectedDate; ?>&user_id=<?php echo $selectedUserId; ?>" class="btn btn-white btn-sm border-0 font-weight-600 px-3 border-left" style="height: 36px; line-height: 24px;">
+                                <i class="fe fe-file-text mr-1"></i> PDF
+                            </a>
+                        </div>
                     </div>
                 </div>
 
