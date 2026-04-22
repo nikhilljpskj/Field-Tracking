@@ -221,13 +221,13 @@
     <div class="modal fade" id="assignInhouseModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <form action="tasks?action=createInhouse" method="POST" enctype="multipart/form-data" class="modal-content">
-                <div class="modal-header bg-dark text-white">
+                <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title"><i class="fe fe-briefcase mr-2"></i>Delegate Internal Task</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body bg-white">
                     <div class="form-group">
                         <label>Assign To (Employee)</label>
                         <select name="assigned_to" class="form-control" required>
@@ -306,23 +306,25 @@
 
 /* ── Table Overrides ── */
 .tm-thead th {
-    padding: 16px 24px !important;
-    font-size: 0.72rem;
+    padding: 24px 32px !important;
+    font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #475569;
+    letter-spacing: 0.1em;
+    color: #334155;
     background: #f8fafc;
     border-bottom: 2px solid #e2e8f0 !important;
     white-space: nowrap;
 }
 .tm-row td {
-    padding: 20px 24px !important;
+    padding: 28px 32px !important;
     vertical-align: middle;
     border-color: #f1f5f9 !important;
+    background: #fff;
 }
-.tm-row:hover { background: #f1f5ff !important; transform: scale(1.002); }
-.tm-row { transition: all 0.2s ease; }
+.tm-row:hover td { background: #f8faff !important; }
+.tm-row:hover { transform: scale(1.005); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+.tm-row { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 
 .tm-name {
     font-weight: 700;

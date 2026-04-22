@@ -140,19 +140,19 @@
 
 <style>
 .table thead th {
-    padding: 18px 24px !important;
-    background: #334155 !important;
+    padding: 24px 32px !important;
+    background: var(--dark) !important;
     color: #fff !important;
     text-transform: uppercase;
     font-size: 0.75rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     border: none !important;
 }
 .table tbody td {
-    padding: 20px 24px !important;
+    padding: 28px 32px !important;
     vertical-align: middle;
 }
-.table tbody tr:hover { background-color: #f1f5ff !important; }
+.table tbody tr:hover { background-color: #f8fafc !important; }
 .badge-soft-warning { background-color: rgba(255, 190, 11, 0.1); }
 .font-weight-600 { font-weight: 600; }
 .font-weight-500 { font-weight: 500; }
