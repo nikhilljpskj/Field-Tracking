@@ -99,6 +99,16 @@ class User extends Model {
         return $stmt->execute([$id]);
     }
 
+    public function toggleActive($id) {
+        $stmt = $this->db->prepare("UPDATE users SET is_active = IF(is_active = 1, 0, 1) WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    public function setActive($id, $status) {
+        $stmt = $this->db->prepare("UPDATE users SET is_active = ? WHERE id = ?");
+        return $stmt->execute([(int)$status, $id]);
+    }
+
     public function getRoles() {
         return $this->db->query("SELECT * FROM roles ORDER BY id ASC")->fetchAll();
     }

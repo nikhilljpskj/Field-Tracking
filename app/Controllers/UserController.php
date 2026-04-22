@@ -82,4 +82,18 @@ class UserController extends Controller {
         }
         $this->redirect('users');
     }
+
+    public function toggleActive() {
+        $this->checkRole('Admin');
+        if (isset($_GET['id'])) {
+            $userModel = new User();
+            $user = $userModel->findById($_GET['id']);
+            if ($user) {
+                $userModel->toggleActive($_GET['id']);
+                $status = $user['is_active'] ? 'disabled' : 'enabled';
+                $_SESSION['flash_success'] = "Employee \"{$user['name']}\" has been {$status}.";
+            }
+        }
+        $this->redirect('users');
+    }
 }
