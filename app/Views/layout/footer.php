@@ -7,6 +7,8 @@
     <script src='js/daterangepicker.js'></script>
     <script src='js/jquery.stickOnScroll.js'></script>
     <script src="js/tinycolor-min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/apps.js"></script>
 
     <script>
       window.HERE_API_KEY = "<?php echo \App\Core\Config::get('HERE_API_KEY'); ?>";
