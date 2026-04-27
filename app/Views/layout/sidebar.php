@@ -48,12 +48,14 @@
         <span class="ml-3 item-text">Client Meetings</span>
       </a>
     </li>
+    <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
     <li class="nav-item w-100">
       <a class="nav-link" href="tracking">
         <i class="fe fe-map-pin fe-16"></i>
         <span class="ml-3 item-text">Live Tracking</span>
       </a>
     </li>
+    <?php endif; ?>
 
     <p class="text-muted nav-heading mt-4 mb-1">
       <span>Leaves</span>
@@ -71,6 +73,8 @@
         <span class="ml-3 item-text">Manage Requests</span>
       </a>
     </li>
+    <?php endif; ?>
+    <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'HR'])): ?>
     <li class="nav-item w-100">
       <a class="nav-link" href="leave-allocate">
         <i class="fe fe-layers fe-16"></i>
@@ -97,7 +101,11 @@
     </li>
     <?php endif; ?>
     
-    <!-- Manager/Admin -->
+    <!-- Performance -->
+    <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager', 'Executive'])): ?>
+    <p class="text-muted nav-heading mt-4 mb-1">
+      <span>Performance</span>
+    </p>
     <li class="nav-item w-100">
       <a class="nav-link" href="targets">
         <i class="fe fe-target fe-16"></i>
@@ -110,6 +118,7 @@
         <span class="ml-3 item-text">Travel Allowance</span>
       </a>
     </li>
+    <?php endif; ?>
   </ul>
 
   <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
@@ -132,6 +141,7 @@
   </ul>
   <?php endif; ?>
 
+  <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager', 'HR'])): ?>
   <p class="text-muted nav-heading mt-4 mb-1">
     <span>Reporting</span>
   </p>
@@ -149,6 +159,7 @@
       </a>
     </li>
   </ul>
+  <?php endif; ?>
 
   <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 'Admin'): ?>
   <p class="text-muted nav-heading mt-4 mb-1">
