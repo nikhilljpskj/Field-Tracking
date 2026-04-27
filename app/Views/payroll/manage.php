@@ -698,6 +698,9 @@
                                         <button type="button" class="btn btn-sm btn-outline-warning" onclick='loadRecordForEdit(${safeRecord})' title="Edit this payslip record">
                                             <i class="fe fe-edit"></i>
                                         </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletePayroll(${p.id})" title="Delete this payslip record">
+                                            <i class="fe fe-trash-2"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -736,6 +739,9 @@
                                     <button type="button" class="btn btn-sm btn-outline-warning" onclick='loadRecordForEdit(${safeRecord})'>
                                         <i class="fe fe-edit mr-1"></i> Edit
                                     </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletePayroll(${p.id})">
+                                        <i class="fe fe-trash-2 mr-1"></i> Delete
+                                    </button>
                                 </div>
                             </div>
                         `;
@@ -750,6 +756,22 @@
             .catch(err => {
                 body.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Error loading history: ${err.message}</td></tr>`;
             });
+    }
+
+    function deletePayroll(id) {
+        if (!confirm("Are you sure you want to delete this payroll record? This action cannot be undone.")) return;
+        
+        fetch(`payroll-manage?action=deleteHistory&id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    viewHistory(); // Refresh modal content
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => alert("Request failed: " + err.message));
     }
 
     window.EDITING_HISTORY_ID = null;

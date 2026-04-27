@@ -144,4 +144,9 @@ class Payroll extends Model {
         $stmt->execute([$user_id]);
         return $stmt->fetchAll();
     }
+
+    public function deleteHistory($id) {
+        $stmt = $this->db->prepare("DELETE FROM payroll_history WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
 }

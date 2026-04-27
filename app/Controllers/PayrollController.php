@@ -19,6 +19,31 @@ class PayrollController extends Controller {
         $this->view('payroll/index', $data);
     }
 
+    public function deleteHistory() {
+        ob_clean();
+        header('Content-Type: application/json');
+        
+        $role = strtoupper($_SESSION['role'] ?? '');
+        if (!in_array($role, ['ADMIN', 'HR'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+            exit;
+        }
+
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            echo json_encode(['status' => 'error', 'message' => 'Record ID required']);
+            exit;
+        }
+
+        $payrollModel = new Payroll();
+        if ($payrollModel->deleteHistory($id)) {
+            echo json_encode(['status' => 'success', 'message' => 'Payroll record deleted successfully']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to delete record']);
+        }
+        exit;
+    }
+
     public function getLeaveSummary() {
         ob_clean();
         header('Content-Type: application/json');
