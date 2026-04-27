@@ -144,7 +144,7 @@ class LeaveController extends Controller {
             $lop = 0;
 
             if ($status == 'Approved') {
-                $app = $this->db->query("SELECT * FROM leave_applications WHERE id = " . $id)->fetch(); // Simplified fetch
+                $app = $leaveModel->getApplication($id);
                 $quarter = ceil(date('n', strtotime($app['start_date'])) / 3);
                 $year = date('Y', strtotime($app['start_date']));
                 $balance = $leaveModel->getBalance($userId, $typeId, $quarter, $year);
@@ -165,6 +165,7 @@ class LeaveController extends Controller {
                 $_SESSION['flash_success'] = "Leave $status successfully!";
             }
         }
+        $this->redirect('leave-manage');
     }
 
     public function seedDefaults() {

@@ -29,6 +29,12 @@ class Leave extends Model {
         return $stmt->fetchAll();
     }
 
+    public function getApplication($id) {
+        $stmt = $this->db->prepare("SELECT * FROM leave_applications WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
     public function getApprovedLeavesForMonth($user_id, $month = null, $year = null) {
         $month = $month ?: date('n');
         $year = $year ?: date('Y');
