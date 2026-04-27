@@ -1,4 +1,5 @@
 <?php include 'layout/header.php'; ?>
+<?php include 'layout/sidebar.php'; ?>
 
 <main role="main" class="main-content">
     <div class="container-fluid">
