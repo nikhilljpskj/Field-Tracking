@@ -5,13 +5,13 @@
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-12 col-xl-11">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                    <div class="mb-3 mb-md-0">
                         <h2 class="h3 mb-0 page-title">Leave Management</h2>
-                        <p class="text-muted">Apply for leaves and track your <strong>Quarter-<?php echo ceil(date('n')/3); ?></strong> balance.</p>
+                        <p class="text-muted mb-0">Apply for leaves and track your <strong>Quarter-<?php echo ceil(date('n')/3); ?></strong> balance.</p>
                     </div>
-                    <button type="button" class="btn btn-primary shadow" data-toggle="modal" data-target="#applyLeaveModal">
-                        <i class="fe fe-plus mr-1"></i> Apply for Leave
+                    <button type="button" class="btn btn-primary btn-apply-leave shadow-lg px-4 py-2" data-toggle="modal" data-target="#applyLeaveModal">
+                        <i class="fe fe-plus-circle mr-2"></i> <span>Apply for Leave</span>
                     </button>
                 </div>
 
@@ -153,6 +153,29 @@
 <style>
 .badge-soft-primary { background-color: rgba(67, 97, 238, 0.1); color: #4361ee; }
 .font-weight-600 { font-weight: 600; }
+.btn-apply-leave {
+    border-radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-apply-leave:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+    color: #fff;
+}
+@media (max-width: 768px) {
+    .btn-apply-leave {
+        width: 100%;
+        padding: 15px !important;
+        font-size: 0.95rem;
+        margin-top: 10px;
+    }
+}
 </style>
 
 <script>
