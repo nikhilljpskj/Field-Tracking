@@ -27,34 +27,68 @@
                     </div>
                     <div class="col-md-3">
                         <div class="card shadow-sm border-0 mb-4" style="max-height: 650px; overflow-y: auto; border: 1px solid #eee;">
-                            <div class="card-header bg-white py-3 border-bottom">
+                            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                                <span class="dot bg-success mr-2"></span>
                                 <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Active Personnel</h6>
                             </div>
                             <div class="card-body p-0">
                                 <ul class="list-group list-group-flush">
-                                    <?php if(empty($locations)): ?>
-                                        <li class="list-group-item text-center py-5 text-muted small italic">
-                                            <i class="fe fe-user-minus d-block mb-2 fe-24"></i>
-                                            No field activity detected.
+                                    <?php if(empty($activePersonnel)): ?>
+                                        <li class="list-group-item text-center py-4 text-muted small italic">
+                                            No field activity in last 1 hour.
                                         </li>
                                     <?php endif; ?>
-                                    <?php foreach($locations as $loc): ?>
+                                    <?php foreach($activePersonnel as $user): ?>
                                     <li class="list-group-item border-0 py-3">
                                         <div class="d-flex align-items-center">
                                             <div class="avatar avatar-sm mr-3">
-                                                <span class="avatar-title rounded-circle bg-soft-primary text-primary font-weight-bold small shadow-sm">
-                                                    <?php echo strtoupper(substr($loc['user_name'], 0, 1)); ?>
+                                                <span class="avatar-title rounded-circle bg-soft-success text-success font-weight-bold small shadow-sm">
+                                                    <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
+                                                </span>
+                                            </div>
+                                            <div class="flex-fill overflow-hidden">
+                                                <div class="font-weight-600 mb-0 text-truncate"><?php echo htmlspecialchars($user['name']); ?></div>
+                                                <small class="text-muted d-block text-truncate" id="addr-<?php echo $user['id']; ?>" style="font-size: 10px;">
+                                                    Resolving location...
+                                                </small>
+                                                <small class="text-info font-weight-bold" style="font-size: 9px;">
+                                                    <i class="fe fe-clock mr-1"></i>Last seen: <?php echo date('h:i A', strtotime($user['location']['logged_at'])); ?>
+                                                </small>
+                                            </div>
+                                            <button class="btn btn-sm btn-white shadow-sm rounded-circle ml-2" onclick="focusUser(<?php echo $user['location']['latitude']; ?>, <?php echo $user['location']['longitude']; ?>)">
+                                                <i class="fe fe-map-pin text-primary"></i>
+                                            </button>
+                                        </div>
+                                    </li>
+                                    <script>setTimeout(() => resolveAddress(<?php echo $user['location']['latitude']; ?>, <?php echo $user['location']['longitude']; ?>, 'addr-<?php echo $user['id']; ?>'), 500);</script>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+
+                            <div class="card-header bg-light py-2 border-top border-bottom">
+                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Inactive / Off Duty</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush opacity-7">
+                                    <?php if(empty($inactivePersonnel)): ?>
+                                        <li class="list-group-item text-center py-3 text-muted small">No inactive users found.</li>
+                                    <?php endif; ?>
+                                    <?php foreach($inactivePersonnel as $user): ?>
+                                    <li class="list-group-item border-0 py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-xs mr-2">
+                                                <span class="avatar-title rounded-circle bg-light text-muted font-weight-bold" style="font-size: 10px;">
+                                                    <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
                                                 </span>
                                             </div>
                                             <div class="flex-fill">
-                                                <div class="font-weight-600 mb-0"><?php echo htmlspecialchars($loc['user_name']); ?></div>
-                                                <small class="text-muted d-block" style="font-size: 10px;">
-                                                    <i class="fe fe-clock mr-1"></i><?php echo date('h:i A', strtotime($loc['logged_at'])); ?> • Accuracy: ±<?php echo round($loc['accuracy']); ?>m
-                                                </small>
+                                                <div class="small font-weight-600 text-muted"><?php echo htmlspecialchars($user['name']); ?></div>
+                                                <?php if($user['location']): ?>
+                                                    <small class="text-muted italic" style="font-size: 9px;">Last active: <?php echo date('d M, h:i A', strtotime($user['location']['logged_at'])); ?></small>
+                                                <?php else: ?>
+                                                    <small class="text-danger italic" style="font-size: 9px;">No tracking data available</small>
+                                                <?php endif; ?>
                                             </div>
-                                            <button class="btn btn-sm btn-white shadow-sm rounded-circle" onclick="focusUser(<?php echo $loc['latitude']; ?>, <?php echo $loc['longitude']; ?>)">
-                                                <i class="fe fe-map-pin text-primary"></i>
-                                            </button>
                                         </div>
                                     </li>
                                     <?php endforeach; ?>
@@ -127,11 +161,29 @@
         };
 
         window.addEventListener('resize', () => map.getViewPort().resize());
+
+        window.resolveAddress = async function(lat, lng, elementId) {
+            try {
+                const url = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${lng}&lang=en-US&apikey=${window.HERE_API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.items && data.items.length > 0) {
+                    document.getElementById(elementId).innerText = data.items[0].address.label;
+                } else {
+                    document.getElementById(elementId).innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                }
+            } catch (e) {
+                document.getElementById(elementId).innerText = "Location name unavailable";
+            }
+        };
     });
 </script>
 
 <style>
+.dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
 .bg-soft-primary { background-color: rgba(67, 97, 238, 0.1); }
+.bg-soft-success { background-color: rgba(40, 167, 69, 0.1); }
+.opacity-7 { opacity: 0.7; }
 .font-weight-600 { font-weight: 600; }
 .list-group-item:hover { background-color: #f8f9fa; }
 </style>

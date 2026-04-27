@@ -26,15 +26,46 @@ class TrackingController extends Controller {
         $trackingModel = new Tracking();
         $userModel = new User();
         
-        $team = $userModel->getAll(); // Allow both Admin and Manager to monitor all users
+        // 1. Get only active (not disabled/deleted) users
+        $allUsers = $userModel->getAll();
+        $activeUsers = array_filter($allUsers, function($u) {
+            return $u['is_active'] == 1 && in_array($u['role_name'], ['Executive', 'Manager', 'Field Executive']); 
+        });
         
-        $teamIds = array_column($team, 'id');
+        if (empty($activeUsers)) {
+            $this->view('tracking_team', ['activePersonnel' => [], 'inactivePersonnel' => [], 'locations' => []]);
+            return;
+        }
+
+        $teamIds = array_column($activeUsers, 'id');
         $locations = $trackingModel->getTeamLastLocations($teamIds);
+        
+        // Map locations for quick lookup
+        $locMap = [];
+        foreach ($locations as $loc) {
+            $locMap[$loc['user_id']] = $loc;
+        }
+
+        $activePersonnel = [];
+        $inactivePersonnel = [];
+        $threshold = time() - 3600; // 1 hour ago
+
+        foreach ($activeUsers as $user) {
+            $loc = $locMap[$user['id']] ?? null;
+            if ($loc && strtotime($loc['logged_at']) >= $threshold) {
+                $user['location'] = $loc;
+                $activePersonnel[] = $user;
+            } else {
+                $user['location'] = $loc;
+                $inactivePersonnel[] = $user;
+            }
+        }
         
         $data = [
             'title' => 'Team Live Monitoring',
-            'locations' => $locations,
-            'team' => $team
+            'activePersonnel' => $activePersonnel,
+            'inactivePersonnel' => $inactivePersonnel,
+            'locations' => $locations // For mapping all recent dots
         ];
         $this->view('tracking_team', $data);
     }
