@@ -51,6 +51,7 @@ class TrackingController extends Controller {
         $activePersonnel = [];
         $inactivePersonnel = [];
         $loggedInNotCheckedIn = [];
+        $checkedOut = [];
         $onLeave = [];
         $absent = [];
         $threshold = time() - 3600; // 1 hour ago
@@ -67,7 +68,9 @@ class TrackingController extends Controller {
                 $user['attendance'] = $att;
                 $user['location'] = $loc;
                 
-                if ($loc && strtotime($loc['logged_at']) >= $threshold) {
+                if ($att['check_out_time']) {
+                    $checkedOut[] = $user;
+                } elseif ($loc && strtotime($loc['logged_at']) >= $threshold) {
                     $activePersonnel[] = $user;
                 } else {
                     $inactivePersonnel[] = $user;
@@ -90,6 +93,7 @@ class TrackingController extends Controller {
             'activePersonnel' => $activePersonnel,
             'inactivePersonnel' => $inactivePersonnel,
             'loggedInNotCheckedIn' => $loggedInNotCheckedIn,
+            'checkedOut' => $checkedOut,
             'onLeave' => $onLeave,
             'absent' => $absent,
             'locations' => $locations

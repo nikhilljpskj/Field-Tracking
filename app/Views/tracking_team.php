@@ -101,6 +101,26 @@
                             </div>
 
                             <div class="card-header bg-light py-2 border-top border-bottom d-flex align-items-center">
+                                <span class="dot bg-dark mr-2"></span>
+                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Checked Out <span class="badge badge-pill badge-dark ml-2"><?php echo count($checkedOut); ?></span></h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush opacity-7">
+                                    <?php foreach($checkedOut as $user): ?>
+                                    <li class="list-group-item border-0 py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-xs mr-2"><span class="avatar-title rounded-circle bg-light text-muted font-weight-bold" style="font-size: 10px;"><?php echo strtoupper(substr($user['name'], 0, 1)); ?></span></div>
+                                            <div class="flex-fill">
+                                                <div class="small font-weight-600 text-muted"><?php echo htmlspecialchars($user['name']); ?></div>
+                                                <small class="text-muted italic" style="font-size: 9px;">Out at: <?php echo date('h:i A', strtotime($user['attendance']['check_out_time'])); ?></small>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+
+                            <div class="card-header bg-light py-2 border-top border-bottom d-flex align-items-center">
                                 <span class="dot bg-secondary mr-2"></span>
                                 <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Logged In (No Check-in) <span class="badge badge-pill badge-secondary ml-2"><?php echo count($loggedInNotCheckedIn); ?></span></h6>
                             </div>
