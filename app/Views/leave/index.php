@@ -8,7 +8,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 class="h3 mb-0 page-title">Leave Management</h2>
-                        <p class="text-muted">Apply for leaves and track your <strong>Q<?php echo ceil(date('n')/3); ?></strong> balance.</p>
+                        <p class="text-muted">Apply for leaves and track your <strong>Quarter<?php echo ceil(date('n')/3); ?></strong> balance.</p>
                     </div>
                     <button type="button" class="btn btn-primary shadow" data-toggle="modal" data-target="#applyLeaveModal">
                         <i class="fe fe-plus mr-1"></i> Apply for Leave
