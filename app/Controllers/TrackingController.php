@@ -50,6 +50,7 @@ class TrackingController extends Controller {
 
         $activePersonnel = [];
         $inactivePersonnel = [];
+        $loggedInNotCheckedIn = [];
         $onLeave = [];
         $absent = [];
         $threshold = time() - 3600; // 1 hour ago
@@ -59,9 +60,10 @@ class TrackingController extends Controller {
             $att = $attMap[$uid] ?? null;
             $loc = $locMap[$uid] ?? null;
             $is_on_leave = in_array($uid, $onLeaveTodayIds);
+            $last_active = $user['last_activity_at'] ? strtotime($user['last_activity_at']) : 0;
 
             if ($att) {
-                // Logged In
+                // Logged In & Checked In
                 $user['attendance'] = $att;
                 $user['location'] = $loc;
                 
@@ -71,9 +73,12 @@ class TrackingController extends Controller {
                     $inactivePersonnel[] = $user;
                 }
             } else {
-                // Not Logged In
+                // Not Checked In
                 if ($is_on_leave) {
                     $onLeave[] = $user;
+                } elseif ($last_active >= $threshold) {
+                    // Logged in to app but no attendance check-in
+                    $loggedInNotCheckedIn[] = $user;
                 } else {
                     $absent[] = $user;
                 }
@@ -84,6 +89,7 @@ class TrackingController extends Controller {
             'title' => 'Team Live Monitoring',
             'activePersonnel' => $activePersonnel,
             'inactivePersonnel' => $inactivePersonnel,
+            'loggedInNotCheckedIn' => $loggedInNotCheckedIn,
             'onLeave' => $onLeave,
             'absent' => $absent,
             'locations' => $locations

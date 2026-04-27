@@ -100,6 +100,29 @@
                                 </ul>
                             </div>
 
+                            <div class="card-header bg-light py-2 border-top border-bottom d-flex align-items-center">
+                                <span class="dot bg-secondary mr-2"></span>
+                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Logged In (No Check-in) <span class="badge badge-pill badge-secondary ml-2"><?php echo count($loggedInNotCheckedIn); ?></span></h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush opacity-7">
+                                    <?php if(empty($loggedInNotCheckedIn)): ?>
+                                        <li class="list-group-item text-center py-2 text-muted small italic">None.</li>
+                                    <?php endif; ?>
+                                    <?php foreach($loggedInNotCheckedIn as $user): ?>
+                                    <li class="list-group-item border-0 py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-xs mr-2"><span class="avatar-title rounded-circle bg-soft-secondary text-secondary font-weight-bold" style="font-size: 10px;"><?php echo strtoupper(substr($user['name'], 0, 1)); ?></span></div>
+                                            <div class="flex-fill">
+                                                <div class="small font-weight-600 text-muted"><?php echo htmlspecialchars($user['name']); ?></div>
+                                                <small class="text-secondary italic" style="font-size: 9px;">Active in app: <?php echo date('h:i A', strtotime($user['last_activity_at'])); ?></small>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+
                             <!-- New Sections: On Leave and Absent -->
                             <div class="card-header bg-light py-2 border-top border-bottom d-flex align-items-center">
                                 <span class="dot bg-info mr-2"></span>
@@ -223,6 +246,7 @@
 .dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
 .bg-soft-primary { background-color: rgba(67, 97, 238, 0.1); }
 .bg-soft-success { background-color: rgba(40, 167, 69, 0.1); }
+.bg-soft-secondary { background-color: rgba(108, 117, 125, 0.1); }
 .bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); }
 .bg-soft-info { background-color: rgba(23, 162, 184, 0.1); }
 .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); }
