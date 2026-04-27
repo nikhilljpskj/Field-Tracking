@@ -8,7 +8,8 @@ class LeaveController extends Controller {
     public function index() {
         $leaveModel = new Leave();
         $applications = $leaveModel->getApplications($_SESSION['user_id']);
-        $allocations = $leaveModel->getAllocations($_SESSION['user_id']);
+        $quarter = ceil(date('n') / 3);
+        $allocations = $leaveModel->getAllocations($_SESSION['user_id'], date('Y'), $quarter);
         
         $data = [
             'title' => 'My Leaves - Sales Tracking',

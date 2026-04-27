@@ -19,6 +19,44 @@ class PayrollController extends Controller {
         $this->view('payroll/index', $data);
     }
 
+    public function getLeaveSummary() {
+        ob_clean();
+        header('Content-Type: application/json');
+        $user_id = $_GET['user_id'] ?? null;
+        $monthYear = $_GET['month'] ?? null;
+        
+        if (!$user_id || !$monthYear) {
+            echo json_encode(['status' => 'error', 'message' => 'Missing parameters']);
+            exit;
+        }
+
+        $parts = explode('-', $monthYear);
+        $year = $parts[0];
+        $month = $parts[1];
+
+        $leaveModel = new \App\Models\Leave();
+        $summary = $leaveModel->getMonthLeaveSummary($user_id, $month, $year);
+
+        // Standardize keys for JS
+        $result = [
+            'lop_days' => 0,
+            'sick_leave' => 0,
+            'casual_leave' => 0,
+            'earned_leave' => 0
+        ];
+
+        foreach ($summary as $s) {
+            $name = strtolower($s['name']);
+            if (strpos($name, 'lop') !== false) $result['lop_days'] = (float)$s['total_days'];
+            if (strpos($name, 'sick') !== false) $result['sick_leave'] = (float)$s['total_days'];
+            if (strpos($name, 'casual') !== false) $result['casual_leave'] = (float)$s['total_days'];
+            if (strpos($name, 'earned') !== false) $result['earned_leave'] = (float)$s['total_days'];
+        }
+
+        echo json_encode(['status' => 'success', 'summary' => $result]);
+        exit;
+    }
+
     public function payslip() {
         $id = $_GET['id'] ?? null;
         if (!$id) $this->redirect('payroll');

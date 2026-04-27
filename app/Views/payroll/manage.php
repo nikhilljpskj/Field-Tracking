@@ -566,6 +566,42 @@
         input.addEventListener('input', calculateAll);
     });
 
+    function fetchLeaveSummary(userId, monthYear) {
+        if (!userId || !monthYear) return;
+        
+        fetch(`payroll-manage?action=getLeaveSummary&user_id=${userId}&month=${monthYear}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const summary = data.summary;
+                    Object.keys(summary).forEach(key => {
+                        const field = document.getElementsByName(key)[0];
+                        if (field) {
+                            field.value = summary[key];
+                        }
+                    });
+                    calculateAll(); 
+                }
+            });
+    }
+
+    function resetCalculator() {
+        document.getElementById('payroll-calculator-form').reset();
+        window.SELECTED_USER_ID = '';
+        calculateAll();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthInput = document.querySelector('input[name="calc_month"]');
+        if (monthInput) {
+            monthInput.addEventListener('change', function() {
+                if (window.SELECTED_USER_ID) {
+                    fetchLeaveSummary(window.SELECTED_USER_ID, this.value);
+                }
+            });
+        }
+    });
+
     function loadEmployeeData(id) {
         if (!id) {
             window.SELECTED_USER_ID = '';
@@ -593,28 +629,13 @@
                 }
             }
         }
-        calculateAll();
-    }
 
-    // GLOBAL LISTENER for all changes (Theme Safe)
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.id === 'employee_select') {
-            console.log("GLOBAL CHANGE detected for employee_select. ID:", e.target.value);
-            loadEmployeeData(e.target.value);
+        // Fetch Leave Summary for the selected month
+        const monthInput = document.querySelector('input[name="calc_month"]');
+        if (monthInput) {
+            fetchLeaveSummary(id, monthInput.value);
         }
-    });
 
-    // jQuery FALLBACK for themed selects like Select2
-    if (typeof $ !== 'undefined') {
-        $(document).on('change', '#employee_select', function() {
-            console.log("JQUERY CHANGE detected for employee_select. ID:", $(this).val());
-            loadEmployeeData($(this).val());
-        });
-    }
-
-    function resetCalculator() {
-        document.getElementById('payroll-calculator-form').reset();
-        window.SELECTED_USER_ID = '';
         calculateAll();
     }
 

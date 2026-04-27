@@ -8,13 +8,21 @@ class Leave extends Model {
         return $this->db->query("SELECT * FROM leave_types ORDER BY name ASC")->fetchAll();
     }
 
-    public function getAllocations($user_id, $year = null) {
+    public function getAllocations($user_id, $year = null, $quarter = null) {
         $year = $year ?: date('Y');
-        $stmt = $this->db->prepare("SELECT la.*, lt.name as type_name 
-                                    FROM leave_allocations la 
-                                    JOIN leave_types lt ON la.leave_type_id = lt.id 
-                                    WHERE la.user_id = ? AND la.year = ?");
-        $stmt->execute([$user_id, $year]);
+        $sql = "SELECT la.*, lt.name as type_name 
+                FROM leave_allocations la 
+                JOIN leave_types lt ON la.leave_type_id = lt.id 
+                WHERE la.user_id = ? AND la.year = ?";
+        $params = [$user_id, $year];
+        
+        if ($quarter) {
+            $sql .= " AND la.quarter = ?";
+            $params[] = $quarter;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -111,5 +119,21 @@ class Leave extends Model {
                                     AND CURDATE() BETWEEN start_date AND end_date");
         $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
+    public function getMonthLeaveSummary($user_id, $month, $year) {
+        $stmt = $this->db->prepare("SELECT lt.name, SUM(
+                                        CASE 
+                                            WHEN la.is_half_day = 1 THEN 0.5 
+                                            ELSE (DATEDIFF(la.end_date, la.start_date) + 1)
+                                        END
+                                    ) as total_days
+                                    FROM leave_applications la
+                                    JOIN leave_types lt ON la.leave_type_id = lt.id
+                                    WHERE la.user_id = ? AND la.status = 'Approved'
+                                    AND (MONTH(la.start_date) = ? AND YEAR(la.start_date) = ?)
+                                    GROUP BY lt.id");
+        $stmt->execute([$user_id, $month, $year]);
+        return $stmt->fetchAll();
     }
 }
