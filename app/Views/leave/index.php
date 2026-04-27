@@ -4,7 +4,7 @@
 <main role="main" class="main-content">
     <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col-12 col-lg-10 col-xl-8">
+            <div class="col-12 col-xl-11">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 class="h3 mb-0 page-title">Leave Management</h2>
