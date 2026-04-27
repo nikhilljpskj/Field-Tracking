@@ -173,21 +173,13 @@ class AttendanceController extends Controller {
             
             $result = $attendanceModel->checkOut($id, $lat, $lng, $address, $photoPath, $odometerPath, $odometerReading);
             if ($result) {
-                // TA Calculation Integration
-                $att = $attendanceModel->getById($id);
-                if ($att && $att['check_in_lat'] && $att['check_out_lat']) {
-                    $distMeters = $this->calculateDistance(
-                        $att['check_in_lat'], $att['check_in_lng'],
-                        $att['check_out_lat'], $att['check_out_lng']
-                    );
-                    $distKm = $distMeters / 1000;
-                    
-                    $travelModel = new \App\Models\Travel();
-                    $rate = $travelModel->getCurrentRate();
-                    $allowance = $distKm * $rate;
-                    
-                    $travelModel->updateTravelSummary($_SESSION['user_id'], date('Y-m-d'), $distKm, $allowance);
-                }
+                // TA Calculation Integration (Milestone-based)
+                $travelModel = new \App\Models\Travel();
+                $distKm = $travelModel->calculateMilestoneDistance($_SESSION['user_id'], date('Y-m-d'));
+                $rate = $travelModel->getCurrentRate();
+                $allowance = $distKm * $rate;
+                
+                $travelModel->updateTravelSummary($_SESSION['user_id'], date('Y-m-d'), $distKm, $allowance);
 
                 unset($_SESSION['is_checked_in']);
                 $_SESSION['flash_success'] = "Checked out successfully! Travel allowance updated.";

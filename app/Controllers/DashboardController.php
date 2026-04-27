@@ -82,8 +82,10 @@ class DashboardController extends Controller {
             // Executive Dashboard - Provide default values for variables used in common dashboard sections
             $attendanceModel = new \App\Models\Attendance();
             $notifModel = new \App\Models\Notification();
+            $travelModel = new \App\Models\Travel();
             
             $data['attendance'] = $attendanceModel->getTodayAttendance($user_id);
+            $data['total_distance'] = $travelModel->calculateMilestoneDistance($user_id, date('Y-m-d'));
             
             // Daily Performance Alert
             $stmt = $db->prepare("SELECT COUNT(*) as count FROM client_meetings WHERE user_id = ? AND DATE(meeting_time) = CURDATE() AND status = 'Approved'");

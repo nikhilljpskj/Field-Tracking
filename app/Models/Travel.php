@@ -119,4 +119,61 @@ class Travel extends Model {
         $stmt->execute([$user_id, $start, $end]);
         return $stmt->fetch();
     }
+
+    public function calculateMilestoneDistance($user_id, $date) {
+        // 1. Get Attendance (Check-in and Check-out)
+        $stmt = $this->db->prepare("SELECT check_in_lat, check_in_lng, check_out_lat, check_out_lng 
+                                     FROM attendance 
+                                     WHERE user_id = ? AND DATE(check_in_time) = ? 
+                                     ORDER BY check_in_time DESC LIMIT 1");
+        $stmt->execute([$user_id, $date]);
+        $att = $stmt->fetch();
+        
+        if (!$att || !$att['check_in_lat']) return 0;
+        
+        // 2. Get Meetings for the day
+        $stmt = $this->db->prepare("SELECT latitude, longitude 
+                                     FROM client_meetings 
+                                     WHERE user_id = ? AND DATE(meeting_time) = ? 
+                                     ORDER BY meeting_time ASC");
+        $stmt->execute([$user_id, $date]);
+        $meetings = $stmt->fetchAll();
+        
+        $points = [];
+        $points[] = ['lat' => $att['check_in_lat'], 'lng' => $att['check_in_lng']];
+        
+        foreach ($meetings as $m) {
+            if ($m['latitude'] && $m['longitude']) {
+                $points[] = ['lat' => $m['latitude'], 'lng' => $m['longitude']];
+            }
+        }
+        
+        // 3. Add Checkout point if it exists
+        if ($att['check_out_lat'] && $att['check_out_lng']) {
+            $points[] = ['lat' => $att['check_out_lat'], 'lng' => $att['check_out_lng']];
+        }
+        
+        if (count($points) < 2) return 0;
+        
+        $totalDistance = 0;
+        for ($i = 0; $i < count($points) - 1; $i++) {
+            $totalDistance += $this->haversine(
+                $points[$i]['lat'], $points[$i]['lng'],
+                $points[$i+1]['lat'], $points[$i+1]['lng']
+            );
+        }
+        
+        return $totalDistance / 1000; // Return in KM
+    }
+
+    private function haversine($lat1, $lon1, $lat2, $lon2) {
+        $earth_radius = 6371000; // meters
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat/2) * sin($dLat/2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon/2) * sin($dLon/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        return $earth_radius * $c;
+    }
 }
