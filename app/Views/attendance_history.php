@@ -443,19 +443,23 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 }
 .fc-daygrid-day.fc-day-today { background-color: #f4f6f9 !important; border: 2px solid var(--p-primary) !important; }
 .status-badge-present {
-    background-color: #dcfce7 !important; border-radius: 4px; border: none;
-    padding: 3px 8px; color: #166534 !important; font-weight: 800;
-    font-size: 9px; text-transform: uppercase;
+    background-color: #22c55e !important; border-radius: 6px; border: none;
+    padding: 4px 10px; color: #ffffff !important; font-weight: 800;
+    font-size: 10px; text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
 }
 .status-badge-leave {
-    background-color: #fef9c3 !important; border-radius: 4px; border: none;
-    padding: 3px 8px; color: #854d0e !important; font-weight: 800;
-    font-size: 9px; text-transform: uppercase;
+    background-color: #f59e0b !important; border-radius: 6px; border: none;
+    padding: 4px 10px; color: #ffffff !important; font-weight: 800;
+    font-size: 10px; text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
 }
 .absent-mark {
     display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
     height: 100%; width: 100%;
-    color: #ef4444; font-weight: 800; font-size: 8px; opacity: 0.6; letter-spacing: 0.5px;
+    color: #f43f5e; font-weight: 800; font-size: 9px; opacity: 0.9; 
+    letter-spacing: 0.5px;
 }
 
 /* ── Mobile ── */
@@ -479,7 +483,8 @@ document.addEventListener('DOMContentLoaded', function() {
         title: 'Present',
         start: '<?php echo date('Y-m-d', strtotime($r['check_in_time'])); ?>',
         classNames: ['status-badge-present'],
-        display: 'block'
+        display: 'block',
+        extendedProps: { type: 'present' }
     });
     <?php endforeach; ?>
 
@@ -491,7 +496,8 @@ document.addEventListener('DOMContentLoaded', function() {
         start: '<?php echo $l['start_date']; ?>',
         end: eDate.toISOString().split('T')[0],
         classNames: ['status-badge-leave'],
-        display: 'block'
+        display: 'block',
+        extendedProps: { type: 'leave' }
     });
     <?php endforeach; ?>
 
@@ -500,12 +506,19 @@ document.addEventListener('DOMContentLoaded', function() {
         headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
         events: events,
         height: 'auto',
+        eventContent: function(arg) {
+            let icon = arg.event.extendedProps.type === 'present' ? 'fe-check-circle' : 'fe-sun';
+            let el = document.createElement('div');
+            el.className = 'fc-content-premium d-flex align-items-center justify-content-center';
+            el.innerHTML = `<i class="fe ${icon} mr-1"></i> <span>${arg.event.title}</span>`;
+            return { domNodes: [el] };
+        },
         dayCellDidMount: function(arg) {
             const today = new Date().setHours(0,0,0,0);
             const cellDate = arg.date.setHours(0,0,0,0);
             if (cellDate < today) {
                 if (arg.date.getDay() === 0) {
-                    arg.el.style.backgroundColor = '#f9fafb';
+                    arg.el.style.backgroundColor = '#f8fafc';
                     return;
                 }
                 const hasSession = events.some(e => {
@@ -517,9 +530,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const frame = arg.el.querySelector('.fc-daygrid-day-frame');
                     const mark = document.createElement('div');
                     mark.className = 'absent-mark';
-                    mark.innerHTML = '<i class="fe fe-user-x mr-1"></i>Absent';
+                    mark.innerHTML = '<i class="fe fe-user-x mb-1" style="font-size:1.2rem"></i><span>ABSENT</span>';
                     frame.appendChild(mark);
-                    arg.el.style.backgroundColor = '#fff5f5';
+                    arg.el.style.backgroundColor = '#fff1f2';
                 }
             }
         }
