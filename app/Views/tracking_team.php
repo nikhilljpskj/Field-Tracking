@@ -29,7 +29,7 @@
                         <div class="card shadow-sm border-0 mb-4" style="max-height: 650px; overflow-y: auto; border: 1px solid #eee;">
                             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
                                 <span class="dot bg-success mr-2"></span>
-                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Active Personnel</h6>
+                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Field Active <span class="badge badge-pill badge-success ml-2"><?php echo count($activePersonnel); ?></span></h6>
                             </div>
                             <div class="card-body p-0">
                                 <ul class="list-group list-group-flush">
@@ -48,11 +48,14 @@
                                             </div>
                                             <div class="flex-fill overflow-hidden">
                                                 <div class="font-weight-600 mb-0 text-truncate"><?php echo htmlspecialchars($user['name']); ?></div>
+                                                <small class="text-success font-weight-bold d-block" style="font-size: 9px;">
+                                                    <i class="fe fe-log-in mr-1"></i>Logged in: <?php echo date('h:i A', strtotime($user['attendance']['check_in_time'])); ?>
+                                                </small>
                                                 <small class="text-muted d-block text-truncate" id="addr-<?php echo $user['id']; ?>" style="font-size: 10px;">
                                                     Resolving location...
                                                 </small>
-                                                <small class="text-info font-weight-bold" style="font-size: 9px;">
-                                                    <i class="fe fe-clock mr-1"></i>Last seen: <?php echo date('h:i A', strtotime($user['location']['logged_at'])); ?>
+                                                <small class="text-info" style="font-size: 9px;">
+                                                    <i class="fe fe-clock mr-1"></i>Last Seen: <?php echo date('h:i A', strtotime($user['location']['logged_at'])); ?>
                                                 </small>
                                             </div>
                                             <button class="btn btn-sm btn-white shadow-sm rounded-circle ml-2" onclick="focusUser(<?php echo $user['location']['latitude']; ?>, <?php echo $user['location']['longitude']; ?>)">
@@ -65,8 +68,9 @@
                                 </ul>
                             </div>
 
-                            <div class="card-header bg-light py-2 border-top border-bottom">
-                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Inactive / Off Duty</h6>
+                            <div class="card-header bg-light py-2 border-top border-bottom d-flex align-items-center">
+                                <span class="dot bg-warning mr-2"></span>
+                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Logged In (Inactive) <span class="badge badge-pill badge-warning ml-2"><?php echo count($inactivePersonnel); ?></span></h6>
                             </div>
                             <div class="card-body p-0">
                                 <ul class="list-group list-group-flush opacity-7">
@@ -77,18 +81,54 @@
                                     <li class="list-group-item border-0 py-2">
                                         <div class="d-flex align-items-center">
                                             <div class="avatar avatar-xs mr-2">
-                                                <span class="avatar-title rounded-circle bg-light text-muted font-weight-bold" style="font-size: 10px;">
+                                                <span class="avatar-title rounded-circle bg-soft-warning text-warning font-weight-bold" style="font-size: 10px;">
                                                     <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
                                                 </span>
                                             </div>
                                             <div class="flex-fill">
                                                 <div class="small font-weight-600 text-muted"><?php echo htmlspecialchars($user['name']); ?></div>
+                                                <small class="text-success d-block" style="font-size: 9px;">Logged in: <?php echo date('h:i A', strtotime($user['attendance']['check_in_time'])); ?></small>
                                                 <?php if($user['location']): ?>
-                                                    <small class="text-muted italic" style="font-size: 9px;">Last active: <?php echo date('d M, h:i A', strtotime($user['location']['logged_at'])); ?></small>
+                                                    <small class="text-danger italic d-block" style="font-size: 9px;">Last signal: <?php echo date('h:i A', strtotime($user['location']['logged_at'])); ?> (> 1hr ago)</small>
                                                 <?php else: ?>
-                                                    <small class="text-danger italic" style="font-size: 9px;">No tracking data available</small>
+                                                    <small class="text-danger italic d-block" style="font-size: 9px;">No GPS signals received today</small>
                                                 <?php endif; ?>
                                             </div>
+                                        </div>
+                                    </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+
+                            <!-- New Sections: On Leave and Absent -->
+                            <div class="card-header bg-light py-2 border-top border-bottom d-flex align-items-center">
+                                <span class="dot bg-info mr-2"></span>
+                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">On Leave <span class="badge badge-pill badge-info ml-2"><?php echo count($onLeave); ?></span></h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush opacity-7">
+                                    <?php foreach($onLeave as $user): ?>
+                                    <li class="list-group-item border-0 py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-xs mr-2"><span class="avatar-title rounded-circle bg-soft-info text-info font-weight-bold" style="font-size: 10px;"><?php echo strtoupper(substr($user['name'], 0, 1)); ?></span></div>
+                                            <div class="small font-weight-600 text-muted"><?php echo htmlspecialchars($user['name']); ?> <small class="text-info italic ml-1">(Approved)</small></div>
+                                        </div>
+                                    </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+
+                            <div class="card-header bg-light py-2 border-top border-bottom d-flex align-items-center">
+                                <span class="dot bg-danger mr-2"></span>
+                                <h6 class="card-title mb-0 font-weight-bold text-muted small text-uppercase">Absent <span class="badge badge-pill badge-danger ml-2"><?php echo count($absent); ?></span></h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush opacity-7">
+                                    <?php foreach($absent as $user): ?>
+                                    <li class="list-group-item border-0 py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-xs mr-2"><span class="avatar-title rounded-circle bg-soft-danger text-danger font-weight-bold" style="font-size: 10px;"><?php echo strtoupper(substr($user['name'], 0, 1)); ?></span></div>
+                                            <div class="small font-weight-600 text-muted"><?php echo htmlspecialchars($user['name']); ?> <small class="text-danger italic ml-1">(No Check-in)</small></div>
                                         </div>
                                     </li>
                                     <?php endforeach; ?>
@@ -183,6 +223,9 @@
 .dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
 .bg-soft-primary { background-color: rgba(67, 97, 238, 0.1); }
 .bg-soft-success { background-color: rgba(40, 167, 69, 0.1); }
+.bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); }
+.bg-soft-info { background-color: rgba(23, 162, 184, 0.1); }
+.bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); }
 .opacity-7 { opacity: 0.7; }
 .font-weight-600 { font-weight: 600; }
 .list-group-item:hover { background-color: #f8f9fa; }

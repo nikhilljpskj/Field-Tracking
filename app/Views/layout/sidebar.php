@@ -78,7 +78,7 @@
     <li class="nav-item w-100">
       <a class="nav-link" href="leave-allocate">
         <i class="fe fe-layers fe-16"></i>
-        <span class="ml-3 item-text">Quota Management</span>
+        <span class="ml-3 item-text">Allocate Leave</span>
       </a>
     </li>
     <?php endif; ?>

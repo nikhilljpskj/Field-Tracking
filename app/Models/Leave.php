@@ -104,4 +104,12 @@ class Leave extends Model {
                                     ON DUPLICATE KEY UPDATE allocated = ?");
         return $stmt->execute([$user_id, $leave_type_id, $quarter, $year, $days, $days]);
     }
+
+    public function getUsersOnLeaveToday() {
+        $stmt = $this->db->prepare("SELECT user_id FROM leave_applications 
+                                    WHERE status = 'Approved' 
+                                    AND CURDATE() BETWEEN start_date AND end_date");
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
 }

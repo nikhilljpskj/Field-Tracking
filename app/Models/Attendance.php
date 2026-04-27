@@ -116,4 +116,15 @@ class Attendance extends Model {
         $stmt = $this->db->prepare("DELETE FROM attendance WHERE id = ?");
         return $stmt->execute([$id]);
     }
+
+    public function getTodayAttendanceBatch($user_ids) {
+        if (empty($user_ids)) return [];
+        $in = implode(',', array_fill(0, count($user_ids), '?'));
+        $stmt = $this->db->prepare("SELECT * FROM attendance 
+                                    WHERE user_id IN ($in) 
+                                    AND DATE(check_in_time) = CURDATE() 
+                                    ORDER BY check_in_time DESC");
+        $stmt->execute($user_ids);
+        return $stmt->fetchAll();
+    }
 }

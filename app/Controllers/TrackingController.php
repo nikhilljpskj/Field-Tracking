@@ -25,6 +25,8 @@ class TrackingController extends Controller {
         $this->checkRole(['Admin', 'Manager']);
         $trackingModel = new Tracking();
         $userModel = new User();
+        $attendanceModel = new \App\Models\Attendance();
+        $leaveModel = new \App\Models\Leave();
         
         // 1. Get only active (not disabled/deleted) users
         $allUsers = $userModel->getAll();
@@ -33,31 +35,48 @@ class TrackingController extends Controller {
         });
         
         if (empty($activeUsers)) {
-            $this->view('tracking_team', ['activePersonnel' => [], 'inactivePersonnel' => [], 'locations' => []]);
+            $this->view('tracking_team', ['activePersonnel' => [], 'inactivePersonnel' => [], 'onLeave' => [], 'absent' => [], 'locations' => []]);
             return;
         }
 
         $teamIds = array_column($activeUsers, 'id');
         $locations = $trackingModel->getTeamLastLocations($teamIds);
+        $attendance = $attendanceModel->getTodayAttendanceBatch($teamIds);
+        $onLeaveTodayIds = $leaveModel->getUsersOnLeaveToday();
         
-        // Map locations for quick lookup
-        $locMap = [];
-        foreach ($locations as $loc) {
-            $locMap[$loc['user_id']] = $loc;
-        }
+        // Map data for quick lookup
+        $locMap = []; foreach ($locations as $loc) { $locMap[$loc['user_id']] = $loc; }
+        $attMap = []; foreach ($attendance as $att) { $attMap[$att['user_id']] = $att; }
 
         $activePersonnel = [];
         $inactivePersonnel = [];
+        $onLeave = [];
+        $absent = [];
         $threshold = time() - 3600; // 1 hour ago
 
         foreach ($activeUsers as $user) {
-            $loc = $locMap[$user['id']] ?? null;
-            if ($loc && strtotime($loc['logged_at']) >= $threshold) {
+            $uid = $user['id'];
+            $att = $attMap[$uid] ?? null;
+            $loc = $locMap[$uid] ?? null;
+            $is_on_leave = in_array($uid, $onLeaveTodayIds);
+
+            if ($att) {
+                // Logged In
+                $user['attendance'] = $att;
                 $user['location'] = $loc;
-                $activePersonnel[] = $user;
+                
+                if ($loc && strtotime($loc['logged_at']) >= $threshold) {
+                    $activePersonnel[] = $user;
+                } else {
+                    $inactivePersonnel[] = $user;
+                }
             } else {
-                $user['location'] = $loc;
-                $inactivePersonnel[] = $user;
+                // Not Logged In
+                if ($is_on_leave) {
+                    $onLeave[] = $user;
+                } else {
+                    $absent[] = $user;
+                }
             }
         }
         
@@ -65,7 +84,9 @@ class TrackingController extends Controller {
             'title' => 'Team Live Monitoring',
             'activePersonnel' => $activePersonnel,
             'inactivePersonnel' => $inactivePersonnel,
-            'locations' => $locations // For mapping all recent dots
+            'onLeave' => $onLeave,
+            'absent' => $absent,
+            'locations' => $locations
         ];
         $this->view('tracking_team', $data);
     }
