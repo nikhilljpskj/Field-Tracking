@@ -27,11 +27,29 @@
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="hero-actions justify-content-lg-end">
+                <div class="hero-actions justify-content-lg-end flex-wrap">
+                    <div class="select-wrapper">
+                        <i class="fe fe-calendar select-icon"></i>
+                        <select id="month-selector" class="premium-select" style="min-width: 140px;">
+                            <?php for($m = 1; $m <= 12; $m++): ?>
+                                <option value="<?php echo sprintf('%02d', $m); ?>" <?php echo ($m == $month) ? 'selected' : ''; ?>>
+                                    <?php echo date('F', mktime(0,0,0,$m,1)); ?>
+                                </option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="select-wrapper">
+                        <i class="fe fe-calendar select-icon"></i>
+                        <select id="year-selector" class="premium-select" style="min-width: 110px;">
+                            <?php for($y = date('Y'); $y >= 2024; $y--): ?>
+                                <option value="<?php echo $y; ?>" <?php echo ($y == $year) ? 'selected' : ''; ?>><?php echo $y; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
                     <?php if(!empty($users)): ?>
                         <div class="select-wrapper">
                             <i class="fe fe-user select-icon"></i>
-                            <select id="user-selector" class="premium-select">
+                            <select id="user-selector" class="premium-select" style="min-width: 170px;">
                                 <?php foreach($users as $u): ?>
                                     <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $selectedUser) ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($u['name']); ?>
@@ -46,10 +64,10 @@
                             <i class="fe fe-download mr-1"></i> Export
                         </button>
                         <div class="dropdown-menu dropdown-menu-right premium-dropdown shadow">
-                            <a class="dropdown-item" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=csv">
+                            <a id="attendance-export-csv" class="dropdown-item" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=csv">
                                 <i class="fe fe-file-text mr-2 text-success"></i> Excel (CSV)
                             </a>
-                            <a class="dropdown-item" target="_blank" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=pdf">
+                            <a id="attendance-export-pdf" class="dropdown-item" target="_blank" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=pdf">
                                 <i class="fe fe-printer mr-2 text-danger"></i> PDF Document
                             </a>
                         </div>
@@ -568,14 +586,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // User selector
     const userSel = document.getElementById('user-selector');
+    const monthSel = document.getElementById('month-selector');
+    const yearSel = document.getElementById('year-selector');
+    const exportCsv = document.getElementById('attendance-export-csv');
+    const exportPdf = document.getElementById('attendance-export-pdf');
+
+    function buildAttendanceUrl() {
+        const params = new URLSearchParams();
+        if (userSel) params.set('user_id', userSel.value);
+        if (monthSel) params.set('month', monthSel.value);
+        if (yearSel) params.set('year', yearSel.value);
+        return `attendance-history?${params.toString()}`;
+    }
+
+    function refreshExportLinks() {
+        const params = new URLSearchParams();
+        if (userSel) params.set('user_id', userSel.value);
+        if (monthSel) params.set('month', monthSel.value);
+        if (yearSel) params.set('year', yearSel.value);
+        exportCsv.href = `attendance-export?${params.toString()}&format=csv`;
+        exportPdf.href = `attendance-export?${params.toString()}&format=pdf`;
+    }
+
+    function reloadAttendanceHistory() {
+        window.location.href = buildAttendanceUrl();
+    }
+
     if (userSel) {
-        userSel.addEventListener('change', function() {
-            const month = '<?php echo $month; ?>';
-            const year = '<?php echo $year; ?>';
-            window.location.href = `attendance-history?user_id=${this.value}&month=${month}&year=${year}`;
+        userSel.addEventListener('change', reloadAttendanceHistory);
+    }
+    if (monthSel) {
+        monthSel.addEventListener('change', function() {
+            refreshExportLinks();
+            reloadAttendanceHistory();
         });
+    }
+    if (yearSel) {
+        yearSel.addEventListener('change', function() {
+            refreshExportLinks();
+            reloadAttendanceHistory();
+        });
+    }
+
+    if (exportCsv && exportPdf) {
+        refreshExportLinks();
     }
 });
 </script>

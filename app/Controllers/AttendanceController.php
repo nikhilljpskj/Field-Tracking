@@ -197,8 +197,14 @@ class AttendanceController extends Controller {
         $userModel = new \App\Models\User();
 
         $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
-        $month = $_GET['month'] ?? date('n');
-        $year = $_GET['year'] ?? date('Y');
+        $month = intval($_GET['month'] ?? date('n'));
+        $year = intval($_GET['year'] ?? date('Y'));
+        if ($month < 1 || $month > 12) {
+            $month = date('n');
+        }
+        if ($year < 2024 || $year > date('Y') + 1) {
+            $year = date('Y');
+        }
 
         // RBAC: Non-admin/manager can only view their own history
         if (!in_array($_SESSION['role'], ['Admin', 'Manager', 'HR']) && $userId != $_SESSION['user_id']) {

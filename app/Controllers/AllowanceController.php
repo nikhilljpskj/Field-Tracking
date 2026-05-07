@@ -14,27 +14,32 @@ class AllowanceController extends Controller {
         $date = date('Y-m-d');
         $summary = $travelModel->getTravelSummary($_SESSION['user_id'], $date);
         
-        // If no summary for today, let's calculate it based on tracking logs
+        // If no summary for today, calculate it from attendance + client meeting routing first,
+        // then fallback to route logs if no attendance data is available.
         if (!$summary) {
-            $mapService = new \App\Services\MapService();
-            $route = $trackingModel->getRoute($_SESSION['user_id'], $date);
-            $distance = 0;
-            
-            // Optimization: Sampling every 5th point or only if distance > 200m to reduce API hits
-            // Also ensures road-matched routing via HERE
-            if (count($route) > 1) {
-                for ($i = 0; $i < count($route) - 1; $i += 2) {
-                    $nextIdx = min($i + 2, count($route) - 1);
-                    $distance += $mapService->getRouteDistance(
-                        $route[$i]['latitude'], $route[$i]['longitude'],
-                        $route[$nextIdx]['latitude'], $route[$nextIdx]['longitude']
-                    );
+            $distanceKm = $travelModel->calculateMilestoneDistance($_SESSION['user_id'], $date);
+
+            if ($distanceKm <= 0) {
+                $mapService = new \App\Services\MapService();
+                $route = $trackingModel->getRoute($_SESSION['user_id'], $date);
+                $distance = 0;
+
+                // Optimization: Sampling every 5th point or only if distance > 200m to reduce API hits
+                // Also ensures road-matched routing via HERE
+                if (count($route) > 1) {
+                    for ($i = 0; $i < count($route) - 1; $i += 2) {
+                        $nextIdx = min($i + 2, count($route) - 1);
+                        $distance += $mapService->getRouteDistance(
+                            $route[$i]['latitude'], $route[$i]['longitude'],
+                            $route[$nextIdx]['latitude'], $route[$nextIdx]['longitude']
+                        );
+                    }
                 }
+
+                $distanceKm = $distance / 1000;
             }
 
-            $distanceKm = $distance / 1000;
             $allowance = $distanceKm * $rate;
-            
             $travelModel->updateTravelSummary($_SESSION['user_id'], $date, $distanceKm, $allowance);
             $summary = ['total_distance' => $distanceKm, 'allowance_earned' => $allowance, 'date' => $date];
         }
