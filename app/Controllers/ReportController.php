@@ -224,11 +224,11 @@ class ReportController extends Controller {
         
         // RBAC Check
         if ($selectedUserId !== $_SESSION['user_id']) {
-            $this->checkRole(['Admin', 'Manager']);
+            $this->checkRole(['Admin', 'Manager', 'HR']);
         }
 
         $users = [];
-        if (in_array($_SESSION['role'], ['Admin', 'Manager'])) {
+        if (in_array($_SESSION['role'], ['Admin', 'Manager', 'HR'])) {
             if ($_SESSION['role'] == 'Manager') {
                 $users = $userModel->getExecutivesByManagerId($_SESSION['user_id']);
             } else {

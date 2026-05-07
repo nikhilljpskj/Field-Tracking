@@ -438,22 +438,35 @@
 
 <script>
 function syncUI() {
-    const m = document.getElementById('month-selector').value;
-    const y = document.getElementById('year-selector').value;
-    const u = document.getElementById('user-selector')?.value || '<?php echo $_SESSION['user_id']; ?>';
-    
-    // Update export links
-    const baseUrl = `reports?action=export&type=monthly&user_id=${u}&month=${m}&year=${y}`;
-    document.getElementById('export-link-csv').href = `${baseUrl}&format=csv`;
-    document.getElementById('export-link-pdf').href = `${baseUrl}&format=pdf`;
+    const monthInput = document.getElementById('month-selector');
+    const yearInput = document.getElementById('year-selector');
+    const userInput = document.getElementById('user-selector');
 
-    const reload = () => {
+    function getSelectedUser() {
+        return userInput ? userInput.value : '<?php echo $_SESSION['user_id']; ?>';
+    }
+
+    function updateLinks() {
+        const m = monthInput.value;
+        const y = yearInput.value;
+        const u = getSelectedUser();
+        const baseUrl = `reports?action=export&type=monthly&user_id=${u}&month=${m}&year=${y}`;
+        document.getElementById('export-link-csv').href = `${baseUrl}&format=csv`;
+        document.getElementById('export-link-pdf').href = `${baseUrl}&format=pdf`;
+    }
+
+    function reload() {
+        const m = monthInput.value;
+        const y = yearInput.value;
+        const u = getSelectedUser();
         window.location.href = `reports?action=monthly&user_id=${u}&month=${m}&year=${y}`;
-    };
+    }
 
-    document.getElementById('month-selector').onchange = reload;
-    document.getElementById('year-selector').onchange = reload;
-    if(document.getElementById('user-selector')) document.getElementById('user-selector').onchange = reload;
+    monthInput.onchange = () => { updateLinks(); reload(); };
+    yearInput.onchange = () => { updateLinks(); reload(); };
+    if (userInput) userInput.onchange = () => { updateLinks(); reload(); };
+
+    updateLinks();
 }
 
 function makePaginator(tbodyId, infoId, paginationId) {

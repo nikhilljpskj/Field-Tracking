@@ -503,6 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        initialDate: '<?php echo sprintf('%04d-%02d-01', $year, $month); ?>',
         headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
         events: events,
         height: 'auto',
@@ -571,7 +572,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const userSel = document.getElementById('user-selector');
     if (userSel) {
         userSel.addEventListener('change', function() {
-            window.location.href = `attendance-history?user_id=${this.value}`;
+            const month = '<?php echo $month; ?>';
+            const year = '<?php echo $year; ?>';
+            window.location.href = `attendance-history?user_id=${this.value}&month=${month}&year=${year}`;
         });
     }
 });

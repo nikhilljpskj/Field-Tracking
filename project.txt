@@ -1,0 +1,67 @@
+=========================================================
+      FIELD TRACKING SYSTEM - PRODUCT OVERVIEW
+=========================================================
+
+1. PRODUCT OVERVIEW
+---------------------------------------------------------
+The Field Tracking System is a comprehensive, mobile-friendly enterprise solution designed to manage, monitor, and optimize the daily activities of on-field sales and marketing executives. The platform provides real-time visibility into workforce operations, automates attendance and travel allowances, and streamlines task management, HR operations, and payroll processing.
+
+2. TARGET AUDIENCE & ROLES
+---------------------------------------------------------
+- Admin: Full system oversight and configuration.
+- HR: Human Resources, leave tracking, & Payroll administration.
+- Manager: Team oversight, task assignment, and approval workflows.
+- Executive: On-field employees interacting with clients and performing daily tasks.
+
+3. CORE SPECIFICATIONS & FEATURES
+---------------------------------------------------------
+A. Attendance & Geolocation Tracking
+   - Geo-fenced check-in and check-out with automatic GPS coordinate logging.
+   - Address resolution using Reverse Geocoding.
+   - Mandatory photo verification (selfie) during check-ins/outs.
+   - Odometer reading and photo capture for accurate travel distance tracking.
+   - Periodic background location tracking for continuous field visibility.
+
+B. Task & Client Meeting Management
+   - Detailed task assignment workflows (Assigned by Manager -> Executed by Field Staff).
+   - Bifurcation of tasks (e.g., Site Visits vs. In-House operations).
+   - Client meeting logs including outcomes, notes, exact meeting locations, and selfie verification.
+   - Multi-stage approval pipeline with robust audit trails.
+
+C. Target & Performance Monitoring
+   - Assign and track dynamic targets (Visits, Sales Amounts, New Clients, Promotions).
+   - Daily, weekly, and monthly performance tracking and analytics.
+
+D. Travel & Reimbursement Automation
+   - Automated travel distance logging based on GPS and odometer data.
+   - Dynamic travel rates per kilometer.
+   - Daily travel summaries and automated allowance calculations with approval workflows.
+
+E. Comprehensive HRMS & Payroll
+   - Leave Management: Leave type allocations (Sick, Casual, Earned), application workflows, and loss of pay (LOP) tracking.
+   - Salary Structures: Basic, HRA, TA/DA, Allowances, PF, and Tax deductions.
+   - Payroll Generation: Automated monthly payroll history generation factoring in LOP and allowances.
+   - Professional, print-ready payslip generation with embedded profile bank details.
+
+F. Reporting & Analytics
+   - Advanced filtering for daily and monthly administrative reports.
+   - Dynamic multi-format data export (CSV/PDF) for individuals and teams.
+   - Administrative dashboards for overall operational insights.
+
+4. TECHNICAL STACK HIGHLIGHTS
+---------------------------------------------------------
+- Frontend (Client-Side): 
+  - HTML5, CSS3, Vanilla JavaScript.
+  - Responsive, mobile-first design with a modern, high-end UI (glassmorphism, micro-animations, custom color palettes).
+  - Dynamic, asynchronous interactions, icon-based controls, and modal-driven workflows.
+- Backend (Server-Side):
+  - PHP (Custom MVC Architecture - Models/Views/Controllers).
+  - Secure RESTful APIs with JavaScript Fetch integration.
+  - Custom session and token-based authentication with auto-logout features.
+- Database:
+  - MySQL relational database with optimized indexing and foreign key constraints.
+  - Robust historical data preservation (e.g., payroll history, task audit trails).
+- Third-Party Integrations & Services:
+  - HERE Maps API for Geocoding and Reverse Geocoding (with local DB caching for optimization).
+  - Dynamic PDF Generation libraries for reports, ID cards, and payslips.
+  - Native CSV export handlers.
