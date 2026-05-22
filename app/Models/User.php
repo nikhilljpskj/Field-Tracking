@@ -164,18 +164,33 @@ class User extends Model {
         return $stmt->fetchAll();
     }
 
-    public function getNextEmployeeCode() {
-        $stmt = $this->db->query("SELECT MAX(CAST(SUBSTRING(employee_code, 4) AS UNSIGNED)) as max_code
-                                  FROM users
-                                  WHERE employee_code REGEXP '^RED[0-9]+$'");
-        $row = $stmt->fetch();
-        $next = (int)($row['max_code'] ?? 0) + 1;
-        return $this->formatEmployeeCode($next);
+    public function formatEmployeeCodeFromUser(array $user) {
+        $createdAt = $user['created_at'] ?? date('Y-m-d H:i:s');
+        $year2 = date('y', strtotime($createdAt));
+        $baseSeq = ((int)$user['id']) % 1000;
+
+        // Force exactly 5 digits after RED: YY + XXX
+        $candidate = 'RED' . $year2 . str_pad((string)$baseSeq, 3, '0', STR_PAD_LEFT);
+        if (!$this->employeeCodeExists($candidate, (int)$user['id'])) {
+            return $candidate;
+        }
+
+        // Collision fallback within the same 3-digit space.
+        for ($i = 0; $i < 1000; $i++) {
+            $seq = ($baseSeq + $i + 1) % 1000;
+            $try = 'RED' . $year2 . str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
+            if (!$this->employeeCodeExists($try, (int)$user['id'])) {
+                return $try;
+            }
+        }
+
+        return null;
     }
 
-    public function formatEmployeeCode($number) {
-        $number = (int)$number;
-        return $number < 1000 ? 'RED' . str_pad((string)$number, 3, '0', STR_PAD_LEFT) : 'RED' . $number;
+    private function employeeCodeExists($employeeCode, $excludeUserId = 0) {
+        $stmt = $this->db->prepare("SELECT id FROM users WHERE employee_code = ? AND id <> ? LIMIT 1");
+        $stmt->execute([$employeeCode, (int)$excludeUserId]);
+        return (bool)$stmt->fetch();
     }
 
     public function ensureEmployeeCode($userId) {
@@ -188,7 +203,10 @@ class User extends Model {
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $code = $this->getNextEmployeeCode();
+            $code = $this->formatEmployeeCodeFromUser($user);
+            if (!$code) {
+                return null;
+            }
             $stmt = $this->db->prepare("UPDATE users SET employee_code = ? WHERE id = ? AND (employee_code IS NULL OR employee_code = '')");
             try {
                 $stmt->execute([$code, $userId]);
