@@ -42,6 +42,8 @@ $routes = [
     'reports-weekly' => 'ReportController',
     'reports-monthly' => 'ReportController',
     'users' => 'UserController',
+    'employee-codes' => 'EmployeeCodeController',
+    'verify-employee' => 'EmployeeCodeController',
     'settings' => 'SettingsController',
     'map' => 'MapController',
     'profile' => 'ProfileController',
@@ -84,6 +86,17 @@ if (array_key_exists($url, $routes)) {
     }
     if ($url == 'logout') {
         $controller->logout();
+        exit;
+    }
+
+    // Public verification route
+    if ($url === 'verify-employee') {
+        $action = $_GET['action'] ?? 'verify';
+        if (method_exists($controller, $action)) {
+            $controller->$action();
+        } else {
+            $controller->verify();
+        }
         exit;
     }
 

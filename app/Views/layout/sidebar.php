@@ -161,23 +161,33 @@
   </ul>
   <?php endif; ?>
 
-  <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 'Admin'): ?>
+  <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'HR'])): ?>
   <p class="text-muted nav-heading mt-4 mb-1">
     <span>Settings</span>
   </p>
   <ul class="navbar-nav flex-fill w-100 mb-2">
+    <?php if($_SESSION['role'] === 'Admin'): ?>
     <li class="nav-item w-100">
       <a class="nav-link" href="users">
         <i class="fe fe-users fe-16"></i>
         <span class="ml-3 item-text">User Management</span>
       </a>
     </li>
+    <?php endif; ?>
+    <li class="nav-item w-100">
+      <a class="nav-link" href="employee-codes">
+        <i class="fe fe-grid fe-16"></i>
+        <span class="ml-3 item-text">Employee QR / Barcode</span>
+      </a>
+    </li>
+    <?php if($_SESSION['role'] === 'Admin'): ?>
     <li class="nav-item w-100">
       <a class="nav-link" href="settings">
         <i class="fe fe-settings fe-16"></i>
         <span class="ml-3 item-text">System Settings</span>
       </a>
     </li>
+    <?php endif; ?>
   </ul>
   <?php endif; ?>
 

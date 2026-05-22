@@ -131,4 +131,151 @@ class User extends Model {
         $stmt->execute([$manager_id]);
         return $stmt->fetchAll();
     }
+
+    public function findByIdWithRole($id) {
+        $stmt = $this->db->prepare("SELECT u.*, r.name as role_name
+                                    FROM users u
+                                    LEFT JOIN roles r ON u.role_id = r.id
+                                    WHERE u.id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
+    public function listForQrModule($filters = []) {
+        $sql = "SELECT u.id, u.name, u.employee_code, u.qr_token, u.barcode_generated_at, u.is_active,
+                       u.department, u.designation, r.name as role_name
+                FROM users u
+                LEFT JOIN roles r ON u.role_id = r.id
+                WHERE 1=1";
+        $params = [];
+
+        if (!empty($filters['q'])) {
+            $sql .= " AND (u.name LIKE ? OR u.employee_code LIKE ? OR u.department LIKE ? OR u.designation LIKE ?)";
+            $q = '%' . $filters['q'] . '%';
+            $params[] = $q;
+            $params[] = $q;
+            $params[] = $q;
+            $params[] = $q;
+        }
+
+        $sql .= " ORDER BY u.name ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function getNextEmployeeCode() {
+        $stmt = $this->db->query("SELECT MAX(CAST(SUBSTRING(employee_code, 4) AS UNSIGNED)) as max_code
+                                  FROM users
+                                  WHERE employee_code REGEXP '^RED[0-9]+$'");
+        $row = $stmt->fetch();
+        $next = (int)($row['max_code'] ?? 0) + 1;
+        return $this->formatEmployeeCode($next);
+    }
+
+    public function formatEmployeeCode($number) {
+        $number = (int)$number;
+        return $number < 1000 ? 'RED' . str_pad((string)$number, 3, '0', STR_PAD_LEFT) : 'RED' . $number;
+    }
+
+    public function ensureEmployeeCode($userId) {
+        $user = $this->findByIdWithRole($userId);
+        if (!$user) {
+            return null;
+        }
+        if (!empty($user['employee_code'])) {
+            return $user['employee_code'];
+        }
+
+        for ($i = 0; $i < 5; $i++) {
+            $code = $this->getNextEmployeeCode();
+            $stmt = $this->db->prepare("UPDATE users SET employee_code = ? WHERE id = ? AND (employee_code IS NULL OR employee_code = '')");
+            try {
+                $stmt->execute([$code, $userId]);
+                if ($stmt->rowCount() > 0) {
+                    return $code;
+                }
+                $fresh = $this->findByIdWithRole($userId);
+                return $fresh['employee_code'] ?? null;
+            } catch (\PDOException $e) {
+                if ((int)$e->getCode() !== 23000) {
+                    throw $e;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function ensureQrToken($userId) {
+        $user = $this->findByIdWithRole($userId);
+        if (!$user) {
+            return null;
+        }
+        if (!empty($user['qr_token'])) {
+            return $user['qr_token'];
+        }
+
+        for ($i = 0; $i < 5; $i++) {
+            $token = bin2hex(random_bytes(16));
+            $stmt = $this->db->prepare("UPDATE users SET qr_token = ? WHERE id = ? AND (qr_token IS NULL OR qr_token = '')");
+            try {
+                $stmt->execute([$token, $userId]);
+                if ($stmt->rowCount() > 0) {
+                    return $token;
+                }
+                $fresh = $this->findByIdWithRole($userId);
+                return $fresh['qr_token'] ?? null;
+            } catch (\PDOException $e) {
+                if ((int)$e->getCode() !== 23000) {
+                    throw $e;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function regenerateQrToken($userId) {
+        for ($i = 0; $i < 5; $i++) {
+            $token = bin2hex(random_bytes(16));
+            $stmt = $this->db->prepare("UPDATE users SET qr_token = ? WHERE id = ?");
+            try {
+                $stmt->execute([$token, $userId]);
+                return $token;
+            } catch (\PDOException $e) {
+                if ((int)$e->getCode() !== 23000) {
+                    throw $e;
+                }
+            }
+        }
+        return null;
+    }
+
+    public function touchBarcodeGeneratedAt($userId) {
+        $stmt = $this->db->prepare("UPDATE users SET barcode_generated_at = NOW() WHERE id = ?");
+        return $stmt->execute([$userId]);
+    }
+
+    public function bulkGenerateMissingEmployeeCodes() {
+        $stmt = $this->db->query("SELECT id FROM users WHERE employee_code IS NULL OR employee_code = '' ORDER BY id ASC");
+        $users = $stmt->fetchAll();
+        $count = 0;
+        foreach ($users as $u) {
+            if ($this->ensureEmployeeCode((int)$u['id'])) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    public function findByQrToken($token) {
+        $stmt = $this->db->prepare("SELECT u.*, r.name as role_name
+                                    FROM users u
+                                    LEFT JOIN roles r ON u.role_id = r.id
+                                    WHERE u.qr_token = ?
+                                    LIMIT 1");
+        $stmt->execute([$token]);
+        return $stmt->fetch();
+    }
 }
