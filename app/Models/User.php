@@ -291,7 +291,7 @@ class User extends Model {
         $stmt = $this->db->prepare("SELECT u.*, r.name as role_name
                                     FROM users u
                                     LEFT JOIN roles r ON u.role_id = r.id
-                                    WHERE LOWER(u.qr_token) = LOWER(?)
+                                    WHERE u.qr_token = ?
                                     LIMIT 1");
         $stmt->execute([$token]);
         return $stmt->fetch();
