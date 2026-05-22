@@ -24,7 +24,9 @@ spl_autoload_register(function ($class) {
 });
 
 // Simple Router
-$url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'login';
+$urlRaw = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'login';
+$urlParts = explode('/', $urlRaw);
+$url = strtolower($urlParts[0] ?? 'login');
 
 // Define controllers/routes
 $routes = [
@@ -61,6 +63,10 @@ $routes = [
     'cleanup-notify'     => 'CleanupController',
     'cleanup'            => 'CleanupController',
 ];
+
+if ($url === 'verify-employee' && isset($urlParts[1], $urlParts[2]) && strtolower($urlParts[1]) === 'token') {
+    $_GET['token'] = $urlParts[2];
+}
 
 if (array_key_exists($url, $routes)) {
     $controllerName = "App\\Controllers\\" . $routes[$url];

@@ -72,11 +72,13 @@
                         <img src="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=png&preview=1" alt="Barcode" class="preview-img preview-bar">
                       </td>
                       <td>
-                        <a class="btn btn-sm btn-outline-primary mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=png">QR PNG</a>
-                        <a class="btn btn-sm btn-outline-primary mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=svg">QR SVG</a>
-                        <a class="btn btn-sm btn-outline-dark mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=png">Barcode PNG</a>
-                        <a class="btn btn-sm btn-outline-dark mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=svg">Barcode SVG</a>
-                        <a class="btn btn-sm btn-outline-warning mb-1" href="employee-codes?action=regenerate&id=<?php echo $u['id']; ?>" onclick="return confirm('Regenerate token for this employee?')">Regenerate</a>
+                        <div class="action-grid">
+                          <a class="btn btn-xs btn-outline-primary action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=png">QR PNG</a>
+                          <a class="btn btn-xs btn-outline-primary action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=svg">QR SVG</a>
+                          <a class="btn btn-xs btn-outline-dark action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=png">BAR PNG</a>
+                          <a class="btn btn-xs btn-outline-dark action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=svg">BAR SVG</a>
+                          <a class="btn btn-xs btn-outline-warning action-btn action-btn-wide" href="employee-codes?action=regenerate&id=<?php echo $u['id']; ?>" onclick="return confirm('Regenerate token for this employee?')">Regenerate</a>
+                        </div>
                       </td>
                     </tr>
                   <?php endforeach; ?>
@@ -96,11 +98,13 @@
                       <img src="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=png&preview=1" alt="QR" class="preview-img mr-2 mb-2">
                       <img src="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=png&preview=1" alt="Barcode" class="preview-img preview-bar mb-2">
                     </div>
-                    <a class="btn btn-sm btn-outline-primary mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=png">QR PNG</a>
-                    <a class="btn btn-sm btn-outline-primary mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=svg">QR SVG</a>
-                    <a class="btn btn-sm btn-outline-dark mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=png">Barcode PNG</a>
-                    <a class="btn btn-sm btn-outline-dark mb-1" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=svg">Barcode SVG</a>
-                    <a class="btn btn-sm btn-outline-warning mb-1" href="employee-codes?action=regenerate&id=<?php echo $u['id']; ?>" onclick="return confirm('Regenerate token for this employee?')">Regenerate</a>
+                    <div class="action-grid">
+                      <a class="btn btn-xs btn-outline-primary action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=png">QR PNG</a>
+                      <a class="btn btn-xs btn-outline-primary action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=qr&format=svg">QR SVG</a>
+                      <a class="btn btn-xs btn-outline-dark action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=png">BAR PNG</a>
+                      <a class="btn btn-xs btn-outline-dark action-btn" href="employee-codes?action=download&id=<?php echo $u['id']; ?>&type=barcode&format=svg">BAR SVG</a>
+                      <a class="btn btn-xs btn-outline-warning action-btn action-btn-wide" href="employee-codes?action=regenerate&id=<?php echo $u['id']; ?>" onclick="return confirm('Regenerate token for this employee?')">Regenerate</a>
+                    </div>
                   </div>
                 </div>
               <?php endforeach; ?>
@@ -115,6 +119,19 @@
 <style>
 .preview-img { width: 88px; height: 88px; object-fit: contain; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px; background: transparent; }
 .preview-bar { width: 180px; height: 88px; }
+.btn-xs { padding: .2rem .45rem; font-size: .7rem; line-height: 1.2; border-radius: .25rem; }
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(78px, 1fr));
+  gap: 6px;
+  align-items: center;
+}
+.action-btn {
+  min-width: 78px;
+  text-align: center;
+  white-space: nowrap;
+}
+.action-btn-wide { grid-column: span 2; }
 </style>
 
 <?php include 'layout/footer.php'; ?>
