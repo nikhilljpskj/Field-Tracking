@@ -126,11 +126,17 @@ class EmployeeCodeController extends Controller {
     }
 
     private function buildQrPayload($employeeCode, $token) {
-        $appUrl = rtrim(Config::get('APP_URL', ''), '/');
-        if ($appUrl !== '') {
-            return $appUrl . '/verify-employee?token=' . rawurlencode($token);
+        $publicUrl = rtrim(Config::get('PUBLIC_BASE_URL', ''), '/');
+        if ($publicUrl === '') {
+            $publicUrl = rtrim(Config::get('APP_URL', ''), '/');
         }
-        return $employeeCode;
+        if ($publicUrl === '') {
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+            $publicUrl = $scheme . '://' . $host . ($basePath !== '' && $basePath !== '.' ? $basePath : '');
+        }
+        return $publicUrl . '/verify-employee?token=' . rawurlencode($token);
     }
 
     private function downloadQrPng($payload, $filename, $preview = false) {
