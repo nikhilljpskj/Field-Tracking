@@ -83,7 +83,6 @@ class EmployeeCodeController extends Controller {
         }
 
         $payload = $this->buildQrPayload($code, $token);
-        $barcodePayload = $this->buildBarcodePayload($token);
         $safeCode = preg_replace('/[^A-Za-z0-9_-]/', '', $code);
         $filename = $safeCode . '-' . $type . '.' . $format;
         $userModel->touchBarcodeGeneratedAt($id);
@@ -97,10 +96,10 @@ class EmployeeCodeController extends Controller {
             return;
         }
         if ($type === 'barcode' && $format === 'svg') {
-            $this->downloadBarcodeSvg($barcodePayload, $filename, $preview);
+            $this->downloadBarcodeSvg($code, $filename, $preview);
             return;
         }
-        $this->downloadBarcodePng($barcodePayload, $filename, $preview);
+        $this->downloadBarcodePng($code, $filename, $preview);
     }
 
     public function verify() {
@@ -137,25 +136,7 @@ class EmployeeCodeController extends Controller {
             $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
             $publicUrl = $scheme . '://' . $host . ($basePath !== '' && $basePath !== '.' ? $basePath : '');
         }
-        return $publicUrl . '/verify-employee/token/' . rawurlencode($token);
-    }
-
-    private function buildBarcodePayload($token) {
-        $publicUrl = rtrim(Config::get('PUBLIC_BASE_URL', ''), '/');
-        if ($publicUrl === '') {
-            $publicUrl = rtrim(Config::get('APP_URL', ''), '/');
-        }
-        if ($publicUrl === '') {
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
-            $publicUrl = $host . ($basePath !== '' && $basePath !== '.' ? $basePath : '');
-        } else {
-            $publicUrl = preg_replace('#^https?://#i', '', $publicUrl);
-        }
-
-        // Code39-compatible URL shape: no protocol and no query string.
-        $safeToken = strtoupper($token);
-        return strtoupper($publicUrl . '/verify-employee/token/' . $safeToken);
+        return $publicUrl . '/verify-employee?token=' . rawurlencode($token);
     }
 
     private function downloadQrPng($payload, $filename, $preview = false) {
