@@ -191,12 +191,14 @@ class AttendanceController extends Controller {
     }
 
     public function history() {
-        $this->checkRole(['Admin', 'Manager', 'HR', 'Executive']);
+        $this->checkRole(['Admin', 'Manager', 'HR', 'Executive', 'Field Executive', 'Staff']);
         $attendanceModel = new Attendance();
         $leaveModel = new \App\Models\Leave();
         $userModel = new \App\Models\User();
 
-        $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
+        $viewerRole = $_SESSION['role'] ?? '';
+        $viewerId = (int)($_SESSION['user_id'] ?? 0);
+        $userId = (int)($_GET['user_id'] ?? $viewerId);
         $month = intval($_GET['month'] ?? date('n'));
         $year = intval($_GET['year'] ?? date('Y'));
         if ($month < 1 || $month > 12) {
@@ -206,18 +208,36 @@ class AttendanceController extends Controller {
             $year = date('Y');
         }
 
-        // RBAC: Non-admin/manager can only view their own history
-        if (!in_array($_SESSION['role'], ['Admin', 'Manager', 'HR']) && $userId != $_SESSION['user_id']) {
-            $userId = $_SESSION['user_id'];
+        $users = [];
+        if (in_array($viewerRole, ['Admin', 'HR'], true)) {
+            // Admin/HR can review any active Executive/Field Executive/Staff
+            $db = \Database::getInstance()->getConnection();
+            $stmt = $db->query("SELECT u.id, u.name, u.role_id, u.manager_id, u.is_active, r.name AS role_name
+                                FROM users u
+                                LEFT JOIN roles r ON r.id = u.role_id
+                                WHERE COALESCE(u.is_active, 1) = 1
+                                  AND r.name IN ('Executive', 'Field Executive', 'Staff')
+                                ORDER BY u.name ASC");
+            $users = $stmt->fetchAll();
+        } elseif ($viewerRole === 'Manager') {
+            // Managers can review their assigned team only.
+            $users = $userModel->getExecutivesByManagerId($viewerId);
+        } else {
+            // Executive/Staff level: self-only.
+            $userId = $viewerId;
+        }
+
+        if (!empty($users)) {
+            $allowedIds = array_map('intval', array_column($users, 'id'));
+            if (!in_array($userId, $allowedIds, true)) {
+                $userId = (int)$allowedIds[0];
+            }
+        } else if (!in_array($viewerRole, ['Admin', 'HR', 'Manager'], true)) {
+            $userId = $viewerId;
         }
 
         $records = $attendanceModel->getMonthlyHistory($userId, $month, $year);
         $leaves = $leaveModel->getApprovedLeavesForMonth($userId, $month, $year);
-        
-        $users = [];
-        if (in_array($_SESSION['role'], ['Admin', 'Manager', 'HR'])) {
-            $users = $userModel->getAll();
-        }
 
         $data = [
             'title' => 'Attendance History - Sales Tracking',
@@ -232,19 +252,44 @@ class AttendanceController extends Controller {
     }
 
     public function exportHistory() {
-        $this->checkRole(['Admin', 'Manager', 'HR', 'Executive']);
+        $this->checkRole(['Admin', 'Manager', 'HR', 'Executive', 'Field Executive', 'Staff']);
         $attendanceModel = new Attendance();
         $userModel = new \App\Models\User();
         $leaveModel = new \App\Models\Leave();
 
-        $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
+        $viewerRole = $_SESSION['role'] ?? '';
+        $viewerId = (int)($_SESSION['user_id'] ?? 0);
+        $userId = (int)($_GET['user_id'] ?? $viewerId);
         $month = $_GET['month'] ?? date('n');
         $year = $_GET['year'] ?? date('Y');
         $format = $_GET['format'] ?? 'csv';
 
-        // RBAC validation
-        if (!in_array($_SESSION['role'], ['Admin', 'Manager', 'HR']) && $userId != $_SESSION['user_id']) {
-            $userId = $_SESSION['user_id'];
+        // RBAC validation aligned with history view scope.
+        if (in_array($viewerRole, ['Admin', 'HR'], true)) {
+            // allowed for active Executive/Field Executive/Staff only
+            $db = \Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT COUNT(*) FROM users u
+                                  LEFT JOIN roles r ON r.id = u.role_id
+                                  WHERE u.id = ? AND COALESCE(u.is_active, 1) = 1
+                                    AND r.name IN ('Executive', 'Field Executive', 'Staff')");
+            $stmt->execute([$userId]);
+            if ((int)$stmt->fetchColumn() === 0) {
+                $userId = $viewerId;
+            }
+        } elseif ($viewerRole === 'Manager') {
+            $db = \Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE id = ? AND manager_id = ?");
+            $stmt->execute([$userId, $viewerId]);
+            if ((int)$stmt->fetchColumn() === 0) {
+                $team = $userModel->getExecutivesByManagerId($viewerId);
+                if (!empty($team)) {
+                    $userId = (int)$team[0]['id'];
+                } else {
+                    $userId = $viewerId;
+                }
+            }
+        } else {
+            $userId = $viewerId;
         }
 
         $month = (int)$month;
