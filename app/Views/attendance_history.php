@@ -269,33 +269,37 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 
 /* ── Premium Hero ── */
 .premium-hero {
-    background: linear-gradient(135deg, #1e1e2d 0%, #32325d 100%);
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 45%, #dbeafe 100%);
     border-radius: var(--p-radius);
     padding: 30px;
-    color: #fff;
+    color: #1f2a44;
     position: relative;
     overflow: visible;
+    border: 1px solid #cfd8ff;
+    box-shadow: 0 10px 30px rgba(67, 97, 238, 0.12);
 }
 .hero-glass-icon {
     width: 60px; height: 60px;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(8px);
+    background: #ffffff;
+    border: 1px solid #dbe4ff;
     border-radius: 18px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; color: #fff;
+    font-size: 1.5rem; color: #4f46e5;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.12);
 }
-.hero-glass-title { font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -0.5px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.hero-glass-title { font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -0.5px; color: #1f2a44; text-shadow: none; }
 .hero-breadcrumb { font-size: 0.85rem; opacity: 0.8; }
-.hero-breadcrumb a { color: #fff !important; text-decoration: none; font-weight: 600; }
-.hero-breadcrumb .active { color: #fff !important; opacity: 1; font-weight: 600; }
+.hero-breadcrumb a { color: #334155 !important; text-decoration: none; font-weight: 600; }
+.hero-breadcrumb .active { color: #1f2937 !important; opacity: 1; font-weight: 700; }
 
 .hero-actions { display: flex; align-items: center; gap: 15px; }
 .history-filter-dock {
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.18);
+    background: #ffffff;
+    border: 1px solid #d9e1ff;
     border-radius: 12px;
     padding: 10px;
     max-width: 860px;
+    box-shadow: 0 6px 14px rgba(79, 70, 229, 0.08);
 }
 .history-filter-row {
     display: grid;
@@ -306,8 +310,8 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 .history-btn {
     height: 36px;
     border-radius: 9px;
-    border: 1px solid rgba(255,255,255,0.35);
-    background: #ffffff;
+    border: 1px solid #d7ddff;
+    background: #f8faff;
     color: #4f46e5;
     font-weight: 700;
     font-size: 0.82rem;
@@ -316,13 +320,12 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     justify-content: center;
     padding: 0 12px;
 }
-.history-btn:hover { background: #f5f7ff; }
+.history-btn:hover { background: #eef2ff; }
 .export-wrap .export-btn { width: 100%; }
 .premium-select {
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #fff;
+    background: #ffffff;
+    border: 1px solid #d9e1ff;
+    color: #1f2937;
     padding: 10px 15px 10px 40px;
     border-radius: 12px;
     font-size: 0.9rem; font-weight: 600;
@@ -344,7 +347,7 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     background: #fff;
 }
 .select-wrapper { position: relative; }
-.select-icon { position: absolute; left: 15px; top: 50%; translate: 0 -50%; opacity: 0.5; }
+.select-icon { position: absolute; left: 15px; top: 50%; translate: 0 -50%; opacity: 0.65; color: #6366f1; }
 .premium-btn {
     border-radius: 12px; padding: 10px 20px; font-weight: 700; font-size: 0.9rem;
     display: inline-flex; align-items: center; border: none; transition: all 0.2s;
