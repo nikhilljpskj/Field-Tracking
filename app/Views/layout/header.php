@@ -65,7 +65,8 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-muted pr-0" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span class="avatar avatar-sm mt-2">
-                <img src="<?php echo $_SESSION['profile_pic'] ?? 'assets/avatars/default.jpg'; ?>" alt="..." class="avatar-img rounded-circle border">
+                <?php $hdrPic = $_SESSION['profile_pic'] ?? 'assets/avatars/default.svg'; ?>
+                <img src="<?php echo htmlspecialchars($hdrPic); ?>" onerror="this.onerror=null;this.src='assets/avatars/default.svg';" alt="..." class="avatar-img rounded-circle border">
               </span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">

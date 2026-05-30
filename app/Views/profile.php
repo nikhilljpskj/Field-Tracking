@@ -20,9 +20,9 @@
                             <div class="col-md-3 text-center mb-5">
                                 <div class="avatar avatar-xl">
                                     <?php 
-                                        $pic = (isset($user['profile_pic']) && !empty($user['profile_pic'])) ? $user['profile_pic'] : 'assets/avatars/default.jpg';
+                                        $pic = (isset($user['profile_pic']) && !empty($user['profile_pic']) && $user['profile_pic'] !== 'assets/avatars/default.jpg') ? $user['profile_pic'] : 'assets/avatars/default.svg';
                                     ?>
-                                    <img src="<?php echo $pic; ?>" alt="..." class="avatar-img rounded-circle border border-primary shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
+                                    <img src="<?php echo htmlspecialchars($pic); ?>" onerror="this.onerror=null;this.src='assets/avatars/default.svg';" alt="..." class="avatar-img rounded-circle border border-primary shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
                                 </div>
                                 <div class="mt-3">
                                     <label for="profile_pic" class="btn btn-sm btn-outline-primary mb-0">Change Photo</label>

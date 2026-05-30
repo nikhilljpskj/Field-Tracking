@@ -26,7 +26,11 @@ class AuthController extends Controller {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['role'] = $user['role_name'] ?? $user['role']; // Handle join if model updated
-                $_SESSION['profile_pic'] = $user['profile_pic'] ?? 'assets/avatars/default.jpg';
+                $profilePic = $user['profile_pic'] ?? '';
+                if ($profilePic === '' || $profilePic === 'assets/avatars/default.jpg') {
+                    $profilePic = 'assets/avatars/default.svg';
+                }
+                $_SESSION['profile_pic'] = $profilePic;
                 
                 $this->redirect('dashboard');
             } else {

@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php endforeach; ?>
 
     <?php foreach($leaves as $l): ?>
-    let eDate = new Date('<?php echo $l['end_date']; ?>');
+    var eDate = new Date('<?php echo $l['end_date']; ?>');
     eDate.setDate(eDate.getDate() + 1);
     events.push({
         title: 'On Leave',
