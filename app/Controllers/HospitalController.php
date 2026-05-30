@@ -67,4 +67,33 @@ class HospitalController extends Controller {
         }
         $this->redirect('hospitals');
     }
+
+    public function export() {
+        $this->checkRole(['Admin', 'Manager', 'HR']);
+        $format = $_GET['format'] ?? 'csv';
+        $hospitalModel = new Hospital();
+        $rows = $hospitalModel->getAll();
+
+        if ($format === 'pdf') {
+            $this->view('reports/print_hospitals', ['rows' => $rows, 'title' => 'Hospitals & Offices']);
+            return;
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="hospitals_offices.csv"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Facility Name', 'Allotted Day', 'Allotted Time', 'Location URL', 'Address', 'Created At']);
+        foreach ($rows as $r) {
+            fputcsv($out, [
+                $r['name'] ?? '',
+                $r['allotted_day'] ?? '',
+                $r['allotted_time'] ?? '',
+                $r['location_url'] ?? '',
+                $r['address'] ?? '',
+                $r['created_at'] ?? ''
+            ]);
+        }
+        fclose($out);
+        exit;
+    }
 }

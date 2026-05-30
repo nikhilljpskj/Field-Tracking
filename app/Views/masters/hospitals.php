@@ -10,9 +10,20 @@
                         <h2 class="h3 mb-0 page-title">Hospitals & Offices</h2>
                         <p class="text-muted">Manage the master list of client facilities, allotted visit day/time, and location details.</p>
                     </div>
-                    <button class="btn btn-primary font-weight-bold shadow-sm rounded-pill px-4" data-toggle="modal" data-target="#addHospitalModal">
-                        <i class="fe fe-plus mr-1"></i> Add Facility
-                    </button>
+                    <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                                <i class="fe fe-download mr-1"></i> Export
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right shadow-sm">
+                                <a class="dropdown-item" href="hospitals?action=export&format=csv"><i class="fe fe-file-text mr-2 text-success"></i>Excel (CSV)</a>
+                                <a class="dropdown-item" target="_blank" href="hospitals?action=export&format=pdf"><i class="fe fe-printer mr-2 text-danger"></i>PDF</a>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary font-weight-bold shadow-sm rounded-pill px-4" data-toggle="modal" data-target="#addHospitalModal">
+                            <i class="fe fe-plus mr-1"></i> Add Facility
+                        </button>
+                    </div>
                 </div>
 
                 <?php if(isset($_SESSION['flash_success'])): ?>
@@ -30,10 +41,8 @@
                                     <tr>
                                         <th class="pl-4">Facility Name</th>
                                         <th>Allotted Day</th>
-                                        <th>Allotted Time</th>
-                                        <th>Location URL</th>
-                                        <th>Registered Address</th>
-                                        <th>Added On</th>
+                                        <th class="d-none d-md-table-cell">Allotted Time</th>
+                                        <th class="d-none d-lg-table-cell">Added On</th>
                                         <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin','Manager','HR'])): ?>
                                             <th class="text-right pr-4">Actions</th>
                                         <?php endif; ?>
@@ -41,7 +50,7 @@
                                 </thead>
                                 <tbody>
                                     <?php if(empty($hospitals)): ?>
-                                        <tr><td colspan="7" class="text-center py-5 text-muted">No hospitals or offices found. Add your first facility to populate the database.</td></tr>
+                                        <tr><td colspan="5" class="text-center py-5 text-muted">No hospitals or offices found. Add your first facility to populate the database.</td></tr>
                                     <?php endif; ?>
                                     <?php foreach($hospitals as $h): ?>
                                     <tr>
@@ -49,26 +58,22 @@
                                             <i class="fe fe-heart text-danger mr-2"></i> <?php echo htmlspecialchars($h['name']); ?>
                                         </td>
                                         <td><?php echo htmlspecialchars($h['allotted_day'] ?? '-'); ?></td>
-                                        <td><?php echo !empty($h['allotted_time']) ? htmlspecialchars(date('h:i A', strtotime($h['allotted_time']))) : '-'; ?></td>
-                                        <td>
-                                            <?php if(!empty($h['location_url'])): ?>
-                                                <a href="<?php echo htmlspecialchars($h['location_url']); ?>" target="_blank" rel="noopener">Open Map</a>
-                                            <?php else: ?>
-                                                <span class="text-muted small">Not Provided</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <?php if(!empty($h['address'])): ?>
-                                                <span class="text-muted"><i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars(substr($h['address'], 0, 50)) . (strlen($h['address']) > 50 ? '...' : ''); ?></span>
-                                            <?php else: ?>
-                                                <span class="text-muted italic small">Not Provided</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-muted"><?php echo !empty($h['created_at']) ? date('M d, Y', strtotime($h['created_at'])) : '-'; ?></td>
+                                        <td class="d-none d-md-table-cell"><?php echo !empty($h['allotted_time']) ? htmlspecialchars(date('h:i A', strtotime($h['allotted_time']))) : '-'; ?></td>
+                                        <td class="d-none d-lg-table-cell text-muted"><?php echo !empty($h['created_at']) ? date('M d, Y', strtotime($h['created_at'])) : '-'; ?></td>
 
                                         <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin','Manager','HR'])): ?>
                                         <td class="text-right pr-4">
-                                            <button type="button" class="btn btn-sm btn-outline-primary mr-1"
+                                            <div class="d-inline-flex align-items-center hc-actions">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary mr-1 hc-ic"
+                                                    data-toggle="modal" data-target="#viewHospitalModal"
+                                                    data-name="<?php echo htmlspecialchars($h['name'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-address="<?php echo htmlspecialchars($h['address'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-location_url="<?php echo htmlspecialchars($h['location_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-allotted_day="<?php echo htmlspecialchars($h['allotted_day'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-allotted_time="<?php echo htmlspecialchars($h['allotted_time'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                                <i class="fe fe-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mr-1 hc-ic"
                                                     data-toggle="modal" data-target="#editHospitalModal"
                                                     data-id="<?php echo (int)$h['id']; ?>"
                                                     data-name="<?php echo htmlspecialchars($h['name'], ENT_QUOTES, 'UTF-8'); ?>"
@@ -78,9 +83,10 @@
                                                     data-allotted_time="<?php echo htmlspecialchars($h['allotted_time'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                                                 <i class="fe fe-edit-2"></i>
                                             </button>
-                                            <a href="hospitals?action=delete&id=<?php echo $h['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deleting this facility is a permanent action. Continue?');">
+                                            <a href="hospitals?action=delete&id=<?php echo $h['id']; ?>" class="btn btn-sm btn-outline-danger hc-ic" onclick="return confirm('Deleting this facility is a permanent action. Continue?');">
                                                 <i class="fe fe-trash-2"></i>
                                             </a>
+                                            </div>
                                         </td>
                                         <?php endif; ?>
                                     </tr>
@@ -190,6 +196,25 @@
     </div>
 </div>
 
+<!-- View Hospital Modal -->
+<div class="modal fade" id="viewHospitalModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="fe fe-eye mr-2"></i>Facility Full Details</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Name:</strong> <span id="vh_name"></span></p>
+                <p><strong>Allotted Day:</strong> <span id="vh_day"></span></p>
+                <p><strong>Allotted Time:</strong> <span id="vh_time"></span></p>
+                <p><strong>Location URL:</strong> <a id="vh_url" href="#" target="_blank" rel="noopener">Open Map</a></p>
+                <p class="mb-0"><strong>Address:</strong><br><span id="vh_address"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 $('#editHospitalModal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
@@ -200,7 +225,31 @@ $('#editHospitalModal').on('show.bs.modal', function (event) {
     $('#eh_allotted_day').val(button.data('allotted_day') || '');
     $('#eh_allotted_time').val(button.data('allotted_time') || '');
 });
+
+$('#viewHospitalModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var url = button.data('location_url') || '';
+    $('#vh_name').text(button.data('name') || '-');
+    $('#vh_day').text(button.data('allotted_day') || '-');
+    $('#vh_time').text(button.data('allotted_time') || '-');
+    $('#vh_address').text(button.data('address') || '-');
+    if (url) {
+        $('#vh_url').attr('href', url).text('Open Map').show();
+    } else {
+        $('#vh_url').attr('href', '#').text('Not Provided');
+    }
+});
 </script>
 
-<?php include dirname(__DIR__) . '/layout/footer.php'; ?>
+<style>
+.hc-actions { gap: 6px; }
+.hc-ic { width: 30px; height: 30px; display:inline-flex; align-items:center; justify-content:center; padding:0; }
+.hc-ic i { font-size: 13px; }
+@media (max-width: 767px) {
+    .page-title { font-size: 1.2rem; }
+    .btn.rounded-pill { padding-left: 12px !important; padding-right: 12px !important; }
+    .table td, .table th { white-space: nowrap; }
+}
+</style>
 
+<?php include dirname(__DIR__) . '/layout/footer.php'; ?>

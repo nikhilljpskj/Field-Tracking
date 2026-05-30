@@ -65,4 +65,32 @@ class DoctorController extends Controller {
         }
         $this->redirect('doctors');
     }
+
+    public function export() {
+        $this->checkRole(['Admin', 'Manager', 'HR']);
+        $format = $_GET['format'] ?? 'csv';
+        $doctorModel = new Doctor();
+        $rows = $doctorModel->getAll();
+
+        if ($format === 'pdf') {
+            $this->view('reports/print_doctors', ['rows' => $rows, 'title' => 'Doctors & POC']);
+            return;
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="doctors_poc.csv"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Name', 'Phone', 'Allotted Day', 'Allotted Time', 'Created At']);
+        foreach ($rows as $r) {
+            fputcsv($out, [
+                $r['name'] ?? '',
+                $r['phone'] ?? '',
+                $r['allotted_day'] ?? '',
+                $r['allotted_time'] ?? '',
+                $r['created_at'] ?? ''
+            ]);
+        }
+        fclose($out);
+        exit;
+    }
 }
