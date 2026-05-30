@@ -294,12 +294,12 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 
 .hero-actions { display: flex; align-items: center; gap: 15px; }
 .history-filter-dock {
-    background: #ffffff;
-    border: 1px solid #d9e1ff;
+    background: transparent;
+    border: none;
     border-radius: 12px;
-    padding: 10px;
+    padding: 0;
     max-width: 860px;
-    box-shadow: 0 6px 14px rgba(79, 70, 229, 0.08);
+    box-shadow: none;
 }
 .history-filter-row {
     display: grid;
