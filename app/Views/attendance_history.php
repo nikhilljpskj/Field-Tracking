@@ -271,7 +271,7 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     padding: 30px;
     color: #fff;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 .hero-glass-icon {
     width: 60px; height: 60px;
@@ -309,6 +309,10 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 }
 .premium-btn.primary { background: #fff; color: var(--p-primary); }
 .premium-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.premium-dropdown {
+    min-width: 220px;
+    z-index: 3000;
+}
 
 /* ── Stats Cards ── */
 .stats-card {

@@ -235,6 +235,7 @@ class AttendanceController extends Controller {
         $this->checkRole(['Admin', 'Manager', 'HR', 'Executive']);
         $attendanceModel = new Attendance();
         $userModel = new \App\Models\User();
+        $leaveModel = new \App\Models\Leave();
 
         $userId = $_GET['user_id'] ?? $_SESSION['user_id'];
         $month = $_GET['month'] ?? date('n');
@@ -246,8 +247,48 @@ class AttendanceController extends Controller {
             $userId = $_SESSION['user_id'];
         }
 
+        $month = (int)$month;
+        $year = (int)$year;
         $records = $attendanceModel->getMonthlyHistory($userId, $month, $year);
+        $leaves = $leaveModel->getApprovedLeavesForMonth($userId, $month, $year);
         $user = $userModel->findById($userId);
+
+        // Build day-wise maps for merged export (attendance + leaves).
+        $attendanceByDate = [];
+        foreach ($records as $r) {
+            $d = date('Y-m-d', strtotime($r['check_in_time']));
+            if (!isset($attendanceByDate[$d])) {
+                $attendanceByDate[$d] = $r;
+            }
+        }
+
+        $leaveByDate = [];
+        $monthStart = date('Y-m-01', strtotime(sprintf('%04d-%02d-01', $year, $month)));
+        $monthEnd = date('Y-m-t', strtotime($monthStart));
+        foreach ($leaves as $l) {
+            $start = max(strtotime($l['start_date']), strtotime($monthStart));
+            $end = min(strtotime($l['end_date']), strtotime($monthEnd));
+            for ($ts = $start; $ts <= $end; $ts = strtotime('+1 day', $ts)) {
+                $d = date('Y-m-d', $ts);
+                $leaveByDate[$d] = $l['type_name'] ?? 'Leave';
+            }
+        }
+
+        $mergedDays = array_unique(array_merge(array_keys($attendanceByDate), array_keys($leaveByDate)));
+        sort($mergedDays);
+        $mergedRows = [];
+        foreach ($mergedDays as $d) {
+            $att = $attendanceByDate[$d] ?? null;
+            $leaveType = $leaveByDate[$d] ?? '';
+            $status = $att ? 'Present' : ($leaveType !== '' ? 'On Leave' : 'Absent');
+            $mergedRows[] = [
+                'date' => $d,
+                'day' => date('l', strtotime($d)),
+                'status' => $status,
+                'leave_type' => $leaveType,
+                'record' => $att
+            ];
+        }
         
         $filename = "attendance_report_" . str_replace(' ', '_', $user['name']) . "_{$year}_{$month}";
 
@@ -258,16 +299,19 @@ class AttendanceController extends Controller {
             $output = fopen('php://output', 'w');
             fputcsv($output, ['Employee Name: ' . $user['name'], 'Month: ' . date('F Y', mktime(0, 0, 0, $month, 10, $year))]);
             fputcsv($output, []); // blank row
-            fputcsv($output, ['Date', 'Day', 'Location (Check-In)', 'Check-In Time', 'Location (Check-Out)', 'Check-Out Time']);
+            fputcsv($output, ['Date', 'Day', 'Status', 'Leave Type', 'Location (Check-In)', 'Check-In Time', 'Location (Check-Out)', 'Check-Out Time']);
             
-            foreach ($records as $r) {
+            foreach ($mergedRows as $row) {
+                $r = $row['record'];
                 fputcsv($output, [
-                    date('d M Y', strtotime($r['check_in_time'])),
-                    date('l', strtotime($r['check_in_time'])),
-                    $r['check_in_address'],
-                    date('h:i A', strtotime($r['check_in_time'])),
-                    $r['check_out_address'] ?: '-',
-                    $r['check_out_time'] ? date('h:i A', strtotime($r['check_out_time'])) : 'Active'
+                    date('d M Y', strtotime($row['date'])),
+                    $row['day'],
+                    $row['status'],
+                    $row['leave_type'] ?: '-',
+                    $r['check_in_address'] ?? '-',
+                    !empty($r['check_in_time']) ? date('h:i A', strtotime($r['check_in_time'])) : '-',
+                    $r['check_out_address'] ?? '-',
+                    !empty($r['check_out_time']) ? date('h:i A', strtotime($r['check_out_time'])) : '-'
                 ]);
             }
             fclose($output);
@@ -277,6 +321,8 @@ class AttendanceController extends Controller {
             $data = [
                 'user' => $user,
                 'records' => $records,
+                'mergedRows' => $mergedRows,
+                'leaves' => $leaves,
                 'month' => $month,
                 'year' => $year
             ];

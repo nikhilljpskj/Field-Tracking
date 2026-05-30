@@ -58,6 +58,7 @@ $routes = [
     'attendance-export' => 'AttendanceController',
     'hospitals'          => 'HospitalController',
     'doctors'            => 'DoctorController',
+    'contacts'           => 'ContactController',
     'cleanup-notify'     => 'CleanupController',
     'cleanup'            => 'CleanupController',
 ];

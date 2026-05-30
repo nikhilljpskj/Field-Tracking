@@ -50,35 +50,54 @@
         <table class="table table-bordered table-sm">
             <thead>
                 <tr>
-                    <th width="15%">Date</th>
-                    <th width="35%">Start of Shift (Check-In)</th>
-                    <th width="35%">End of Shift (Check-Out)</th>
-                    <th width="15%">Duration</th>
+                    <th width="14%">Date</th>
+                    <th width="13%">Status</th>
+                    <th width="13%">Leave Type</th>
+                    <th width="25%">Start of Shift (Check-In)</th>
+                    <th width="25%">End of Shift (Check-Out)</th>
+                    <th width="10%">Duration</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($records)): ?>
-                    <?php foreach ($records as $r): ?>
+                <?php if (!empty($mergedRows)): ?>
+                    <?php foreach ($mergedRows as $row): ?>
+                        <?php $r = $row['record']; ?>
                         <tr>
                             <td>
-                                <strong><?php echo date('d M Y', strtotime($r['check_in_time'])); ?></strong><br>
-                                <span class="text-muted small"><?php echo date('l', strtotime($r['check_in_time'])); ?></span>
+                                <strong><?php echo date('d M Y', strtotime($row['date'])); ?></strong><br>
+                                <span class="text-muted small"><?php echo htmlspecialchars($row['day']); ?></span>
+                            </td>
+                            <td class="text-center">
+                                <?php if ($row['status'] === 'Present'): ?>
+                                    <span class="badge badge-success">Present</span>
+                                <?php elseif ($row['status'] === 'On Leave'): ?>
+                                    <span class="badge badge-warning">On Leave</span>
+                                <?php else: ?>
+                                    <span class="badge badge-secondary"><?php echo htmlspecialchars($row['status']); ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-center">
+                                <?php echo !empty($row['leave_type']) ? htmlspecialchars($row['leave_type']) : '-'; ?>
                             </td>
                             <td>
-                                <span class="text-success-custom"><?php echo date('h:i A', strtotime($r['check_in_time'])); ?></span><br>
-                                <span class="small text-muted"><?php echo htmlspecialchars($r['check_in_address']); ?></span>
+                                <?php if (!empty($r['check_in_time'])): ?>
+                                    <span class="text-success-custom"><?php echo date('h:i A', strtotime($r['check_in_time'])); ?></span><br>
+                                    <span class="small text-muted"><?php echo htmlspecialchars($r['check_in_address']); ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <?php if ($r['check_out_time']): ?>
+                                <?php if (!empty($r['check_out_time'])): ?>
                                     <span class="text-danger-custom"><?php echo date('h:i A', strtotime($r['check_out_time'])); ?></span><br>
                                     <span class="small text-muted"><?php echo htmlspecialchars($r['check_out_address']); ?></span>
                                 <?php else: ?>
-                                    <span class="badge badge-secondary" style="font-size: 11px;">Active / Pending</span>
+                                    <span class="text-muted">-</span>
                                 <?php endif; ?>
                             </td>
                             <td class="text-center font-weight-bold">
                                 <?php 
-                                if ($r['check_out_time']) {
+                                if (!empty($r['check_out_time']) && !empty($r['check_in_time'])) {
                                     $diff = strtotime($r['check_out_time']) - strtotime($r['check_in_time']);
                                     echo floor($diff/3600) . 'h ' . floor(($diff/60)%60) . 'm';
                                 } else {
@@ -90,7 +109,7 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                             <h6 class="mb-0">No attendance records found for this month.</h6>
                         </td>
                     </tr>
