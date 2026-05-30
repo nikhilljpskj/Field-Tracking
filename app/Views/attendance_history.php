@@ -27,9 +27,9 @@
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="hero-actions justify-content-lg-end flex-wrap">
-                    <form id="attendance-filter-form" method="GET" action="attendance-history" class="d-flex flex-wrap align-items-center" style="gap:10px;">
-                        <div class="select-wrapper">
+                <div class="hero-actions-wrap">
+                    <form id="attendance-filter-form" method="GET" action="attendance-history" class="hero-filter-grid">
+                        <div class="select-wrapper month-wrap">
                             <i class="fe fe-calendar select-icon"></i>
                             <select id="month-selector" name="month" class="premium-select" style="min-width: 140px;">
                                 <?php for($m = 1; $m <= 12; $m++): ?>
@@ -39,7 +39,7 @@
                                 <?php endfor; ?>
                             </select>
                         </div>
-                        <div class="select-wrapper">
+                        <div class="select-wrapper year-wrap">
                             <i class="fe fe-calendar select-icon"></i>
                             <select id="year-selector" name="year" class="premium-select" style="min-width: 110px;">
                                 <?php for($y = date('Y'); $y >= 2024; $y--): ?>
@@ -48,7 +48,7 @@
                             </select>
                         </div>
                         <?php if(!empty($users)): ?>
-                            <div class="select-wrapper">
+                            <div class="select-wrapper user-wrap">
                                 <i class="fe fe-user select-icon"></i>
                                 <select id="user-selector" name="user_id" class="premium-select" style="min-width: 220px;">
                                     <?php foreach($users as $u): ?>
@@ -59,13 +59,13 @@
                                 </select>
                             </div>
                         <?php endif; ?>
-                        <button type="submit" class="premium-btn primary" id="filter-apply-btn">
+                        <button type="submit" class="premium-btn primary find-btn" id="filter-apply-btn">
                             <i class="fe fe-search mr-1"></i> Find
                         </button>
                     </form>
                     
-                    <div class="dropdown">
-                        <button class="premium-btn primary dropdown-toggle" type="button" data-toggle="dropdown">
+                    <div class="dropdown export-wrap">
+                        <button class="premium-btn primary dropdown-toggle export-btn" type="button" data-toggle="dropdown">
                             <i class="fe fe-download mr-1"></i> Export
                         </button>
                         <div class="dropdown-menu dropdown-menu-right premium-dropdown shadow">
@@ -292,6 +292,26 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 .hero-breadcrumb .active { color: #fff !important; opacity: 1; font-weight: 600; }
 
 .hero-actions { display: flex; align-items: center; gap: 15px; }
+.hero-actions-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+.hero-filter-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "month year"
+        "user  find";
+    gap: 10px 12px;
+    align-items: center;
+}
+.hero-filter-grid .month-wrap { grid-area: month; }
+.hero-filter-grid .year-wrap { grid-area: year; }
+.hero-filter-grid .user-wrap { grid-area: user; }
+.hero-filter-grid .find-btn { grid-area: find; justify-content: center; min-width: 110px; height: 50px; }
+.export-wrap .export-btn { min-width: 140px; justify-content: center; }
 .premium-select {
     background: rgba(255,255,255,0.1);
     backdrop-filter: blur(10px);
@@ -301,6 +321,8 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     border-radius: 12px;
     font-size: 0.9rem; font-weight: 600;
     cursor: pointer; transition: all 0.2s;
+    width: 100%;
+    height: 50px;
 }
 .premium-select option {
     color: #1e293b;
@@ -311,6 +333,7 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 .premium-btn {
     border-radius: 12px; padding: 10px 20px; font-weight: 700; font-size: 0.9rem;
     display: inline-flex; align-items: center; border: none; transition: all 0.2s;
+    height: 50px;
 }
 .premium-btn.primary { background: #fff; color: var(--p-primary); }
 .premium-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
@@ -491,12 +514,32 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 
 /* ── Mobile ── */
 @media (max-width: 576px) {
-    .premium-hero { padding: 15px !important; }
+    .premium-hero { padding: 14px !important; }
     .hero-glass-title { font-size: 1.25rem !important; }
     .hero-glass-icon { width: 45px; height: 45px; font-size: 1.2rem; }
     .ah-hero-controls { width: 100%; }
     .stats-card { padding: 15px; }
     .stats-value { font-size: 1.2rem; }
+    .hero-actions-wrap { align-items: stretch; margin-top: 12px; }
+    .hero-filter-grid {
+        width: 100%;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "month year"
+            "user user"
+            "find find";
+    }
+    .hero-filter-grid .find-btn,
+    .export-wrap .export-btn,
+    .premium-btn {
+        width: 100%;
+    }
+    .export-wrap {
+        width: 100%;
+    }
+    .premium-select {
+        min-width: 0 !important;
+    }
 }
 </style>
 
