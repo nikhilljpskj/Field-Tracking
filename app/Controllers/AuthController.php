@@ -16,6 +16,12 @@ class AuthController extends Controller {
             $userModel = new User();
             $user = $userModel->findByEmail($email);
 
+            if ($user && (int)($user['is_active'] ?? 1) !== 1) {
+                $data['error'] = 'Your account has been disabled. Please contact admin.';
+                $this->view('auth/login', $data);
+                return;
+            }
+
             if ($user && password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];

@@ -83,7 +83,14 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="inputPassword5">New Password</label>
-                                    <input type="password" class="form-control" id="inputPassword5" name="password" placeholder="Leave blank to keep current password">
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="inputPassword5" name="password" placeholder="Leave blank to keep current password">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-secondary border-left-0" onclick="togglePasswordField('inputPassword5', 'profilePasswordIcon')">
+                                                <i class="fe fe-eye fe-16" id="profilePasswordIcon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <p class="small text-muted mb-2"> Password requirements: </p>
                                 <ul class="small text-muted pl-4 mb-0">
@@ -110,6 +117,22 @@ function previewImage(input) {
             document.querySelector('.avatar-img').setAttribute('src', e.target.result);
         }
         reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function togglePasswordField(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fe-eye');
+        icon.classList.add('fe-eye-off');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fe-eye-off');
+        icon.classList.add('fe-eye');
     }
 }
 </script>
