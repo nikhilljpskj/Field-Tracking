@@ -26,6 +26,11 @@
             <i class="fe fe-check-circle mr-2"></i><?php echo $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?>
         </div>
     <?php endif; ?>
+    <?php if(isset($_SESSION['flash_error'])): ?>
+        <div class="alert alert-danger border-0 shadow-sm rounded-lg mb-3">
+            <i class="fe fe-alert-circle mr-2"></i><?php echo $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Overdue alert -->
     <?php if(!empty($overdueTasks)): ?>
@@ -112,26 +117,10 @@
                                 <?php echo $t['status']; ?>
                             </span>
                             <?php if(!$isCompleted): ?>
-                            <div class="dropdown">
-                                <button class="btn-update-status dropdown-toggle" type="button" data-toggle="dropdown">
-                                    <i class="fe fe-edit-2 fe-11 mr-1"></i> Update
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right shadow border-0 rounded-lg">
-                                    <form action="tasks?action=updateStatus" method="POST">
-                                        <input type="hidden" name="task_id" value="<?php echo $t['id']; ?>">
-                                        <button type="submit" name="status" value="In Progress" class="dropdown-item py-2">
-                                            <i class="fe fe-play-circle mr-2 text-primary"></i> Set In Progress
-                                        </button>
-                                        <button type="submit" name="status" value="Completed" class="dropdown-item py-2 text-success font-weight-bold">
-                                            <i class="fe fe-check-circle mr-2"></i> Mark Completed
-                                        </button>
-                                        <div class="dropdown-divider"></div>
-                                        <button type="submit" name="status" value="Cancelled" class="dropdown-item py-2 text-danger">
-                                            <i class="fe fe-x-circle mr-2"></i> Cancel Visit
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                            <button class="btn-update-status" type="button"
+                                onclick="openVisitUpdateModal(<?php echo (int)$t['id']; ?>, '<?php echo htmlspecialchars($t['status'], ENT_QUOTES, 'UTF-8'); ?>', '<?php echo htmlspecialchars($t['hospital_office_name'], ENT_QUOTES, 'UTF-8'); ?>')">
+                                <i class="fe fe-edit-2 fe-11 mr-1"></i> Accept / Update
+                            </button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -253,6 +242,46 @@
 
 </div>
 </main>
+
+<!-- Site Visit Update Modal -->
+<div class="modal fade" id="visitUpdateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form action="tasks?action=updateStatus" method="POST" class="modal-content border-0 shadow-lg rounded-xl">
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+                <h6 class="modal-title text-white font-weight-bold"><i class="fe fe-navigation mr-2"></i>Site Visit Task Update</h6>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" name="task_id" id="visit_update_task_id">
+                <div class="form-group">
+                    <label class="task-modal-label">Assignment</label>
+                    <input type="text" class="form-control" id="visit_update_title" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="task-modal-label">Status</label>
+                    <select name="status" id="visit_update_status" class="form-control font-weight-bold" required>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress / Accepted</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="task-modal-label">Task Update Details</label>
+                    <textarea name="update_details" class="form-control" rows="3" placeholder="What progress was made in this visit?"></textarea>
+                </div>
+                <div class="form-group mb-0">
+                    <label class="task-modal-label">Comment</label>
+                    <input type="text" name="comment" class="form-control" placeholder="Any additional comment for manager/admin">
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary shadow-sm px-4">Submit Update</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- ═══════════════════════════════════════ STYLES ═══ -->
 <style>
@@ -738,6 +767,12 @@ function htmlspecialchars_decode(str) {
 function openAcceptModal(id) {
     document.getElementById('accept_task_id').value = id;
     $('#acceptModal').modal('show');
+}
+function openVisitUpdateModal(id, status, title) {
+    document.getElementById('visit_update_task_id').value = id;
+    document.getElementById('visit_update_status').value = status || 'Pending';
+    document.getElementById('visit_update_title').value = title || '';
+    $('#visitUpdateModal').modal('show');
 }
 function openCompleteModal(id) {
     document.getElementById('complete_task_id').value = id;

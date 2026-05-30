@@ -86,6 +86,10 @@ class TaskController extends Controller {
             $_POST['assigned_by'] = $_SESSION['user_id'];
             $result = $taskModel->createTask($_POST);
             if ($result) {
+                $db = \Database::getInstance()->getConnection();
+                $msg = "New Site Visit Assigned: " . ($_POST['hospital_name'] ?? 'Visit') . " on " . date('d M Y', strtotime($_POST['visit_date'] ?? date('Y-m-d')));
+                $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskAssigned', ?)");
+                $stmt->execute([$_POST['assigned_to'], $msg]);
                 $_SESSION['flash_success'] = "Task assigned successfully!";
             } else {
                 $_SESSION['flash_error'] = "Failed to assign task.";
@@ -97,8 +101,58 @@ class TaskController extends Controller {
     public function updateStatus() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['task_id'])) {
             $taskModel = new Task();
-            $result = $taskModel->updateTaskStatus($_POST['task_id'], $_POST['status']);
+            $taskId = (int) $_POST['task_id'];
+            $status = $_POST['status'] ?? 'Pending';
+            $allowedStatuses = ['Pending', 'In Progress', 'Completed', 'Cancelled'];
+            if (!in_array($status, $allowedStatuses, true)) {
+                $status = 'Pending';
+            }
+
+            $task = $taskModel->getTaskById($taskId);
+            if (!$task) {
+                $_SESSION['flash_error'] = "Task not found.";
+                $this->redirect('tasks');
+                return;
+            }
+
+            // Employee must only update their own assigned task.
+            if (!in_array($_SESSION['role'], ['Admin', 'Manager']) && (int)$task['assigned_to'] !== (int)$_SESSION['user_id']) {
+                $_SESSION['flash_error'] = "You are not allowed to update this task.";
+                $this->redirect('tasks');
+                return;
+            }
+
+            $updateDetails = trim($_POST['update_details'] ?? '');
+            $comment = trim($_POST['comment'] ?? '');
+            $result = false;
+
+            if ($updateDetails !== '' || $comment !== '') {
+                $existingNotes = trim((string)($task['notes'] ?? ''));
+                $entryLines = [];
+                $entryLines[] = "[" . date('d M Y h:i A') . "] Status: " . $status;
+                if ($updateDetails !== '') {
+                    $entryLines[] = "Update: " . $updateDetails;
+                }
+                if ($comment !== '') {
+                    $entryLines[] = "Comment: " . $comment;
+                }
+                $entry = implode("\n", $entryLines);
+                $newNotes = $existingNotes === '' ? $entry : ($existingNotes . "\n\n" . $entry);
+                $result = $taskModel->updateTaskWithEmployeeNote($taskId, $status, $newNotes);
+            } else {
+                $result = $taskModel->updateTaskStatus($taskId, $status);
+            }
+
             if ($result) {
+                // Notify assigner when assignee updates site-visit progress.
+                if ((int)$task['assigned_by'] > 0 && (int)$task['assigned_by'] !== (int)$_SESSION['user_id']) {
+                    $db = \Database::getInstance()->getConnection();
+                    $employeeName = $_SESSION['name'] ?? 'Employee';
+                    $hospitalName = $task['hospital_office_name'] ?? 'Site Visit';
+                    $msg = $employeeName . " updated site visit (" . $hospitalName . ") to " . $status . ".";
+                    $stmt = $db->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'TaskSubmitted', ?)");
+                    $stmt->execute([$task['assigned_by'], $msg]);
+                }
                 $_SESSION['flash_success'] = "Task status updated!";
             } else {
                 $_SESSION['flash_error'] = "Failed to update task.";

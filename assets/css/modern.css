@@ -195,6 +195,27 @@ body {
 
 /* Desktop Sidebar Adjustments */
 @media (min-width: 768px) {
+    body.vertical .sidebar-left,
+    body.vertical.hover .sidebar-left,
+    body.narrow.open .sidebar-left {
+        width: 290px !important;
+    }
+
+    body.vertical .main-content,
+    body.vertical.hover .main-content,
+    body.narrow.open .main-content,
+    body.vertical .topnav,
+    body.vertical.hover .topnav,
+    body.narrow.open .topnav {
+        margin-left: 290px !important;
+    }
+
+    body.vertical .main-content,
+    body.vertical.hover .main-content,
+    body.narrow.open .main-content {
+        width: calc(100% - 290px) !important;
+    }
+
     body.vertical.collapsed .sidebar-left {
         width: 70px !important;
     }

@@ -15,6 +15,17 @@ class Task extends Model {
         return $stmt->execute([$status, $task_id]);
     }
 
+    public function getTaskById($task_id) {
+        $stmt = $this->db->prepare("SELECT * FROM tasks WHERE id = ?");
+        $stmt->execute([$task_id]);
+        return $stmt->fetch();
+    }
+
+    public function updateTaskWithEmployeeNote($task_id, $status, $notes) {
+        $stmt = $this->db->prepare("UPDATE tasks SET status = ?, notes = ? WHERE id = ?");
+        return $stmt->execute([$status, $notes, $task_id]);
+    }
+
     public function createTask($data) {
         $stmt = $this->db->prepare("INSERT INTO tasks (assigned_by, assigned_to, hospital_office_name, location_desc, target_desc, visit_date, priority, notes) 
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
