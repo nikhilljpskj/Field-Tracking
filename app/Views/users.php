@@ -172,7 +172,14 @@
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <label>Password</label>
-                                <input type="password" name="password" class="form-control" required>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="adminCreatePassword" class="form-control" required>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary border-left-0" onclick="togglePasswordField('adminCreatePassword', 'adminCreatePasswordIcon')">
+                                            <i class="fe fe-eye fe-16" id="adminCreatePasswordIcon"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Phone Number</label>
@@ -236,6 +243,22 @@
 </style>
 
 <script>
+function togglePasswordField(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fe-eye');
+        icon.classList.add('fe-eye-off');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fe-eye-off');
+        icon.classList.add('fe-eye');
+    }
+}
+
 (function() {
     const PER_PAGE = 10;
     let currentPage = 1;

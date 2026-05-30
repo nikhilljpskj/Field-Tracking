@@ -41,7 +41,14 @@
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label class="font-weight-600">New Password <small class="text-muted">(Leave blank to keep current)</small></label>
-                                    <input type="password" name="password" class="form-control form-control-lg bg-light border-0">
+                                    <div class="input-group input-group-lg">
+                                        <input type="password" name="password" id="adminEditPassword" class="form-control bg-light border-0">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-secondary border-left-0" onclick="togglePasswordField('adminEditPassword', 'adminEditPasswordIcon')">
+                                                <i class="fe fe-eye fe-16" id="adminEditPasswordIcon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -88,5 +95,23 @@
 .font-weight-600 { font-weight: 600; }
 .op-1 { opacity: 0.1; }
 </style>
+
+<script>
+function togglePasswordField(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fe-eye');
+        icon.classList.add('fe-eye-off');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fe-eye-off');
+        icon.classList.add('fe-eye');
+    }
+}
+</script>
 
 <?php include 'layout/footer.php'; ?>
