@@ -28,36 +28,41 @@
             </div>
             <div class="col-lg-5">
                 <div class="hero-actions justify-content-lg-end flex-wrap">
-                    <div class="select-wrapper">
-                        <i class="fe fe-calendar select-icon"></i>
-                        <select id="month-selector" class="premium-select" style="min-width: 140px;">
-                            <?php for($m = 1; $m <= 12; $m++): ?>
-                                <option value="<?php echo sprintf('%02d', $m); ?>" <?php echo ($m == $month) ? 'selected' : ''; ?>>
-                                    <?php echo date('F', mktime(0,0,0,$m,1)); ?>
-                                </option>
-                            <?php endfor; ?>
-                        </select>
-                    </div>
-                    <div class="select-wrapper">
-                        <i class="fe fe-calendar select-icon"></i>
-                        <select id="year-selector" class="premium-select" style="min-width: 110px;">
-                            <?php for($y = date('Y'); $y >= 2024; $y--): ?>
-                                <option value="<?php echo $y; ?>" <?php echo ($y == $year) ? 'selected' : ''; ?>><?php echo $y; ?></option>
-                            <?php endfor; ?>
-                        </select>
-                    </div>
-                    <?php if(!empty($users)): ?>
+                    <form id="attendance-filter-form" method="GET" action="attendance-history" class="d-flex flex-wrap align-items-center" style="gap:10px;">
                         <div class="select-wrapper">
-                            <i class="fe fe-user select-icon"></i>
-                            <select id="user-selector" class="premium-select" style="min-width: 170px;">
-                                <?php foreach($users as $u): ?>
-                                    <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $selectedUser) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($u['name']); ?>
+                            <i class="fe fe-calendar select-icon"></i>
+                            <select id="month-selector" name="month" class="premium-select" style="min-width: 140px;">
+                                <?php for($m = 1; $m <= 12; $m++): ?>
+                                    <option value="<?php echo sprintf('%02d', $m); ?>" <?php echo ($m == $month) ? 'selected' : ''; ?>>
+                                        <?php echo date('F', mktime(0,0,0,$m,1)); ?>
                                     </option>
-                                <?php endforeach; ?>
+                                <?php endfor; ?>
                             </select>
                         </div>
-                    <?php endif; ?>
+                        <div class="select-wrapper">
+                            <i class="fe fe-calendar select-icon"></i>
+                            <select id="year-selector" name="year" class="premium-select" style="min-width: 110px;">
+                                <?php for($y = date('Y'); $y >= 2024; $y--): ?>
+                                    <option value="<?php echo $y; ?>" <?php echo ($y == $year) ? 'selected' : ''; ?>><?php echo $y; ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        <?php if(!empty($users)): ?>
+                            <div class="select-wrapper">
+                                <i class="fe fe-user select-icon"></i>
+                                <select id="user-selector" name="user_id" class="premium-select" style="min-width: 220px;">
+                                    <?php foreach($users as $u): ?>
+                                        <option value="<?php echo $u['id']; ?>" <?php echo ((int)$u['id'] === (int)$selectedUser) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['role_name'] ?? 'User'); ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
+                        <button type="submit" class="premium-btn primary" id="filter-apply-btn">
+                            <i class="fe fe-search mr-1"></i> Find
+                        </button>
+                    </form>
                     
                     <div class="dropdown">
                         <button class="premium-btn primary dropdown-toggle" type="button" data-toggle="dropdown">
@@ -590,19 +595,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    const filterForm = document.getElementById('attendance-filter-form');
     const userSel = document.getElementById('user-selector');
     const monthSel = document.getElementById('month-selector');
     const yearSel = document.getElementById('year-selector');
     const exportCsv = document.getElementById('attendance-export-csv');
     const exportPdf = document.getElementById('attendance-export-pdf');
-
-    function buildAttendanceUrl() {
-        const params = new URLSearchParams();
-        if (userSel) params.set('user_id', userSel.value);
-        if (monthSel) params.set('month', monthSel.value);
-        if (yearSel) params.set('year', yearSel.value);
-        return `attendance-history?${params.toString()}`;
-    }
 
     function refreshExportLinks() {
         const params = new URLSearchParams();
@@ -613,23 +611,28 @@ document.addEventListener('DOMContentLoaded', function() {
         exportPdf.href = `attendance-export?${params.toString()}&format=pdf`;
     }
 
-    function reloadAttendanceHistory() {
-        window.location.href = buildAttendanceUrl();
+    function applyFilters() {
+        if (filterForm) {
+            filterForm.submit();
+        }
     }
 
     if (userSel) {
-        userSel.addEventListener('change', reloadAttendanceHistory);
+        userSel.addEventListener('change', function() {
+            refreshExportLinks();
+            applyFilters();
+        });
     }
     if (monthSel) {
         monthSel.addEventListener('change', function() {
             refreshExportLinks();
-            reloadAttendanceHistory();
+            applyFilters();
         });
     }
     if (yearSel) {
         yearSel.addEventListener('change', function() {
             refreshExportLinks();
-            reloadAttendanceHistory();
+            applyFilters();
         });
     }
 

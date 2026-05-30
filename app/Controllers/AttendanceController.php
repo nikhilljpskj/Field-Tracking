@@ -220,8 +220,16 @@ class AttendanceController extends Controller {
                                 ORDER BY u.name ASC");
             $users = $stmt->fetchAll();
         } elseif ($viewerRole === 'Manager') {
-            // Managers can review their assigned team only.
-            $users = $userModel->getExecutivesByManagerId($viewerId);
+            // Managers can review only their assigned team (active users only).
+            $db = \Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT u.id, u.name, u.role_id, u.manager_id, u.is_active, r.name AS role_name
+                                  FROM users u
+                                  LEFT JOIN roles r ON r.id = u.role_id
+                                  WHERE COALESCE(u.is_active, 1) = 1
+                                    AND u.manager_id = ?
+                                  ORDER BY u.name ASC");
+            $stmt->execute([$viewerId]);
+            $users = $stmt->fetchAll();
         } else {
             // Executive/Staff level: self-only.
             $userId = $viewerId;
