@@ -25,13 +25,11 @@
                         </nav>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="hero-actions-wrap">
+                <div class="hero-actions-wrap mt-3">
                     <form id="attendance-filter-form" method="GET" action="attendance-history" class="hero-filter-grid">
                         <div class="select-wrapper month-wrap">
                             <i class="fe fe-calendar select-icon"></i>
-                            <select id="month-selector" name="month" class="premium-select" style="min-width: 140px;">
+                            <select id="month-selector" name="month" class="premium-select" style="min-width: 120px;">
                                 <?php for($m = 1; $m <= 12; $m++): ?>
                                     <option value="<?php echo sprintf('%02d', $m); ?>" <?php echo ($m == $month) ? 'selected' : ''; ?>>
                                         <?php echo date('F', mktime(0,0,0,$m,1)); ?>
@@ -41,7 +39,7 @@
                         </div>
                         <div class="select-wrapper year-wrap">
                             <i class="fe fe-calendar select-icon"></i>
-                            <select id="year-selector" name="year" class="premium-select" style="min-width: 110px;">
+                            <select id="year-selector" name="year" class="premium-select" style="min-width: 95px;">
                                 <?php for($y = date('Y'); $y >= 2024; $y--): ?>
                                     <option value="<?php echo $y; ?>" <?php echo ($y == $year) ? 'selected' : ''; ?>><?php echo $y; ?></option>
                                 <?php endfor; ?>
@@ -63,7 +61,7 @@
                             <i class="fe fe-search mr-1"></i> Find
                         </button>
                     </form>
-                    
+
                     <div class="dropdown export-wrap">
                         <button class="premium-btn primary dropdown-toggle export-btn" type="button" data-toggle="dropdown">
                             <i class="fe fe-download mr-1"></i> Export
@@ -79,6 +77,7 @@
                     </div>
                 </div>
             </div>
+            <div class="col-lg-5"></div>
         </div>
     </div>
 
@@ -310,7 +309,7 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 .hero-filter-grid .month-wrap { grid-area: month; }
 .hero-filter-grid .year-wrap { grid-area: year; }
 .hero-filter-grid .user-wrap { grid-area: user; }
-.hero-filter-grid .find-btn { grid-area: find; justify-content: center; min-width: 110px; height: 50px; }
+.hero-filter-grid .find-btn { grid-area: find; justify-content: center; min-width: 110px; height: 42px; }
 .export-wrap .export-btn { min-width: 140px; justify-content: center; }
 .premium-select {
     background: rgba(255,255,255,0.1);
@@ -322,7 +321,10 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     font-size: 0.9rem; font-weight: 600;
     cursor: pointer; transition: all 0.2s;
     width: 100%;
-    height: 50px;
+    height: 42px;
+    font-size: 0.84rem;
+    padding-top: 8px;
+    padding-bottom: 8px;
 }
 .premium-select option {
     color: #1e293b;
@@ -333,7 +335,9 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 .premium-btn {
     border-radius: 12px; padding: 10px 20px; font-weight: 700; font-size: 0.9rem;
     display: inline-flex; align-items: center; border: none; transition: all 0.2s;
-    height: 50px;
+    height: 42px;
+    padding: 8px 16px;
+    font-size: 0.84rem;
 }
 .premium-btn.primary { background: #fff; color: var(--p-primary); }
 .premium-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
