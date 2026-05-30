@@ -25,11 +25,11 @@
                         </nav>
                     </div>
                 </div>
-                <div class="hero-actions-wrap mt-3">
-                    <form id="attendance-filter-form" method="GET" action="attendance-history" class="hero-filter-grid">
+                <div class="history-filter-dock mt-3">
+                    <form id="attendance-filter-form" method="GET" action="attendance-history" class="history-filter-row">
                         <div class="select-wrapper month-wrap">
                             <i class="fe fe-calendar select-icon"></i>
-                            <select id="month-selector" name="month" class="premium-select" style="min-width: 120px;">
+                            <select id="month-selector" name="month" class="premium-select compact">
                                 <?php for($m = 1; $m <= 12; $m++): ?>
                                     <option value="<?php echo sprintf('%02d', $m); ?>" <?php echo ($m == $month) ? 'selected' : ''; ?>>
                                         <?php echo date('F', mktime(0,0,0,$m,1)); ?>
@@ -39,7 +39,7 @@
                         </div>
                         <div class="select-wrapper year-wrap">
                             <i class="fe fe-calendar select-icon"></i>
-                            <select id="year-selector" name="year" class="premium-select" style="min-width: 95px;">
+                            <select id="year-selector" name="year" class="premium-select compact">
                                 <?php for($y = date('Y'); $y >= 2024; $y--): ?>
                                     <option value="<?php echo $y; ?>" <?php echo ($y == $year) ? 'selected' : ''; ?>><?php echo $y; ?></option>
                                 <?php endfor; ?>
@@ -48,7 +48,7 @@
                         <?php if(!empty($users)): ?>
                             <div class="select-wrapper user-wrap">
                                 <i class="fe fe-user select-icon"></i>
-                                <select id="user-selector" name="user_id" class="premium-select" style="min-width: 220px;">
+                                <select id="user-selector" name="user_id" class="premium-select compact">
                                     <?php foreach($users as $u): ?>
                                         <option value="<?php echo $u['id']; ?>" <?php echo ((int)$u['id'] === (int)$selectedUser) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['role_name'] ?? 'User'); ?>)
@@ -57,24 +57,23 @@
                                 </select>
                             </div>
                         <?php endif; ?>
-                        <button type="submit" class="premium-btn primary find-btn" id="filter-apply-btn">
+                        <button type="submit" class="history-btn find-btn" id="filter-apply-btn">
                             <i class="fe fe-search mr-1"></i> Find
                         </button>
-                    </form>
-
-                    <div class="dropdown export-wrap">
-                        <button class="premium-btn primary dropdown-toggle export-btn" type="button" data-toggle="dropdown">
-                            <i class="fe fe-download mr-1"></i> Export
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right premium-dropdown shadow">
-                            <a id="attendance-export-csv" class="dropdown-item" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=csv">
-                                <i class="fe fe-file-text mr-2 text-success"></i> Excel (CSV)
-                            </a>
-                            <a id="attendance-export-pdf" class="dropdown-item" target="_blank" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=pdf">
-                                <i class="fe fe-printer mr-2 text-danger"></i> PDF Document
-                            </a>
+                        <div class="dropdown export-wrap">
+                            <button class="history-btn export-btn dropdown-toggle" type="button" data-toggle="dropdown">
+                                <i class="fe fe-download mr-1"></i> Export
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right premium-dropdown shadow">
+                                <a id="attendance-export-csv" class="dropdown-item" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=csv">
+                                    <i class="fe fe-file-text mr-2 text-success"></i> Excel (CSV)
+                                </a>
+                                <a id="attendance-export-pdf" class="dropdown-item" target="_blank" href="attendance-export?user_id=<?php echo $selectedUser; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&format=pdf">
+                                    <i class="fe fe-printer mr-2 text-danger"></i> PDF Document
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
             <div class="col-lg-5"></div>
@@ -291,26 +290,34 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
 .hero-breadcrumb .active { color: #fff !important; opacity: 1; font-weight: 600; }
 
 .hero-actions { display: flex; align-items: center; gap: 15px; }
-.hero-actions-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
+.history-filter-dock {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 12px;
+    padding: 10px;
+    max-width: 860px;
 }
-.hero-filter-grid {
+.history-filter-row {
     display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-        "month year"
-        "user  find";
-    gap: 10px 12px;
+    grid-template-columns: 170px 120px minmax(230px, 1fr) 110px 120px;
+    gap: 8px;
     align-items: center;
 }
-.hero-filter-grid .month-wrap { grid-area: month; }
-.hero-filter-grid .year-wrap { grid-area: year; }
-.hero-filter-grid .user-wrap { grid-area: user; }
-.hero-filter-grid .find-btn { grid-area: find; justify-content: center; min-width: 110px; height: 42px; }
-.export-wrap .export-btn { min-width: 140px; justify-content: center; }
+.history-btn {
+    height: 36px;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: #ffffff;
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+}
+.history-btn:hover { background: #f5f7ff; }
+.export-wrap .export-btn { width: 100%; }
 .premium-select {
     background: rgba(255,255,255,0.1);
     backdrop-filter: blur(10px);
@@ -325,6 +332,12 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     font-size: 0.84rem;
     padding-top: 8px;
     padding-bottom: 8px;
+}
+.premium-select.compact {
+    height: 36px;
+    font-size: 0.8rem;
+    padding: 6px 10px 6px 34px;
+    border-radius: 9px;
 }
 .premium-select option {
     color: #1e293b;
@@ -524,26 +537,27 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: 
     .ah-hero-controls { width: 100%; }
     .stats-card { padding: 15px; }
     .stats-value { font-size: 1.2rem; }
-    .hero-actions-wrap { align-items: stretch; margin-top: 12px; }
-    .hero-filter-grid {
+    .history-filter-dock { max-width: 100%; padding: 10px; }
+    .history-filter-row {
         width: 100%;
         grid-template-columns: 1fr 1fr;
-        grid-template-areas:
-            "month year"
-            "user user"
-            "find find";
+        gap: 8px;
     }
-    .hero-filter-grid .find-btn,
-    .export-wrap .export-btn,
-    .premium-btn {
-        width: 100%;
+    .history-filter-row .user-wrap { grid-column: 1 / -1; }
+    .history-filter-row .find-btn,
+    .history-filter-row .export-wrap { grid-column: span 1; }
+    .history-btn, .export-wrap .export-btn, .premium-select.compact { width: 100%; }
+}
+
+@media (max-width: 992px) and (min-width: 577px) {
+    .history-filter-dock { max-width: 100%; }
+    .history-filter-row {
+        grid-template-columns: 1fr 120px 1fr;
+        grid-auto-rows: minmax(36px, auto);
     }
-    .export-wrap {
-        width: 100%;
-    }
-    .premium-select {
-        min-width: 0 !important;
-    }
+    .history-filter-row .month-wrap { grid-column: 1; }
+    .history-filter-row .year-wrap { grid-column: 2; }
+    .history-filter-row .user-wrap { grid-column: 1 / -1; }
 }
 </style>
 
