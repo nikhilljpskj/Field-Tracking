@@ -6,6 +6,7 @@ use App\Models\Hospital;
 
 class HospitalController extends Controller {
     public function index() {
+        $this->checkRole(['Admin', 'Manager', 'HR']);
         $hospitalModel = new Hospital();
         $hospitals = $hospitalModel->getAll();
         
@@ -17,11 +18,15 @@ class HospitalController extends Controller {
     }
 
     public function add() {
+        $this->checkRole(['Admin', 'Manager', 'HR']);
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST['name'])) {
             $hospitalModel = new Hospital();
             $result = $hospitalModel->add([
                 'name' => $_POST['name'],
-                'address' => $_POST['address'] ?? null
+                'address' => $_POST['address'] ?? null,
+                'location_url' => $_POST['location_url'] ?? null,
+                'allotted_day' => $_POST['allotted_day'] ?? null,
+                'allotted_time' => $_POST['allotted_time'] ?? null
             ]);
             
             if ($result) {
@@ -33,8 +38,28 @@ class HospitalController extends Controller {
         $this->redirect('hospitals');
     }
 
+    public function update() {
+        $this->checkRole(['Admin', 'Manager', 'HR']);
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST['id']) && !empty($_POST['name'])) {
+            $hospitalModel = new Hospital();
+            $result = $hospitalModel->update($_POST['id'], [
+                'name' => $_POST['name'],
+                'address' => $_POST['address'] ?? null,
+                'location_url' => $_POST['location_url'] ?? null,
+                'allotted_day' => $_POST['allotted_day'] ?? null,
+                'allotted_time' => $_POST['allotted_time'] ?? null
+            ]);
+            if ($result) {
+                $_SESSION['flash_success'] = "Hospital / Office updated successfully!";
+            } else {
+                $_SESSION['flash_error'] = "Failed to update facility.";
+            }
+        }
+        $this->redirect('hospitals');
+    }
+
     public function delete() {
-        $this->checkRole(['Admin', 'Manager']);
+        $this->checkRole(['Admin', 'Manager', 'HR']);
         if (isset($_GET['id'])) {
             $hospitalModel = new Hospital();
             $hospitalModel->delete($_GET['id']);

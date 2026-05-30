@@ -4,11 +4,11 @@
 <main role="main" class="main-content">
     <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col-12 col-xl-10">
+            <div class="col-12 col-xl-11">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 class="h3 mb-0 page-title">Doctors & Points of Contact</h2>
-                        <p class="text-muted">Manage reference doctors for home enrollments and client interactions.</p>
+                        <p class="text-muted">Manage doctors/POCs with allotted visit day and time.</p>
                     </div>
                     <button class="btn btn-primary font-weight-bold shadow-sm rounded-pill px-4" data-toggle="modal" data-target="#addDoctorModal">
                         <i class="fe fe-plus mr-1"></i> Add Doctor / POC
@@ -28,25 +28,27 @@
                             <table class="table table-hover mb-0">
                                 <thead class="bg-light text-muted small text-uppercase font-weight-bold">
                                     <tr>
-                                        <th class="pl-4">Doctor Name</th>
+                                        <th class="pl-4">Doctor / POC Name</th>
                                         <th>Phone Number</th>
+                                        <th>Allotted Day</th>
+                                        <th>Allotted Time</th>
                                         <th>Added On</th>
-                                        <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin','Manager'])): ?>
-                                        <th class="text-right pr-4">Actions</th>
+                                        <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin','Manager','HR'])): ?>
+                                            <th class="text-right pr-4">Actions</th>
                                         <?php endif; ?>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if(empty($doctors)): ?>
-                                        <tr><td colspan="4" class="text-center py-5 text-muted">No doctors found in the database. Add one to get started.</td></tr>
+                                        <tr><td colspan="6" class="text-center py-5 text-muted">No doctors found in the database. Add one to get started.</td></tr>
                                     <?php endif; ?>
                                     <?php foreach($doctors as $d): ?>
                                     <tr>
                                         <td class="pl-4 font-weight-bold text-dark">
-                                            Dr. <?php echo htmlspecialchars(str_ireplace('dr. ', '', str_ireplace('dr ', '', $d['name']))); ?>
+                                            <?php echo htmlspecialchars($d['name']); ?>
                                         </td>
                                         <td>
-                                            <?php if($d['phone']): ?>
+                                            <?php if(!empty($d['phone'])): ?>
                                                 <a href="tel:<?php echo htmlspecialchars($d['phone']); ?>" class="text-decoration-none">
                                                     <i class="fe fe-phone text-muted mr-1"></i> <?php echo htmlspecialchars($d['phone']); ?>
                                                 </a>
@@ -54,11 +56,22 @@
                                                 <span class="text-muted italic small">Not Provided</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="text-muted"><?php echo date('M d, Y', strtotime($d['created_at'])); ?></td>
-                                        
-                                        <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin','Manager'])): ?>
+                                        <td><?php echo htmlspecialchars($d['allotted_day'] ?? '-'); ?></td>
+                                        <td><?php echo !empty($d['allotted_time']) ? htmlspecialchars(date('h:i A', strtotime($d['allotted_time']))) : '-'; ?></td>
+                                        <td class="text-muted"><?php echo !empty($d['created_at']) ? date('M d, Y', strtotime($d['created_at'])) : '-'; ?></td>
+
+                                        <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin','Manager','HR'])): ?>
                                         <td class="text-right pr-4">
-                                            <a href="doctors?action=delete&id=<?php echo $d['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this doctor?');">
+                                            <button type="button" class="btn btn-sm btn-outline-primary mr-1"
+                                                    data-toggle="modal" data-target="#editDoctorModal"
+                                                    data-id="<?php echo (int)$d['id']; ?>"
+                                                    data-name="<?php echo htmlspecialchars($d['name'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-phone="<?php echo htmlspecialchars($d['phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-allotted_day="<?php echo htmlspecialchars($d['allotted_day'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-allotted_time="<?php echo htmlspecialchars($d['allotted_time'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                                <i class="fe fe-edit-2"></i>
+                                            </button>
+                                            <a href="doctors?action=delete&id=<?php echo $d['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this doctor / POC?');">
                                                 <i class="fe fe-trash-2"></i>
                                             </a>
                                         </td>
@@ -89,11 +102,24 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Full Name</label>
-                        <input type="text" name="name" class="form-control" required placeholder="e.g. John Smith">
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. Dr. John Smith / POC Name">
                     </div>
-                    <div class="form-group mb-0">
+                    <div class="form-group">
                         <label>Phone Number (Optional)</label>
                         <input type="tel" name="phone" class="form-control" placeholder="e.g. +91 9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor Allotted Day</label>
+                        <select name="allotted_day" class="form-control">
+                            <option value="">Select Day</option>
+                            <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $d): ?>
+                                <option value="<?php echo $d; ?>"><?php echo $d; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label>Doctor Allotted Time</label>
+                        <input type="time" name="allotted_time" class="form-control">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -105,4 +131,60 @@
     </div>
 </div>
 
+<!-- Edit Doctor Modal -->
+<div class="modal fade" id="editDoctorModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fe fe-edit-2 mr-2"></i>Edit Doctor/POC</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="doctors?action=update" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="ed_id">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" id="ed_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" name="phone" id="ed_phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor Allotted Day</label>
+                        <select name="allotted_day" id="ed_allotted_day" class="form-control">
+                            <option value="">Select Day</option>
+                            <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $d): ?>
+                                <option value="<?php echo $d; ?>"><?php echo $d; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label>Doctor Allotted Time</label>
+                        <input type="time" name="allotted_time" id="ed_allotted_time" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info px-4 shadow-sm">Update Doctor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+$('#editDoctorModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    $('#ed_id').val(button.data('id') || '');
+    $('#ed_name').val(button.data('name') || '');
+    $('#ed_phone').val(button.data('phone') || '');
+    $('#ed_allotted_day').val(button.data('allotted_day') || '');
+    $('#ed_allotted_time').val(button.data('allotted_time') || '');
+});
+</script>
+
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>
+

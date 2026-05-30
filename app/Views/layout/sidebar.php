@@ -127,7 +127,7 @@
     <?php endif; ?>
   </ul>
 
-  <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
+  <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager', 'HR'])): ?>
   <p class="text-muted nav-heading mt-4 mb-1">
     <span>Master Data</span>
   </p>
