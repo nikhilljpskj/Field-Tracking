@@ -245,12 +245,40 @@
             <p class="text-muted mb-0">Management Command Center / Reviewing Check-In Intelligence</p>
         </div>
         <div class="d-flex gap-3">
+            <?php if (!empty($canMarkSelfAttendance)): ?>
+            <a class="btn btn-success shadow-sm font-weight-bold px-4 py-2" style="border-radius:10px;" href="attendance?mode=self">
+                <i class="fe fe-check-circle mr-2"></i> Mark My Attendance
+            </a>
+            <?php endif; ?>
             <button class="btn btn-outline-primary shadow-sm font-weight-bold px-4 py-2" style="border-radius:10px;" id="btn-global-map">
                 <i class="fe fe-map mr-2"></i> Operational Map View
             </button>
             <button class="btn btn-dark shadow-sm font-weight-bold px-4 py-2" style="border-radius:10px;" onclick="exportRecords()">
                 <i class="fe fe-download mr-2"></i> Export Data
             </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 16px;">
+        <div class="card-body py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0 font-weight-bold text-dark">Currently Logged In (Last 60 Minutes)</h6>
+                <span class="badge badge-primary"><?php echo count($loggedInUsers ?? []); ?></span>
+            </div>
+            <?php if (!empty($loggedInUsers)): ?>
+                <div class="d-flex flex-wrap" style="gap: 10px;">
+                    <?php foreach (($loggedInUsers ?? []) as $lu): ?>
+                        <div class="px-3 py-2 border rounded bg-light">
+                            <div class="font-weight-bold text-dark small"><?php echo htmlspecialchars($lu['name']); ?></div>
+                            <div class="text-muted" style="font-size: 11px;">
+                                <?php echo htmlspecialchars($lu['role_name'] ?? 'User'); ?> | Last active <?php echo date('h:i A', strtotime($lu['last_activity_at'])); ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="text-muted small">No one from this scope has recent app activity.</div>
+            <?php endif; ?>
         </div>
     </div>
 

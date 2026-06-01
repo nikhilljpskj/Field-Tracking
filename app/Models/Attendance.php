@@ -58,6 +58,17 @@ class Attendance extends Model {
                 WHERE 1=1";
         $params = [];
 
+        if (!empty($filters['user_ids']) && is_array($filters['user_ids'])) {
+            $ids = array_values(array_filter(array_map('intval', $filters['user_ids']), function($v) { return $v > 0; }));
+            if (!empty($ids)) {
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                $sql .= " AND a.user_id IN ($placeholders)";
+                foreach ($ids as $id) {
+                    $params[] = $id;
+                }
+            }
+        }
+
         if (!empty($filters['user_id'])) {
             $sql .= " AND a.user_id = ?";
             $params[] = $filters['user_id'];

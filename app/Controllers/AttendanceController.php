@@ -28,6 +28,8 @@ class AttendanceController extends Controller {
         $this->checkRole(['Admin', 'Manager']);
         $attendanceModel = new Attendance();
         $userModel = new \App\Models\User();
+        $viewerRole = $_SESSION['role'] ?? '';
+        $viewerId = (int)($_SESSION['user_id'] ?? 0);
         
         $filters = [
             'user_id' => $_GET['user_id'] ?? null,
@@ -36,14 +38,50 @@ class AttendanceController extends Controller {
             'search' => $_GET['search'] ?? null
         ];
 
+        if ($viewerRole === 'Manager') {
+            $users = $userModel->getExecutivesByManagerId($viewerId);
+            $self = $userModel->findById($viewerId);
+            if ($self) {
+                $self['role_name'] = $self['role_name'] ?? 'Manager';
+                $users[] = $self;
+            }
+            $allowedUserIds = array_values(array_unique(array_map('intval', array_column($users, 'id'))));
+            $filters['user_ids'] = $allowedUserIds;
+            if (!empty($filters['user_id']) && !in_array((int)$filters['user_id'], $allowedUserIds, true)) {
+                $filters['user_id'] = null;
+            }
+        } else {
+            $users = $userModel->getAll();
+            $allowedUserIds = array_values(array_unique(array_map('intval', array_column($users, 'id'))));
+            $filters['user_ids'] = $allowedUserIds;
+        }
+
         $records = $attendanceModel->getFilteredRecords($filters);
-        $users = $userModel->getAll();
+
+        $activeNowThreshold = date('Y-m-d H:i:s', time() - 3600);
+        $loggedInUsers = [];
+        if (!empty($allowedUserIds)) {
+            $db = \Database::getInstance()->getConnection();
+            $in = implode(',', array_fill(0, count($allowedUserIds), '?'));
+            $sql = "SELECT u.id, u.name, u.phone, r.name AS role_name, u.last_activity_at
+                    FROM users u
+                    LEFT JOIN roles r ON r.id = u.role_id
+                    WHERE u.id IN ($in) AND u.last_activity_at IS NOT NULL AND u.last_activity_at >= ?
+                    ORDER BY u.last_activity_at DESC";
+            $params = $allowedUserIds;
+            $params[] = $activeNowThreshold;
+            $stmt = $db->prepare($sql);
+            $stmt->execute($params);
+            $loggedInUsers = $stmt->fetchAll();
+        }
         
         $data = [
             'title' => 'Attendance Logistics - Command Center',
             'records' => $records,
             'users' => $users,
-            'filters' => $filters
+            'filters' => $filters,
+            'loggedInUsers' => $loggedInUsers,
+            'canMarkSelfAttendance' => in_array($viewerRole, ['Admin', 'Manager'], true)
         ];
         $this->view('attendance_manage', $data);
     }
