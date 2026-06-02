@@ -197,7 +197,7 @@ class EmployeeCodeController extends Controller {
         $patterns = $this->code39Patterns();
 
         $x = 10;
-        $h = 120;
+        $h = 70;
         $unitNarrow = 2;
         $unitWide = 5;
         $gap = 2;
@@ -219,9 +219,9 @@ class EmployeeCodeController extends Controller {
         }
 
         $totalWidth = $x + 10;
-        $labelY = $h + 35;
+        $labelY = $h + 25;
         return '<?xml version="1.0" encoding="UTF-8"?>'
-            . '<svg xmlns="http://www.w3.org/2000/svg" width="' . $totalWidth . '" height="180" viewBox="0 0 ' . $totalWidth . ' 180">'
+            . '<svg xmlns="http://www.w3.org/2000/svg" width="' . $totalWidth . '" height="120" viewBox="0 0 ' . $totalWidth . ' 120">'
             . implode('', $bars)
             . '<text x="' . ($totalWidth / 2) . '" y="' . $labelY . '" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#000">' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '</text>'
             . '</svg>';
@@ -237,7 +237,7 @@ class EmployeeCodeController extends Controller {
     private function downloadBarcodePng($employeeCode, $filename, $preview = false) {
         $svg = $this->barcodeSvgMarkup($employeeCode);
         $width = 700;
-        $height = 220;
+        $height = 140;
         $img = imagecreatetruecolor($width, $height);
         imagealphablending($img, false);
         imagesavealpha($img, true);
@@ -249,7 +249,7 @@ class EmployeeCodeController extends Controller {
         foreach ($matches as $m) {
             imagefilledrectangle($img, (int)$m[1], (int)$m[2], (int)$m[1] + (int)$m[3], (int)$m[2] + (int)$m[4], $black);
         }
-        imagestring($img, 5, 260, 170, $employeeCode, $black);
+        imagestring($img, 5, 260, 105, $employeeCode, $black);
 
         header('Content-Type: image/png');
         header('Content-Disposition: ' . ($preview ? 'inline' : 'attachment') . '; filename="' . $filename . '"');

@@ -87,11 +87,16 @@ class MeetingController extends Controller {
 
     public function update_status() {
         $this->checkRole(['Admin', 'Manager']);
-        if (isset($_GET['id']) && isset($_GET['status'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        $status = $_POST['status'] ?? $_GET['status'] ?? null;
+
+        if ($id && $status) {
             $meetingModel = new Meeting();
-            $result = $meetingModel->updateStatus($_GET['id'], $_GET['status'], $_SESSION['user_id']);
+            $comments = trim($_POST['reason'] ?? $_GET['reason'] ?? '');
+            $comments = $comments !== '' ? $comments : null;
+            $result = $meetingModel->updateStatus($id, $status, $_SESSION['user_id'], $comments);
             if ($result) {
-                $_SESSION['flash_success'] = "Intelligence report " . $_GET['status'] . " successfully.";
+                $_SESSION['flash_success'] = "Intelligence report " . $status . " successfully.";
             } else {
                 $_SESSION['flash_error'] = "Failed to update report status.";
             }
@@ -99,8 +104,26 @@ class MeetingController extends Controller {
         $this->redirect('meetings');
     }
 
+    public function update_names() {
+        $this->checkRole(['Admin', 'Manager']);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+            $meetingModel = new Meeting();
+            $clientName = trim($_POST['client_name'] ?? '');
+            $hospitalName = trim($_POST['hospital_name'] ?? '');
+
+            if ($clientName === '' || $hospitalName === '') {
+                $_SESSION['flash_error'] = "Contact person and hospital / office name are required.";
+            } elseif ($meetingModel->updateClientAndHospital($_POST['id'], $clientName, $hospitalName)) {
+                $_SESSION['flash_success'] = "Client meeting names updated successfully.";
+            } else {
+                $_SESSION['flash_error'] = "Failed to update client meeting names.";
+            }
+        }
+        $this->redirect('meetings');
+    }
+
     public function delete() {
-        $this->checkRole(['Admin']);
+        $this->checkRole(['Admin', 'Manager']);
         if (isset($_GET['id'])) {
             $meetingModel = new Meeting();
             $record = $meetingModel->getById($_GET['id']);

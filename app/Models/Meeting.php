@@ -111,6 +111,11 @@ class Meeting extends Model {
         ]);
     }
 
+    public function updateClientAndHospital($id, $clientName, $hospitalName) {
+        $stmt = $this->db->prepare("UPDATE client_meetings SET client_name = ?, hospital_office_name = ? WHERE id = ?");
+        return $stmt->execute([$clientName, $hospitalName, $id]);
+    }
+
     public function getById($id) {
         $stmt = $this->db->prepare("SELECT m.*, u.name as user_name, au.name as approver_name, d.name as referenced_doctor_name 
                                     FROM client_meetings m 

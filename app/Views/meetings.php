@@ -210,6 +210,9 @@
         <?php if(isset($_SESSION['flash_success'])): ?>
             <div class="alert alert-success border-0 shadow-sm m-0"><?php echo $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
         <?php endif; ?>
+        <?php if(isset($_SESSION['flash_error'])): ?>
+            <div class="alert alert-danger border-0 shadow-sm mt-2 mb-0"><?php echo $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?></div>
+        <?php endif; ?>
     </div>
 
     <!-- Main Workspace -->
@@ -380,12 +383,10 @@
                                 </button>
                              <?php endif; ?>
                              <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
-                                <?php if($_SESSION['role'] === 'Admin'): ?>
                                 <button class="feed-action-btn feed-action-delete" onclick="event.stopPropagation(); if(confirm('Permanently delete this meeting log and its associated selfie?')) window.location.href='meetings?action=delete&id=<?php echo $m['id']; ?>'" title="Delete Record">
                                     <i class="fe fe-trash-2"></i>
                                     <span class="feed-action-label">Delete</span>
                                 </button>
-                                <?php endif; ?>
                              <?php endif; ?>
                         </div>
                     </div>
@@ -413,8 +414,22 @@
                     <div class="col-md-7 p-4 bg-white">
                         <div class="d-flex justify-content-between mb-4">
                             <div>
-                                <h3 id="modal-client-name" class="font-weight-bold text-primary mb-1"></h3>
-                                <p id="modal-hospital-name" class="text-muted mb-0"></p>
+                                <div class="d-flex align-items-start" style="gap: 8px;">
+                                    <h3 id="modal-client-name" class="font-weight-bold text-primary mb-1"></h3>
+                                    <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
+                                        <button type="button" class="btn btn-sm btn-link p-0 text-muted" id="modal-edit-client-btn" title="Edit Contact Person / Client Name">
+                                            <i class="fe fe-edit-2"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="d-flex align-items-center" style="gap: 8px;">
+                                    <p id="modal-hospital-name" class="text-muted mb-0"></p>
+                                    <?php if(isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Manager'])): ?>
+                                        <button type="button" class="btn btn-sm btn-link p-0 text-muted" id="modal-edit-hospital-btn" title="Edit Hospital / Office Name">
+                                            <i class="fe fe-edit-2"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                             <span id="modal-status-badge" class="badge px-4 py-2" style="height: fit-content;"></span>
                         </div>
@@ -456,11 +471,65 @@
                     <div class="mr-auto">
                         <button type="button" class="btn btn-success px-4 font-weight-bold rounded-pill audit-btn" id="modal-approve-btn">Approve</button>
                         <button type="button" class="btn btn-danger px-4 font-weight-bold rounded-pill audit-btn" id="modal-reject-btn">Reject</button>
+                        <button type="button" class="btn btn-outline-danger px-4 font-weight-bold rounded-pill audit-btn" id="modal-delete-btn">Delete</button>
                     </div>
                 <?php endif; ?>
                 <button type="button" class="btn btn-primary px-4 font-weight-bold rounded-pill" id="modal-location-trigger-btn">View GPS Trace</button>
                 <button type="button" class="btn btn-outline-secondary px-4 font-weight-bold rounded-pill" data-dismiss="modal">Close</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approval / Rejection Comment Modal -->
+<div class="modal fade" id="meetingActionModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title font-weight-bold" id="meetingActionModalTitle">Verify Meeting</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <form action="meetings?action=update_status" method="POST" id="meetingActionForm">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="meetingActionId">
+                    <input type="hidden" name="status" id="meetingActionStatus">
+                    <p class="text-muted small">Please provide a reason or comment for this action.</p>
+                    <textarea name="reason" class="form-control bg-light border-0 px-3 py-2" rows="3" placeholder="Enter comments (optional)..." style="border-radius: 10px;"></textarea>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4 font-weight-bold" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 font-weight-bold shadow-sm" id="meetingActionSubmit">Confirm Action</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Meeting Name Edit Modal -->
+<div class="modal fade" id="meetingNameEditModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title font-weight-bold">Edit Meeting Names</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <form action="meetings?action=update_names" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="meetingEditId">
+                    <div class="form-group">
+                        <label class="small text-muted font-weight-bold text-uppercase">Contact Person / Client Name</label>
+                        <input type="text" name="client_name" id="meetingEditClientName" class="form-control bg-light border-0" required>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small text-muted font-weight-bold text-uppercase">Hospital / Office Name</label>
+                        <input type="text" name="hospital_name" id="meetingEditHospitalName" class="form-control bg-light border-0" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4 font-weight-bold" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 font-weight-bold shadow-sm">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -690,7 +759,10 @@ document.addEventListener('DOMContentLoaded', function() {
         window.scrollTo({top: 0, behavior: 'smooth'});
     };
 
+    let selectedMeetingForModal = null;
+
     window.viewMeetingDetails = (data) => {
+        selectedMeetingForModal = data;
         document.getElementById('modal-client-name').textContent = data.client_name;
         document.getElementById('modal-hospital-name').textContent = data.hospital_office_name;
         document.getElementById('modal-staff-name').textContent = data.user_name || 'Executive';
@@ -726,13 +798,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if(document.getElementById('modal-approve-btn')) {
             document.getElementById('modal-approve-btn').onclick = () => {
-                window.location.href = `meetings?action=update_status&id=${data.id}&status=Approved`;
+                openMeetingActionModal(data.id, 'Approved');
             };
             document.getElementById('modal-reject-btn').onclick = () => {
-                window.location.href = `meetings?action=update_status&id=${data.id}&status=Rejected`;
+                openMeetingActionModal(data.id, 'Rejected');
+            };
+            document.getElementById('modal-delete-btn').onclick = () => {
+                if (confirm('Permanently delete this meeting log and its associated selfie?')) {
+                    window.location.href = `meetings?action=delete&id=${data.id}`;
+                }
             };
         }
+
+        if (document.getElementById('modal-edit-client-btn')) {
+            document.getElementById('modal-edit-client-btn').onclick = openMeetingNameEditModal;
+            document.getElementById('modal-edit-hospital-btn').onclick = openMeetingNameEditModal;
+        }
         $('#meetingDetailModal').modal('show');
+    };
+
+    window.openMeetingActionModal = (id, status) => {
+        const isApproval = status === 'Approved';
+        $('#meetingDetailModal').modal('hide');
+        document.getElementById('meetingActionId').value = id;
+        document.getElementById('meetingActionStatus').value = status;
+        document.querySelector('#meetingActionForm textarea[name="reason"]').value = '';
+        document.getElementById('meetingActionModalTitle').innerText = isApproval ? 'Approve Meeting' : 'Reject Meeting';
+        document.getElementById('meetingActionModalTitle').style.color = isApproval ? '#28a745' : '#dc3545';
+        document.getElementById('meetingActionSubmit').innerText = isApproval ? 'Approve' : 'Reject';
+        document.getElementById('meetingActionSubmit').className = isApproval ? 'btn btn-success rounded-pill px-4 font-weight-bold shadow-sm' : 'btn btn-danger rounded-pill px-4 font-weight-bold shadow-sm';
+        $('#meetingActionModal').modal('show');
+    };
+
+    window.openMeetingNameEditModal = () => {
+        if (!selectedMeetingForModal) return;
+        document.getElementById('meetingEditId').value = selectedMeetingForModal.id;
+        document.getElementById('meetingEditClientName').value = selectedMeetingForModal.client_name || '';
+        document.getElementById('meetingEditHospitalName').value = selectedMeetingForModal.hospital_office_name || '';
+        $('#meetingNameEditModal').modal('show');
     };
 
     let modalMap, modalMarker;

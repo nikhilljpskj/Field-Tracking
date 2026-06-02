@@ -118,7 +118,7 @@
 
 <style>
 .preview-img { width: 88px; height: 88px; object-fit: contain; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px; background: transparent; }
-.preview-bar { width: 180px; height: 88px; }
+.preview-bar { width: 180px; height: 64px; }
 .btn-xs { padding: .2rem .45rem; font-size: .7rem; line-height: 1.2; border-radius: .25rem; }
 .action-grid {
   display: grid;
