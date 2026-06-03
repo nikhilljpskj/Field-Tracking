@@ -32,6 +32,10 @@
                                     <label class="font-weight-600">Hospital / Office Name</label>
                                     <input type="text" name="hospital_name" class="form-control form-control-lg bg-light border-0" value="<?php echo htmlspecialchars($meeting['hospital_office_name']); ?>" required>
                                 </div>
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-600">Department</label>
+                                    <input type="text" name="department" class="form-control form-control-lg bg-light border-0" value="<?php echo htmlspecialchars($meeting['department'] ?? ''); ?>" <?php echo (($meeting['visit_category'] ?? 'Meeting') === 'Meeting') ? 'required' : ''; ?>>
+                                </div>
                             </div>
                             
                             <div class="row">

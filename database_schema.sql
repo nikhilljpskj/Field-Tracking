@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS client_meetings (
     user_id INT,
     client_name VARCHAR(255),
     hospital_office_name VARCHAR(255),
+    department VARCHAR(255),
     meeting_type VARCHAR(100),
     notes TEXT,
     outcome TEXT,

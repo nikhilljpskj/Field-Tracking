@@ -53,6 +53,13 @@ class MeetingController extends Controller {
 
     public function log() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['latitude'])) {
+            $visitCategory = $_POST['visit_category'] ?? 'Meeting';
+            $department = trim($_POST['department'] ?? '');
+            if ($visitCategory === 'Meeting' && $department === '') {
+                $_SESSION['flash_error'] = "Department is required for Standard Meeting.";
+                $this->redirect('meetings');
+            }
+
             $meetingModel = new Meeting();
             $selfiePath = null;
             if (isset($_POST['selfie_data']) && !empty($_POST['selfie_data'])) {
@@ -63,7 +70,8 @@ class MeetingController extends Controller {
                 'user_id' => $_SESSION['user_id'],
                 'client_name' => $_POST['client_name'],
                 'hospital_name' => $_POST['hospital_name'],
-                'visit_category' => $_POST['visit_category'] ?? 'Meeting',
+                'department' => $department !== '' ? $department : null,
+                'visit_category' => $visitCategory,
                 'meeting_type' => $_POST['meeting_type'],
                 'notes' => $_POST['notes'],
                 'outcome' => $_POST['outcome'],

@@ -366,7 +366,7 @@ class ReportController extends Controller {
             if (!empty($data)) {
                 // Customized Header for Premium Export
                 fputcsv($output, [
-                    'S.No', 'Employee Name', 'Client/Hospital', 'Category', 
+                    'S.No', 'Employee Name', 'Client/Hospital', 'Department', 'Category', 
                     'Visit Date/Time (IST)', 'Outcome', 'Location Address', 
                     'Status', 'Approved By', 'Comments'
                 ]);
@@ -377,6 +377,7 @@ class ReportController extends Controller {
                         $i++,
                         $row['user_name'] ?? 'N/A',
                         $row['client_name'] . ' (' . $row['hospital_office_name'] . ')',
+                        $row['department'] ?? '',
                         $row['visit_category'],
                         date('d M Y - h:i A', strtotime($row['meeting_time'])),
                         $row['outcome'],

@@ -5,12 +5,13 @@ use App\Core\Model;
 
 class Meeting extends Model {
     public function logMeeting($data) {
-        $stmt = $this->db->prepare("INSERT INTO client_meetings (user_id, client_name, hospital_office_name, visit_category, meeting_type, notes, outcome, meeting_time, latitude, longitude, address, selfie_path, referenced_doctor_id) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO client_meetings (user_id, client_name, hospital_office_name, department, visit_category, meeting_type, notes, outcome, meeting_time, latitude, longitude, address, selfie_path, referenced_doctor_id) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         return $stmt->execute([
             $data['user_id'],
             $data['client_name'],
             $data['hospital_name'],
+            $data['department'] ?? null,
             $data['visit_category'] ?? 'Meeting',
             $data['meeting_type'],
             $data['notes'],
@@ -98,10 +99,11 @@ class Meeting extends Model {
     }
 
     public function update($id, $data) {
-        $stmt = $this->db->prepare("UPDATE client_meetings SET client_name = ?, hospital_office_name = ?, visit_category = ?, meeting_type = ?, notes = ?, outcome = ?, meeting_time = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE client_meetings SET client_name = ?, hospital_office_name = ?, department = ?, visit_category = ?, meeting_type = ?, notes = ?, outcome = ?, meeting_time = ? WHERE id = ?");
         return $stmt->execute([
             $data['client_name'],
             $data['hospital_name'],
+            $data['department'] ?? null,
             $data['visit_category'] ?? 'Meeting',
             $data['meeting_type'],
             $data['notes'],

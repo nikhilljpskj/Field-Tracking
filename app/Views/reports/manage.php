@@ -105,6 +105,9 @@
                                         <td class="py-3">
                                             <div class="font-weight-700 text-dark"><?php echo htmlspecialchars($m['client_name']); ?></div>
                                             <div class="small text-muted"><i class="fe fe-map-pin mr-1"></i> <?php echo htmlspecialchars($m['hospital_office_name']); ?></div>
+                                            <?php if(!empty($m['department'])): ?>
+                                                <div class="small text-muted"><i class="fe fe-layers mr-1"></i> <?php echo htmlspecialchars($m['department']); ?></div>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="py-3">
                                             <span class="badge badge-light border x-small font-weight-bold"><?php echo strtoupper($m['meeting_type']); ?></span>
@@ -329,6 +332,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <label class="text-muted small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-user mr-2"></i>In-Person Contact</label>
                                 <div class="font-weight-700 text-dark" id="intel-client"></div>
                             </section>
+
+                            <section class="mb-4" id="intel-department-section">
+                                <label class="text-muted small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-layers mr-2"></i>Department</label>
+                                <div class="font-weight-700 text-dark" id="intel-department"></div>
+                            </section>
                             
                             <section class="mb-4 p-3 bg-soft-info rounded-lg">
                                 <label class="text-info small font-weight-bold text-uppercase mb-1 d-block"><i class="fe fe-message-square mr-2"></i>Executive Summary/Notes</label>
@@ -471,6 +479,12 @@ function openActionModal(actionStr, recordId) {
                     document.getElementById('intel-hospital').textContent = m.hospital_office_name;
                     document.getElementById('intel-address').textContent = m.address;
                     document.getElementById('intel-client').textContent = m.client_name;
+                    if (m.department) {
+                        document.getElementById('intel-department').textContent = m.department;
+                        document.getElementById('intel-department-section').style.display = 'block';
+                    } else {
+                        document.getElementById('intel-department-section').style.display = 'none';
+                    }
                     document.getElementById('intel-type').textContent = m.meeting_type;
                     document.getElementById('intel-time').textContent = new Date(m.meeting_time).toLocaleString('en-IN', {
                         day: '2-digit', month: 'short', year: 'numeric',

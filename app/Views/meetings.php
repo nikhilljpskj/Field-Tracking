@@ -262,6 +262,10 @@
                         <option value="Home Enrollment">Home Enrollment</option>
                     </select>
                 </div>
+                <div class="form-group mb-3" id="department_field_container">
+                    <label class="small font-weight-bold text-muted text-uppercase">Department <span class="text-danger">*</span></label>
+                    <input type="text" name="department" id="department" class="form-control bg-white" placeholder="Department" required>
+                </div>
                 
                 <div class="form-group mb-3" id="doctor_field_container" style="display: none;">
                     <label class="small font-weight-bold text-primary text-uppercase">Referenced Doctor</label>
@@ -359,6 +363,9 @@
                             <div class="small text-primary font-weight-bold mb-1 text-uppercase letter-spacing-1"><?php echo htmlspecialchars($m['user_name'] ?? 'Executive'); ?></div>
                             <h5 class="mb-1 font-weight-bold text-dark"><?php echo htmlspecialchars($m['client_name'] ?: 'No Client'); ?></h5>
                             <div class="text-muted small"><i class="fe fe-briefcase mr-1"></i> <?php echo htmlspecialchars($m['hospital_office_name']); ?></div>
+                            <?php if(!empty($m['department'])): ?>
+                                <div class="text-muted small"><i class="fe fe-layers mr-1"></i> <?php echo htmlspecialchars($m['department']); ?></div>
+                            <?php endif; ?>
                             <div class="text-muted small mt-1"><i class="fe fe-calendar mr-1"></i> <?php echo date('d M Y', strtotime($m['meeting_time'])); ?></div>
                         </div>
 
@@ -448,6 +455,11 @@
                         <div id="modal-ref-doctor-container" class="bg-light rounded p-3 mb-4 border border-dashed border-primary" style="display:none;">
                             <label class="small text-primary font-weight-bold text-uppercase"><i class="fe fe-user mr-1"></i> Referenced Doctor</label>
                             <div id="modal-ref-doctor" class="font-weight-bold text-dark"></div>
+                        </div>
+
+                        <div id="modal-department-container" class="bg-light rounded p-3 mb-4 border border-dashed">
+                            <label class="small text-muted font-weight-bold text-uppercase"><i class="fe fe-layers mr-1"></i> Department</label>
+                            <div id="modal-department" class="font-weight-bold text-dark"></div>
                         </div>
 
                         <div class="bg-light rounded p-3 mb-4 border border-dashed">
@@ -638,12 +650,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dynamic Form Trigger for Reference Doctor
     const categorySelect = document.getElementById('visit_category');
     const doctorFieldContainer = document.getElementById('doctor_field_container');
+    const departmentFieldContainer = document.getElementById('department_field_container');
+    const departmentInput = document.getElementById('department');
     categorySelect.addEventListener('change', function() {
         if (this.value === 'Home Enrollment') {
             doctorFieldContainer.style.display = 'block';
+            departmentFieldContainer.style.display = 'none';
+            departmentInput.required = false;
+            departmentInput.value = '';
         } else {
             doctorFieldContainer.style.display = 'none';
             doctorFieldContainer.querySelector('select').value = '';
+            departmentFieldContainer.style.display = 'block';
+            departmentInput.required = true;
         }
     });
     
@@ -770,6 +789,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modal-notes').textContent = data.notes;
         document.getElementById('modal-outcome').textContent = data.outcome;
         document.getElementById('modal-address').textContent = data.address;
+
+        const departmentContainer = document.getElementById('modal-department-container');
+        if (data.department) {
+            document.getElementById('modal-department').textContent = data.department;
+            departmentContainer.style.display = 'block';
+        } else {
+            departmentContainer.style.display = 'none';
+        }
         
         const refDocContainer = document.getElementById('modal-ref-doctor-container');
         if (data.visit_category === 'Home Enrollment' && data.referenced_doctor_name) {

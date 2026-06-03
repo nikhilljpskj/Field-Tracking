@@ -83,6 +83,9 @@
                             <td>
                                 <span class="d-block font-weight-bold"><?php echo htmlspecialchars($m['client_name'] ?? '-'); ?></span>
                                 <span class="small text-muted d-block"><?php echo htmlspecialchars($m['hospital_office_name'] ?? '-'); ?></span>
+                                <?php if (!empty($m['department'])): ?>
+                                    <span class="small text-muted d-block">Dept: <?php echo htmlspecialchars($m['department']); ?></span>
+                                <?php endif; ?>
                                 <?php if (!empty($m['notes'])): ?>
                                     <span class="small font-italic text-secondary mt-1 d-block">"<?php echo htmlspecialchars(substr($m['notes'], 0, 50)) . (strlen($m['notes']) > 50 ? '...' : ''); ?>"</span>
                                 <?php endif; ?>

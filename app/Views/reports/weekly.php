@@ -79,6 +79,9 @@
                                                 <td>
                                                     <div class="font-weight-600"><?php echo htmlspecialchars($m['client_name']); ?></div>
                                                     <small class="text-muted"><?php echo htmlspecialchars($m['hospital_office_name']); ?></small>
+                                                    <?php if(!empty($m['department'])): ?>
+                                                        <small class="text-muted d-block">Dept: <?php echo htmlspecialchars($m['department']); ?></small>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td><small class="text-muted"><?php echo htmlspecialchars($m['address']); ?></small></td>
                                                 <td><span class="badge badge-soft-<?php echo $m['status']=='Approved'?'success':'warning'; ?>"><?php echo $m['status']; ?></span></td>
