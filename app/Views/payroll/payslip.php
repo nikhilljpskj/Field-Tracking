@@ -153,7 +153,7 @@
         <div class="footer">
             <p>This is a computer-generated payslip and does not require a signature.</p>
             <p>© 2026 Redeemer Technologies. All Rights Reserved.</p>
-            <p class="billing-line">Billed by Daya Life science</p>
+            <p class="billing-line">Billed by Daya Life Science</p>
         </div>
     </div>
 </body>
