@@ -36,6 +36,7 @@
         .net-salary-box p { margin: 5px 0 0; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }
 
         .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }
+        .billing-line { margin-top: 12px; font-size: 10px; font-weight: 300; color: #bbb; }
         
         @page {
             size: A4;
@@ -149,6 +150,7 @@
         <div class="footer">
             <p>This is a computer-generated payslip and does not require a signature.</p>
             <p>© 2026 Redeemer Technologies. All Rights Reserved.</p>
+            <p class="billing-line">Billed by Daya Life science</p>
         </div>
     </div>
 </body>
