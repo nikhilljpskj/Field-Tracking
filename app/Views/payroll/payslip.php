@@ -49,6 +49,9 @@
             .payslip-container { box-shadow: none; border: none; width: 100%; max-width: 100%; margin: 0; }
             .header, .info-grid, .info-row, .total-row { min-width: 0; }
             .company-info, .payslip-title, .info-box, .info-label, .info-value { min-width: 0; overflow-wrap: anywhere; }
+            .net-salary-box { padding: 14px 25px; margin-top: 20px; }
+            .net-salary-box h2 { font-size: 28px; }
+            .footer { margin-top: 35px; }
             .no-print { display: none; }
         }
         
