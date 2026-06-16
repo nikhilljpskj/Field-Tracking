@@ -37,9 +37,17 @@
 
         .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }
         
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
         @media print {
+            * { box-sizing: border-box; }
             body { background: #fff; padding: 0; }
-            .payslip-container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+            .payslip-container { box-shadow: none; border: none; width: 100%; max-width: 100%; margin: 0; }
+            .header, .info-grid, .info-row, .total-row { min-width: 0; }
+            .company-info, .payslip-title, .info-box, .info-label, .info-value { min-width: 0; overflow-wrap: anywhere; }
             .no-print { display: none; }
         }
         
