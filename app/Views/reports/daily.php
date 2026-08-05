@@ -11,12 +11,12 @@
                         <p class="text-muted mb-0">Operational intelligence for <?php echo date('d M Y', strtotime($selectedDate)); ?>.</p>
                     </div>
 
-                    <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                    <div class="d-flex align-items-center flex-wrap report-filter-bar" style="gap: 10px;">
                         <!-- Compact Filter System -->
-                        <form action="reports" method="GET" class="d-flex align-items-center" style="gap: 8px;">
+                        <form action="reports" method="GET" class="d-flex align-items-center report-filter-form" style="gap: 8px;">
                             <input type="hidden" name="action" value="index">
                             
-                            <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2; width: auto;">
+                            <div class="input-group shadow-sm report-filter-control" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2; width: auto;">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-calendar text-primary" style="font-size: 0.8rem;"></i></span>
                                 </div>
@@ -24,13 +24,19 @@
                             </div>
 
                             <?php if(!empty($users)): ?>
-                            <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2; width: auto;">
+                            <div class="input-group shadow-sm report-filter-control employee-filter-control" style="border-radius: 8px; overflow: visible; height: 36px; border: 1px solid #eef0f2; width: auto;">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-users text-info" style="font-size: 0.8rem;"></i></span>
                                 </div>
                                 <select name="user_id" class="form-control border-0 px-2" style="min-width: 160px; font-size: 0.85rem; font-weight: 600; height: 34px;" onchange="this.form.submit()">
                                     <option value="<?php echo $_SESSION['user_id']; ?>">Myself</option>
+                                    <?php if(in_array($_SESSION['role'], ['Admin', 'HR', 'Manager'], true)): ?>
+                                        <option value="all" <?php echo $selectedUserId === 'all' ? 'selected' : ''; ?>>
+                                            <?php echo $_SESSION['role'] === 'Manager' ? 'All Team Employees' : 'All Employees'; ?>
+                                        </option>
+                                    <?php endif; ?>
                                     <?php foreach($users as $u): ?>
+                                        <?php if((int)$u['id'] === (int)$_SESSION['user_id']) continue; ?>
                                         <option value="<?php echo $u['id']; ?>" <?php echo $u['id'] == $selectedUserId ? 'selected' : ''; ?>><?php echo htmlspecialchars($u['name']); ?></option>
                                     <?php endforeach; ?>
                                 </select>
@@ -38,7 +44,12 @@
                             <?php endif; ?>
                         </form>
 
-                        <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                        <div class="btn-group shadow-sm report-export-group" style="border-radius: 8px; overflow: hidden;">
+                            <?php if(in_array($_SESSION['role'], ['Admin', 'HR', 'Manager'], true)): ?>
+                            <a href="reports?action=export&type=daily&format=xls&date=<?php echo urlencode($selectedDate); ?>&user_id=<?php echo urlencode($selectedUserId); ?>" class="btn btn-success btn-sm border-0 font-weight-600 px-3" style="height: 36px; line-height: 24px;">
+                                <i class="fe fe-download mr-1"></i> Excel
+                            </a>
+                            <?php endif; ?>
                             <a href="reports?action=export&type=daily&format=csv&date=<?php echo $selectedDate; ?>&user_id=<?php echo $selectedUserId; ?>" class="btn btn-white btn-sm border-0 font-weight-600 px-3" style="height: 36px; line-height: 24px;">
                                 <i class="fe fe-download mr-1"></i> CSV
                             </a>
@@ -230,6 +241,43 @@
 .font-weight-700 { font-weight: 700; }
 .font-weight-800 { font-weight: 800; }
 .x-small { font-size: 0.75rem; }
+@media (max-width: 767.98px) {
+    .report-filter-bar,
+    .report-filter-form,
+    .report-export-group {
+        width: 100%;
+    }
+    .report-filter-form {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    .report-filter-control {
+        width: 100% !important;
+        height: 46px !important;
+        overflow: visible !important;
+    }
+    .report-filter-control .form-control,
+    .report-filter-control .input-group-text {
+        height: 44px !important;
+        font-size: 16px !important;
+    }
+    .employee-filter-control select {
+        min-width: 0 !important;
+        width: 100% !important;
+        position: relative;
+        z-index: 5;
+    }
+    .report-export-group {
+        display: flex;
+    }
+    .report-export-group .btn {
+        flex: 1 1 0;
+        height: 42px !important;
+        line-height: 30px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+}
 </style>
 <script>
 (function(){

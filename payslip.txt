@@ -1,0 +1,718 @@
+PAYSLIP AND SALARY STRUCTURE MODULE SPECIFICATION
+=================================================
+
+Purpose
+-------
+Build a complete payroll module that lets HR/Admin define employee salary structures, calculate salary with statutory deductions and loss-of-pay, generate monthly payroll history, and let employees view/print their own payslips.
+
+The module has two major parts:
+1. Salary Structure Module: HR/Admin maintains the recurring salary setup for each employee.
+2. Payslip Module: System generates month-wise salary records from the salary structure and displays a professional printable payslip.
+
+
+USER ROLES AND ACCESS
+---------------------
+
+1. Employee
+   - Can view only their own active salary structure summary.
+   - Can view only their own payroll history.
+   - Can open, print, or download their own payslips.
+   - Cannot edit salary structure, generate payroll, delete payroll, or view other employee payslips.
+
+2. HR
+   - Can view all employees for payroll management.
+   - Can create/update employee salary structures.
+   - Can calculate salary in real time.
+   - Can pull leave/LOP summary.
+   - Can generate monthly payslips.
+   - Can edit existing payslip records.
+   - Can delete payroll history records.
+   - Can export payroll CSV.
+   - Can view/print employee payslips.
+
+3. Admin
+   - Same access as HR.
+   - Has full payroll management access.
+
+Security rule:
+Any payslip detail page must verify that the logged-in user is either:
+- the employee who owns the payroll record, or
+- a user with Admin/HR role.
+If not, redirect or deny access.
+
+
+MAIN ROUTES / SCREENS
+---------------------
+
+1. My Payroll
+   URL example: /payroll
+   Access: All logged-in users.
+
+   Features:
+   - Show active salary structure summary.
+   - Show Basic, HRA, Monthly CTC, statutory deductions summary.
+   - Show message when salary structure is not defined.
+   - Show payroll history table sorted by latest year/month first.
+   - Each payroll row shows:
+     - Month and year
+     - Processed date
+     - Gross earnings
+     - Deductions/LOP
+     - Net salary
+     - Payslip view/download button
+
+2. Payroll Management
+   URL example: /payroll-manage
+   Access: Admin and HR only.
+
+   Features:
+   - Employee selector with all employees.
+   - Load selected employee salary structure into payroll calculator.
+   - Salary component input form.
+   - HRA input can be treated as percentage or fixed amount.
+   - DA input can be treated as percentage or fixed amount.
+   - Statutory calculation enable/disable toggle.
+   - Month selector for payroll month.
+   - Leave/LOP fields.
+   - Live salary calculation.
+   - Save salary structure and generate/update payroll history.
+   - View employee payroll history in modal/table.
+   - Open payslip from history.
+   - Load an old payslip into calculator as a base for a new month.
+   - Edit an existing payslip record.
+   - Delete payroll history record.
+   - Export salary structures/payroll to CSV.
+   - Print current page/report if required.
+
+3. Payslip View
+   URL example: /payroll?action=payslip&id={payroll_history_id}
+   Access: Employee owner, HR, Admin.
+
+   Features:
+   - Render without normal app layout for clean printing.
+   - Print/download PDF using browser print.
+   - Show company details/logo.
+   - Show payslip month/year.
+   - Show employee details.
+   - Show bank/payment details.
+   - Show earnings and deductions table.
+   - Show gross salary, total deductions, and net payable.
+   - Convert net salary to words.
+   - Add footer: computer-generated payslip does not require signature.
+
+
+DATABASE TABLES
+---------------
+
+1. salary_structures
+
+Stores the current salary structure/draft for one employee.
+
+Required fields:
+- id: primary key
+- user_id: employee id, unique
+- basic: monthly basic salary
+- hra: HRA amount or percentage input
+- da: DA amount or percentage input
+- special_allowance
+- conveyance_allowance
+- medical_allowance
+- education_allowance
+- uniform_allowance
+- food_allowance
+- telephone_allowance
+- books_allowance
+- research_allowance
+- cca
+- transport_allowance
+- pf_deduction: optional legacy/manual PF field
+- tax_deduction: optional legacy/manual tax field
+- total_ctc: annual or configured total CTC reference
+- pf_employer_contribution
+- eps_contribution
+- esi_employer_contribution
+- gratuity_provision
+- bonus_provision
+- lwf_employee
+- lwf_employer
+- surcharge
+- advance_recovery
+- loan_emi
+- tds_monthly
+- professional_tax
+- deduction_80c
+- deduction_80d
+- prev_employer_tds
+- total_working_days: default 26
+- is_statutory_enabled: 1/0
+- updated_at
+
+Recommended constraints:
+- UNIQUE KEY on user_id
+- Foreign key user_id references users(id)
+- Decimal money fields should use DECIMAL(12,2)
+- total_working_days should default to 26
+- is_statutory_enabled should default to 1
+
+2. payroll_history
+
+Stores generated month-wise payslip records. This table must preserve a snapshot of the salary calculation at generation time.
+
+Required fields:
+- id: primary key
+- user_id
+- month: numeric month 1-12
+- year: numeric year
+- gross_salary
+- lop_deductions
+- net_salary
+- status: Generated/Paid
+- breakdown_json: full calculation snapshot as JSON
+- monthly_ctc
+- annual_ctc
+- processed_by: user id of HR/Admin who generated/updated it
+- created_at
+- is_statutory_enabled
+
+Recommended extra fields:
+- net_salary_taxable
+- gross_earnings
+- total_statutory_deductions
+- employer_contributions
+
+Recommended constraints:
+- UNIQUE KEY on user_id, month, year to prevent duplicate payslips for the same employee and month.
+- Foreign key user_id references users(id)
+
+3. salary_templates
+
+Optional table for reusable salary templates.
+
+Fields:
+- id
+- name
+- description
+- data_json
+- created_at
+
+
+SALARY STRUCTURE INPUT FIELDS
+-----------------------------
+
+Earnings:
+- Basic Salary
+- HRA
+- HRA Type: percentage/fixed
+- DA
+- DA Type: percentage/fixed
+- Special Allowance
+- Conveyance Allowance
+- Medical Allowance
+- Education Allowance
+- Uniform Allowance
+- Food Allowance
+- Telephone Allowance
+- Books Allowance
+- Research Allowance
+- City Compensatory Allowance (CCA)
+- Transport Allowance
+
+Deductions and recoveries:
+- Professional Tax
+- Labour Welfare Fund Employee Contribution
+- Advance Recovery
+- Loan EMI
+- TDS/Income Tax
+- PF Employee Contribution
+- ESI Employee Contribution
+- Loss of Pay Deduction
+
+Employer-side CTC components:
+- PF Employer Contribution
+- EPS Contribution
+- ESI Employer Contribution
+- Gratuity Provision
+- Bonus Provision
+- Labour Welfare Fund Employer Contribution
+
+Tax/declaration fields:
+- 80C Deduction
+- 80D Deduction
+- Previous Employer TDS
+- Surcharge
+
+Payroll period fields:
+- Payroll Month
+- Total Working Days, default 26
+- LOP Days
+- Paid Days, calculated as total working days minus LOP days
+- Sick Leave
+- Casual Leave
+- Earned Leave
+
+
+CALCULATION RULES
+-----------------
+
+1. HRA and DA conversion
+   - If HRA type is percentage, HRA amount = Basic * HRA / 100.
+   - If HRA type is fixed, HRA amount = HRA input.
+   - If DA type is percentage, DA amount = Basic * DA / 100.
+   - If DA type is fixed, DA amount = DA input.
+
+Backend compatibility rule:
+If only numeric HRA/DA values are stored and the value is greater than 0 and less than 100, treat it as a percentage of Basic. Otherwise treat it as a fixed amount.
+
+2. Gross earnings
+   Gross Earnings =
+   Basic
+   + HRA actual
+   + DA actual
+   + Special Allowance
+   + Conveyance Allowance
+   + Medical Allowance
+   + Education Allowance
+   + Uniform Allowance
+   + Food Allowance
+   + Telephone Allowance
+   + Books Allowance
+   + Research Allowance
+   + CCA
+   + Transport Allowance
+
+3. Statutory toggle
+   If statutory calculation is disabled:
+   - PF = 0
+   - ESI = 0
+   - Gratuity = 0
+   - Bonus = 0
+   - Auto TDS = 0
+
+   If statutory calculation is enabled, calculate the following.
+
+4. Provident Fund
+   PF wage = min(Basic + DA actual, 15000)
+   Employee PF = (Basic + DA actual) * 12%
+   EPS = PF wage * 8.33%
+   Employer EPF balance = Employee PF - EPS
+
+Note:
+Some implementations cap employee PF also to PF wage. Current existing logic uses actual Basic + DA for employee PF and capped wage for EPS.
+
+5. ESI
+   If gross earnings <= 21000:
+   - Employee ESI = ceil(gross earnings * 0.75%)
+   - Employer ESI = ceil(gross earnings * 3.25%)
+   Else:
+   - Employee ESI = 0
+   - Employer ESI = 0
+
+6. Gratuity and bonus provisions
+   Gratuity = Basic * 4.81%
+   Bonus = Basic * 8.33%
+
+7. TDS
+   Taxable Annual Salary = Gross Earnings * 12
+   If taxable annual salary > 500000:
+   - Monthly TDS = (Taxable Annual Salary - 500000) * 10% / 12
+   Else:
+   - Monthly TDS = 0
+
+8. Other employee deductions
+   Other Deductions =
+   Professional Tax
+   + LWF Employee
+   + Advance Recovery
+   + Loan EMI
+   + Monthly TDS
+   + Employee PF
+   + Employee ESI
+
+9. Loss of Pay
+   Working days = total_working_days or 26 if not provided.
+   Per-day salary = Gross Earnings / Working Days.
+   LOP Amount = LOP Days * Per-day salary.
+   Paid Days = max(0, Working Days - LOP Days).
+
+10. Net salary
+   Net Before LOP = Gross Earnings - Other Deductions.
+   Net Salary Payable = Net Before LOP - LOP Amount.
+
+11. Employer contribution total
+   Employer Total =
+   Employee PF
+   + Employer ESI
+   + Gratuity
+   + Bonus
+   + LWF Employer
+
+Note:
+The current logic uses employee PF in employer total. A stricter implementation may use employer PF instead. Keep this configurable if building a new app.
+
+12. CTC
+   Monthly CTC = Gross Earnings + Employer Total.
+   Annual CTC = Monthly CTC * 12.
+
+
+PAYROLL GENERATION FLOW
+-----------------------
+
+1. HR/Admin opens Payroll Management.
+2. HR/Admin selects employee.
+3. System loads existing salary structure if available.
+4. HR/Admin enters or updates salary components.
+5. HR/Admin selects payroll month.
+6. System optionally fetches leave summary for selected employee and month.
+7. System fills LOP, sick leave, casual leave, and earned leave values.
+8. Calculator updates live gross, deductions, LOP, net salary, monthly CTC, and annual CTC.
+9. HR/Admin clicks Save Draft / Generate.
+10. System saves salary_structures using INSERT ... ON DUPLICATE KEY UPDATE.
+11. System generates payroll_history for the selected employee/month/year.
+12. If payroll_history for that employee/month/year already exists, update it instead of creating duplicate.
+13. Store full calculation in breakdown_json so future payslip remains historically correct even if salary structure changes later.
+
+
+EDIT EXISTING PAYSLIP FLOW
+--------------------------
+
+1. HR/Admin opens employee payroll history.
+2. HR/Admin clicks Edit on an existing payroll record.
+3. System loads breakdown_json into calculator.
+4. System sets month/year from the selected history record.
+5. Save button changes to Update Payslip.
+6. HR/Admin modifies values.
+7. System recalculates gross, deductions, LOP, net salary, CTC.
+8. System updates the existing payroll_history row by id.
+9. System updates processed_by to current HR/Admin.
+10. System keeps salary snapshot in breakdown_json.
+
+
+LOAD OLD PAYSLIP AS NEW DRAFT FLOW
+----------------------------------
+
+1. HR/Admin opens employee payroll history.
+2. HR/Admin chooses an old payslip and loads it into calculator.
+3. System fills salary fields from old breakdown_json.
+4. HR/Admin changes the payroll month if needed.
+5. Saving creates or updates payroll_history for the selected month, not the old record.
+
+
+LEAVE SUMMARY INTEGRATION
+-------------------------
+
+Endpoint example:
+/payroll-manage?action=getLeaveSummary&user_id={id}&month={YYYY-MM}
+
+Expected response:
+{
+  "status": "success",
+  "summary": {
+    "lop_days": 0,
+    "sick_leave": 0,
+    "casual_leave": 0,
+    "earned_leave": 0
+  }
+}
+
+Rules:
+- Pull approved leave records for selected employee and month.
+- Map leave types by name:
+  - contains "lop" -> lop_days
+  - contains "sick" -> sick_leave
+  - contains "casual" -> casual_leave
+  - contains "earned" -> earned_leave
+- Recalculate payroll after filling leave values.
+
+
+PAYSLIP VIEW CONTENT
+--------------------
+
+Header:
+- Company logo
+- Company name
+- Company address
+- Company email/web
+- Payslip title
+- Payslip month and year
+
+Employee details:
+- Employee name
+- Employee ID, for example EMP-0001
+- Designation/role
+- Email
+
+Payment details:
+- Bank name
+- Account number
+- IFSC code
+- LOP days
+
+Salary table:
+- Earnings column:
+  - Basic Salary
+  - HRA
+  - DA
+  - Special Allowance
+  - Conveyance
+  - Other configured allowances if available
+  - Total Gross Earnings
+
+- Deductions column:
+  - Provident Fund
+  - Professional Tax
+  - TDS / Income Tax
+  - ESI
+  - LOP Deduction
+  - Advance Recovery
+  - Loan EMI
+  - Total Deductions
+
+Net salary section:
+- Net Salary Payable
+- Amount in currency
+- Amount in words
+
+Footer:
+- "This is a computer-generated payslip and does not require a signature."
+- Company copyright or configured footer.
+- Optional billing/legal line.
+
+
+PRINT / PDF REQUIREMENTS
+------------------------
+
+- Payslip page should be clean and printable on A4.
+- Hide print button while printing.
+- Use browser print to save as PDF.
+- Avoid app sidebar/header on payslip print page.
+- Ensure long employee names, bank names, account numbers, and emails wrap safely.
+- Use currency formatting with two decimals.
+- Use Indian numbering/currency formatting where appropriate.
+
+
+CSV EXPORT
+----------
+
+Access: Admin/HR only.
+
+CSV should include at minimum:
+- Employee Name
+- Basic
+- HRA
+- DA
+- Gross Salary
+- Deductions
+- Net Salary
+- Monthly CTC
+
+Recommended extra columns:
+- Employee ID
+- Payroll Month
+- Payroll Year
+- LOP Days
+- LOP Amount
+- PF Employee
+- ESI Employee
+- Professional Tax
+- TDS
+- Annual CTC
+- Status
+- Processed By
+- Processed Date
+
+
+API / CONTROLLER ACTIONS
+------------------------
+
+1. index
+   - Gets current user's salary structure.
+   - Gets current user's payroll history.
+   - Renders My Payroll page.
+
+2. manage
+   - Requires Admin/HR.
+   - Gets all employees with salary structure.
+   - Gets salary templates if used.
+   - Renders Payroll Management page.
+
+3. saveStructure
+   - Requires POST and Admin/HR.
+   - Saves salary structure for employee.
+   - Redirects back to Payroll Management with success/failure message.
+
+4. saveDraft
+   - Requires POST and Admin/HR.
+   - If history_id exists, update that payroll_history record.
+   - If history_id does not exist:
+     - Save/update salary structure.
+     - Generate or update payroll_history for selected month/year.
+   - Returns JSON success/error.
+
+5. getHistory
+   - Requires employee user_id.
+   - Returns payroll_history for employee as JSON.
+
+6. getLeaveSummary
+   - Requires user_id and month in YYYY-MM format.
+   - Returns leave summary JSON.
+
+7. payslip
+   - Requires payroll_history id.
+   - Checks owner/Admin/HR access.
+   - Loads payroll record, employee record, and breakdown_json.
+   - Renders printable payslip.
+
+8. deleteHistory
+   - Requires Admin/HR.
+   - Requires payroll_history id.
+   - Deletes payroll record.
+   - Returns JSON success/error.
+
+9. exportCSV
+   - Requires Admin/HR.
+   - Streams CSV download.
+
+
+MODEL METHODS
+-------------
+
+1. getSalaryStructure(user_id)
+   - Return one salary_structures row for employee.
+
+2. saveSalaryStructure(data)
+   - Insert or update salary structure by user_id.
+   - Default missing numeric fields to 0.
+   - Convert statutory checkbox/toggle to 1 or 0.
+
+3. calculate(data)
+   - Apply all salary calculation rules.
+   - Return original inputs plus calculated fields:
+     - gross
+     - deductions
+     - net
+     - monthly_ctc
+     - annual_ctc
+     - pf_employee
+     - pf_employer
+     - eps
+     - epf_balance
+     - esi_employee
+     - esi_employer
+     - gratuity
+     - bonus
+     - tds
+     - hra actual
+     - da actual
+
+4. generatePayroll(user_id, month, year, processed_by, lopDays)
+   - Load salary structure.
+   - Calculate salary.
+   - Calculate LOP amount.
+   - Calculate final net salary.
+   - Store payroll_history with breakdown_json.
+   - Use upsert on user_id/month/year.
+
+5. getPayrollHistory(user_id)
+   - Return all payroll_history rows for employee sorted latest first.
+   - Include processed_by user name if available.
+
+6. deleteHistory(id)
+   - Delete one payroll_history row.
+
+
+VALIDATION RULES
+----------------
+
+- user_id is required for salary structure and payroll generation.
+- calc_month is required and must be YYYY-MM.
+- month must be 1-12.
+- year must be valid numeric year.
+- Money fields must be numeric and cannot be negative unless the business explicitly allows adjustments.
+- total_working_days must be greater than 0.
+- lop_days cannot be less than 0.
+- lop_days should not exceed total_working_days unless manually allowed by HR.
+- Employee must exist before saving salary or payroll.
+- Only Admin/HR can write payroll data.
+- Employees can read only their own payroll data.
+
+
+IMPORTANT SNAPSHOT RULE
+-----------------------
+
+Never build old payslips directly from the current salary_structures table.
+
+When payroll is generated, save the full salary calculation and all input values into payroll_history.breakdown_json. Payslip view must use payroll_history and breakdown_json so historical payslips remain unchanged after salary structure edits.
+
+
+UI BEHAVIOR REQUIREMENTS
+------------------------
+
+Payroll Management:
+- Selecting an employee loads existing structure instantly.
+- Changing any salary/leave field recalculates totals immediately.
+- Statutory toggle recalculates immediately.
+- Payroll month change should trigger leave summary fetch when employee is selected.
+- Save button should show loading state while saving.
+- History modal should show loading state while fetching.
+- Delete action must ask for confirmation.
+- Edit mode should clearly show that an existing payslip is being modified.
+- User must be able to cancel edit mode.
+
+My Payroll:
+- Empty state for no salary structure.
+- Empty state for no payroll history.
+- Payslip opens in new tab/window.
+
+Payslip:
+- Print button visible on screen.
+- Print button hidden in print mode.
+- Page should fit A4.
+
+
+IMPLEMENTATION NOTES FOR ANOTHER APP
+------------------------------------
+
+- Keep salary calculation in one backend service/model so frontend and backend do not drift.
+- Frontend live calculation is useful for HR experience, but backend calculation must be authoritative.
+- Use transactions when saving salary structure and payroll history together.
+- Use decimal columns for money, not floating-point database types.
+- Store every generated payslip as immutable history unless HR intentionally edits it.
+- Add audit fields if the new app needs compliance:
+  - created_by
+  - updated_by
+  - updated_at
+  - approved_by
+  - paid_at
+  - payment_reference
+- Add payroll status workflow if required:
+  - Draft
+  - Generated
+  - Approved
+  - Paid
+  - Cancelled
+- Consider locking paid payslips from edits.
+- Consider adding PDF generation library if browser print is not enough.
+
+
+MINIMUM ACCEPTANCE CHECKLIST
+----------------------------
+
+- HR/Admin can create a salary structure for an employee.
+- HR/Admin can update an existing salary structure.
+- Calculator computes gross salary correctly.
+- Calculator computes PF, EPS, ESI, gratuity, bonus, TDS when statutory toggle is enabled.
+- Calculator sets statutory values to zero when toggle is disabled.
+- LOP amount is calculated using gross salary / working days.
+- Net salary subtracts employee deductions and LOP.
+- Monthly and annual CTC are calculated.
+- HR/Admin can generate a payroll record for a selected month.
+- Duplicate generation for same employee/month/year updates existing record instead of creating duplicate.
+- Payroll history stores breakdown_json snapshot.
+- Employee can view only their own payroll history.
+- Employee can print/download their own payslip.
+- HR/Admin can view any employee payslip.
+- Unauthorized users cannot view other employee payslips.
+- HR/Admin can edit existing payroll history.
+- HR/Admin can delete payroll history.
+- HR/Admin can export payroll CSV.
+- Payslip is print-ready and includes employee, bank, earnings, deductions, gross, net, LOP, and amount in words.

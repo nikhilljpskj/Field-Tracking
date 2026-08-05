@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redeemer Technologies Field Tracking System - User Manual</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d8e0ea;
+      --soft: #f6f8fb;
+      --brand: #2563eb;
+      --ok: #0f766e;
+      --warn: #b45309;
+      --danger: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #fff;
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 22px 80px;
+    }
+    header {
+      border-bottom: 3px solid var(--brand);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .brand img {
+      width: 170px;
+      max-height: 70px;
+      object-fit: contain;
+    }
+    h1, h2, h3, h4 { line-height: 1.2; margin: 0 0 12px; }
+    h1 { font-size: 32px; }
+    h2 {
+      font-size: 24px;
+      margin-top: 34px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    h3 { font-size: 19px; margin-top: 24px; color: #0f2a56; }
+    h4 { font-size: 16px; margin-top: 16px; }
+    p { margin: 8px 0 12px; }
+    a { color: var(--brand); }
+    code {
+      background: #eef2ff;
+      color: #1e3a8a;
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: #edf4ff; }
+    ul, ol { margin: 8px 0 16px 22px; padding: 0; }
+    li { margin: 5px 0; }
+    .note, .warning, .success {
+      border-left: 4px solid var(--brand);
+      background: var(--soft);
+      padding: 12px 14px;
+      margin: 14px 0;
+      border-radius: 6px;
+    }
+    .warning { border-color: var(--warn); background: #fff7ed; }
+    .success { border-color: var(--ok); background: #ecfdf5; }
+    .danger { color: var(--danger); font-weight: bold; }
+    .toc {
+      columns: 2;
+      column-gap: 38px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      padding: 18px 22px;
+      border-radius: 8px;
+    }
+    .toc a { display: block; margin: 4px 0; text-decoration: none; }
+    .screenshot {
+      border: 2px dashed #b8c4d6;
+      background: #f8fafc;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 18px;
+      margin: 10px 0 18px;
+      min-height: 72px;
+    }
+    .page-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 18px 0;
+      background: #fff;
+    }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #075985;
+      padding: 2px 8px;
+      font-size: 12px;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+    .kbd {
+      border: 1px solid #cbd5e1;
+      border-bottom-width: 2px;
+      background: #f8fafc;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 12px;
+    }
+    @media print {
+      .page { max-width: none; padding: 18mm; }
+      .toc { columns: 1; }
+      .page-card, .note, .warning, table { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+    @media (max-width: 760px) {
+      .toc { columns: 1; }
+      table { font-size: 13px; }
+      th, td { padding: 7px; }
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div class="brand">
+      <img src="assets/images/redeemer-technologies-logo.png" alt="Redeemer Technologies logo">
+      <div>
+        <h1>Field Tracking System User Manual</h1>
+        <p><strong>Application:</strong> Redeemer Technologies Field Tracking / HRMS</p>
+        <p><strong>Audience:</strong> Admin, HR, Manager, Executive, Field Executive, and Staff users</p>
+        <p><strong>Version prepared:</strong> 26 June 2026</p>
+      </div>
+    </div>
+  </header>
+
+  <section id="important-note">
+    <h2>Important Note About Screenshots And Passwords</h2>
+    <div class="warning">
+      <p><strong>Screenshots:</strong> The application runtime/database was not available from this workspace while this manual was prepared, so live page screenshots could not be captured. Each page section contains a screenshot placeholder. After logging in locally, replace each placeholder with the relevant screenshot from that page.</p>
+      <p><strong>Passwords:</strong> User passwords are stored as secure hashes. Plain text passwords cannot be recovered from the database. The only confirmed seed login in the project is the default administrator below. All other user passwords must be created or reset by an Admin through User Management.</p>
+    </div>
+  </section>
+
+  <section id="toc">
+    <h2>Contents</h2>
+    <nav class="toc">
+      <a href="#overview">1. System Overview</a>
+      <a href="#login">2. Login Credentials</a>
+      <a href="#roles">3. Role Permissions</a>
+      <a href="#layout">4. Common Layout</a>
+      <a href="#navigation">5. Navigation Map</a>
+      <a href="#daily-use">6. Daily End-User Workflow</a>
+      <a href="#pages">7. Page-by-Page Manual</a>
+      <a href="#crud">8. CRUD Operations Summary</a>
+      <a href="#limits">9. Limitations And Rules</a>
+      <a href="#troubleshooting">10. Troubleshooting</a>
+    </nav>
+  </section>
+
+  <section id="overview">
+    <h2>1. System Overview</h2>
+    <p>The Field Tracking System is a web application for managing field employees, attendance, GPS location logs, client visits, task assignment, sales targets, travel allowance, leave management, payroll, employee identity codes, and operational reports.</p>
+    <p>The system is designed for mobile field use. Attendance and meeting pages use the device camera and GPS. Managers, HR, and Admin users use the same system for approvals, audits, master data, reports, payroll, and configuration.</p>
+  </section>
+
+  <section id="login">
+    <h2>2. Login Credentials</h2>
+    <h3>Confirmed Default Login</h3>
+    <table>
+      <thead><tr><th>Role</th><th>Email / User Name</th><th>Password</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Admin</td>
+          <td><code>admin@example.com</code></td>
+          <td><code>admin123</code></td>
+          <td>Project seed script <code>seed_db.php</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Other Role Logins</h3>
+    <p>Admin creates HR, Manager, Executive, Field Executive, and Staff accounts from <strong>Settings &gt; User Management</strong>. During creation, Admin sets each employee email and password. If a user forgets a password, Admin opens that user in User Management and enters a new password in the edit form.</p>
+    <table>
+      <thead><tr><th>Role</th><th>How Login Is Created</th><th>Password Handling</th></tr></thead>
+      <tbody>
+        <tr><td>HR</td><td>Admin creates a user and selects HR role.</td><td>Password is chosen by Admin during create or reset.</td></tr>
+        <tr><td>Manager</td><td>Admin creates a user and selects Manager role.</td><td>Password is chosen by Admin during create or reset.</td></tr>
+        <tr><td>Executive / Field Executive / Staff</td><td>Admin creates the employee and assigns a Manager if needed.</td><td>Password is chosen by Admin during create or reset.</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <p>Recommended first action after installation: log in as Admin, change the default Admin password, create real HR/Manager/Executive users, and disable or delete any sample users.</p>
+    </div>
+  </section>
+
+  <section id="roles">
+    <h2>3. Role Permissions</h2>
+    <table>
+      <thead><tr><th>Role</th><th>Main Responsibility</th><th>Primary Access</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Admin</td>
+          <td>Full system control.</td>
+          <td>Dashboard, attendance management, live tracking, tasks, meetings, leaves, payroll, targets, allowance, master data, reports, users, employee QR/barcode, settings, cleanup functions.</td>
+        </tr>
+        <tr>
+          <td>HR</td>
+          <td>Employee administration, leave allocation, payroll support, reporting.</td>
+          <td>Dashboard, personal attendance, attendance history, tasks, meetings, contacts, leaves, leave manage, leave allocate, payroll, payroll admin, master data, reports, employee QR/barcode.</td>
+        </tr>
+        <tr>
+          <td>Manager</td>
+          <td>Team monitoring, assignment, approvals, target tracking.</td>
+          <td>Dashboard, attendance management for own team, attendance history, tasks, meetings, contacts, live tracking, leaves, leave manage, payslips, targets, allowance, master data, reports.</td>
+        </tr>
+        <tr>
+          <td>Executive / Field Executive / Staff</td>
+          <td>Daily field work, attendance, visits, task completion, leave requests.</td>
+          <td>Dashboard, daily attendance, attendance history, daily tasks, client meetings, contacts, my leaves, my payslips, sales targets, travel allowance.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="layout">
+    <h2>4. Common Layout</h2>
+    <h3>Logo And Brand Area</h3>
+    <p>The left sidebar displays the Redeemer Technologies logo and brand name. Clicking the brand area returns users to the application root/login flow.</p>
+    <h3>Top Bar</h3>
+    <ul>
+      <li><strong>Menu button:</strong> Opens or collapses the sidebar, especially useful on mobile.</li>
+      <li><strong>Search field:</strong> Visual search input in the header. It may not search every module unless implemented on the current page.</li>
+      <li><strong>Notification bell:</strong> Shows unread alerts such as task assignments, performance alerts, cleanup warnings, and task approval events.</li>
+      <li><strong>Profile avatar:</strong> Opens Profile, Settings, and Logout shortcuts. Settings is available only to roles permitted by the application.</li>
+    </ul>
+    <h3>Cleanup Warning Banner</h3>
+    <p>Admin and HR may see a scheduled deletion banner. It warns when attendance or meeting logs are approaching the 60-day retention deletion window. The banner can be dismissed for the current day.</p>
+  </section>
+
+  <section id="navigation">
+    <h2>5. Navigation Map</h2>
+    <table>
+      <thead><tr><th>Menu Section</th><th>Pages</th><th>Visible To</th></tr></thead>
+      <tbody>
+        <tr><td>Main</td><td>Dashboard</td><td>All logged-in users</td></tr>
+        <tr><td>Modules</td><td>Daily Attendance, Attendance History, Daily Tasks, Client Meetings, Contact</td><td>All logged-in users</td></tr>
+        <tr><td>Modules</td><td>Live Tracking</td><td>Admin, Manager</td></tr>
+        <tr><td>Leaves</td><td>My Leaves</td><td>All logged-in users</td></tr>
+        <tr><td>Leaves</td><td>Manage Requests</td><td>Admin, Manager, HR</td></tr>
+        <tr><td>Leaves</td><td>Allocate Leave</td><td>Admin, HR</td></tr>
+        <tr><td>Payroll</td><td>My Payslips</td><td>All logged-in users</td></tr>
+        <tr><td>Payroll</td><td>Payroll Admin</td><td>Admin, HR</td></tr>
+        <tr><td>Performance</td><td>Sales Targets, Travel Allowance</td><td>Admin, Manager, Executive</td></tr>
+        <tr><td>Master Data</td><td>Hospitals &amp; Offices, Doctors &amp; POC</td><td>Admin, Manager, HR</td></tr>
+        <tr><td>Reporting</td><td>Daily Reports, Monthly Reports</td><td>Admin, Manager, HR</td></tr>
+        <tr><td>Settings</td><td>User Management</td><td>Admin</td></tr>
+        <tr><td>Settings</td><td>Employee QR / Barcode</td><td>Admin, HR</td></tr>
+        <tr><td>Settings</td><td>System Settings</td><td>Admin</td></tr>
+        <tr><td>Exit</td><td>Logout</td><td>All logged-in users</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="daily-use">
+    <h2>6. Daily End-User Workflow</h2>
+    <ol>
+      <li>Log in with the email and password provided by Admin.</li>
+      <li>Open <strong>Daily Attendance</strong>, allow browser location and camera permissions, capture selfie and odometer photo if required, then check in.</li>
+      <li>Keep the application open or active enough for background location sync while checked in. Tracking logs only while the session is checked in.</li>
+      <li>Open <strong>Daily Tasks</strong> to view assigned site visits and in-house tasks. Accept, update, submit, or complete tasks as applicable.</li>
+      <li>Open <strong>Client Meetings</strong> for each visit. Capture selfie, allow GPS, enter client/facility/department/meeting details, and submit the meeting log.</li>
+      <li>Check <strong>Travel Allowance</strong> to review today’s calculated distance and allowance.</li>
+      <li>At the end of the day, return to <strong>Daily Attendance</strong>, capture checkout photo/odometer, and check out.</li>
+      <li>Use <strong>My Leaves</strong> for leave requests and <strong>My Payslips</strong> for payroll records.</li>
+    </ol>
+  </section>
+
+  <section id="pages">
+    <h2>7. Page-By-Page Manual</h2>
+
+    <article class="page-card" id="login-page">
+      <h3>Login Page <code>/login</code></h3>
+      <p><span class="badge">All users</span></p>
+      <div class="screenshot">Screenshot placeholder: Login page with logo, email field, password field, eye icon, and Let me in button.</div>
+      <p>Use this page to enter the application. Type your registered email address and password. Use the eye icon to show or hide the password before submitting.</p>
+      <ul>
+        <li>If credentials are wrong, the page shows “Invalid email or password”.</li>
+        <li>If the account is disabled, the page shows “Your account has been disabled. Please contact admin.”</li>
+        <li>After successful login, the app redirects to Dashboard.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="dashboard-page">
+      <h3>Dashboard <code>/dashboard</code></h3>
+      <p><span class="badge">All users</span></p>
+      <div class="screenshot">Screenshot placeholder: Dashboard summary cards, quick action buttons, performance panels, and task/meeting shortcuts.</div>
+      <p>The dashboard is the first page after login. It summarizes attendance, employee count, distance, meetings, trends, performance thresholds, and overdue tasks according to role.</p>
+      <ul>
+        <li>Admin/HR/Manager see administrative summaries such as total employees, today’s attendance, today’s travel, approved meetings, and trends.</li>
+        <li>Executive users see personal attendance status, daily meeting performance, monthly target progress, travel distance, and overdue in-house tasks.</li>
+        <li>Quick buttons route users to Attendance, Client Meetings, Tasks, Targets, Reports, or Tracking where permitted.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="attendance-page">
+      <h3>Daily Attendance <code>/attendance</code></h3>
+      <p><span class="badge">All users</span><span class="badge">Admin/Manager management view</span></p>
+      <div class="screenshot">Screenshot placeholder: Attendance check-in/check-out page with selfie modal, odometer modal, GPS status, and action button.</div>
+      <p>Executives and staff use this page to mark daily attendance. Admin and Manager are taken to the attendance management view by default; they can use <code>/attendance?mode=self</code> to mark their own attendance.</p>
+      <h4>How To Check In</h4>
+      <ol>
+        <li>Open Daily Attendance.</li>
+        <li>Allow browser location permission.</li>
+        <li>Open the selfie modal, capture your selfie, and confirm.</li>
+        <li>Capture odometer photo if required, enter odometer reading, and vehicle/ticket details.</li>
+        <li>Wait for GPS/address capture, then press Check In.</li>
+      </ol>
+      <h4>How To Check Out</h4>
+      <ol>
+        <li>Return to Daily Attendance after work.</li>
+        <li>Allow GPS and capture checkout selfie/odometer if prompted.</li>
+        <li>Press Check Out. Travel allowance is recalculated after checkout.</li>
+      </ol>
+      <p><strong>Limitations:</strong> Camera and GPS must be allowed in the browser. Accuracy above the configured threshold may be ignored. Upload folder permissions must allow image saving.</p>
+    </article>
+
+    <article class="page-card" id="attendance-management-page">
+      <h3>Attendance Management <code>/attendance</code>, <code>/attendance-edit</code>, <code>/attendance-history</code>, <code>/attendance-export</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">Manager</span><span class="badge">HR for history</span></p>
+      <div class="screenshot">Screenshot placeholder: Attendance management list with filters, audit modal, map button, export button, edit action, and active users.</div>
+      <p>Admin and Manager can review attendance records. Managers are limited to their assigned team. Admin can edit and delete attendance records; Managers can edit records; delete is Admin-only.</p>
+      <ul>
+        <li><strong>Filters:</strong> employee, date range, and search.</li>
+        <li><strong>Audit:</strong> view check-in/out time, GPS, address, images, odometer, and map links.</li>
+        <li><strong>Edit:</strong> update check-in/check-out timestamps, coordinates, and addresses.</li>
+        <li><strong>Delete:</strong> Admin can permanently delete attendance records and associated media.</li>
+        <li><strong>History:</strong> month/year calendar or list view with leave overlay.</li>
+        <li><strong>Export:</strong> CSV or print/PDF style attendance history.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="tasks-page">
+      <h3>Daily Tasks <code>/tasks</code></h3>
+      <p><span class="badge">All users</span><span class="badge">Admin/Manager assignment</span></p>
+      <div class="screenshot">Screenshot placeholder: Tasks page showing site visit tasks, in-house task cards, status controls, comments, attachments, and audit history.</div>
+      <p>Tasks are split into site visit tasks and in-house tasks.</p>
+      <h4>Executive Use</h4>
+      <ul>
+        <li>View tasks assigned to you.</li>
+        <li>Update site visit status: Pending, In Progress, Completed, or Cancelled.</li>
+        <li>Add update details and comments, which are appended to task notes.</li>
+        <li>Accept in-house tasks, submit partial progress, upload completion files, and submit final work.</li>
+      </ul>
+      <h4>Admin/Manager Use</h4>
+      <ul>
+        <li>Create site visit tasks with employee, hospital/office, location, target, visit date, priority, and notes.</li>
+        <li>Create in-house tasks with assignee, task name, requirements, deadline, and optional file attachment.</li>
+        <li>Approve completed in-house tasks or request revision with feedback.</li>
+        <li>Managers see their team; Admin sees all users and can delete in-house tasks.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="meetings-page">
+      <h3>Client Meetings <code>/meetings</code></h3>
+      <p><span class="badge">All users</span><span class="badge">Admin/Manager approval</span></p>
+      <div class="screenshot">Screenshot placeholder: Client Meetings page with meeting form, camera modal, GPS trace, feed cards, approve/reject/delete controls.</div>
+      <p>Use this page to log every client, hospital, office, doctor, or POC interaction with selfie and GPS proof.</p>
+      <h4>How To Log A Meeting</h4>
+      <ol>
+        <li>Allow camera and location access.</li>
+        <li>Capture a selfie from the photo modal.</li>
+        <li>Enter client/contact name, hospital or office name, visit category, department, doctor reference if applicable, meeting type, notes, and outcome.</li>
+        <li>Wait for GPS/address capture and submit.</li>
+      </ol>
+      <h4>Admin/Manager Actions</h4>
+      <ul>
+        <li>View all meeting logs, photos, coordinates, and location trace.</li>
+        <li>Approve or reject meeting logs with optional comments.</li>
+        <li>Edit client/contact and hospital/office names.</li>
+        <li>Delete meeting log and associated selfie.</li>
+      </ul>
+      <p><strong>Validation:</strong> Department is required for Standard Meeting category.</p>
+    </article>
+
+    <article class="page-card" id="contacts-page">
+      <h3>Contact Directory <code>/contacts</code></h3>
+      <p><span class="badge">All users</span></p>
+      <div class="screenshot">Screenshot placeholder: Contact directory with employee names, roles, email, mobile number, and export menu.</div>
+      <p>This page shows contact details based on role scope. Admin and HR see all active users. Manager sees assigned team members. Executive/Staff see HR users and their reporting manager.</p>
+      <ul>
+        <li>Export contacts as CSV.</li>
+        <li>Open print/PDF format from the export menu.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="tracking-page">
+      <h3>Live Tracking <code>/tracking</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">Manager</span></p>
+      <div class="screenshot">Screenshot placeholder: Team live monitoring map/list showing active, inactive, checked out, on leave, absent, and logged-in-not-checked-in users.</div>
+      <p>Live Tracking shows team location status and route information. Location logs are created in the background only while a user is checked in and has granted GPS permission.</p>
+      <ul>
+        <li><strong>Active:</strong> checked in and recently synced location.</li>
+        <li><strong>Inactive:</strong> checked in but no recent location sync.</li>
+        <li><strong>Checked out:</strong> attendance completed for the day.</li>
+        <li><strong>On leave:</strong> approved leave exists today.</li>
+        <li><strong>Absent:</strong> no check-in and no recent activity.</li>
+        <li><strong>Logged in, not checked in:</strong> app activity exists but no attendance check-in.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="leave-pages">
+      <h3>Leave Management <code>/leaves</code>, <code>/leave-manage</code>, <code>/leave-allocate</code></h3>
+      <p><span class="badge">All users</span><span class="badge">Admin</span><span class="badge">HR</span><span class="badge">Manager</span></p>
+      <div class="screenshot">Screenshot placeholder: My Leaves page with balances, apply form, application history, manage requests, and quota allocation modal.</div>
+      <h4>My Leaves</h4>
+      <ul>
+        <li>View current quarter allocations and balances.</li>
+        <li>Apply for leave by selecting leave type, start date, end date, half-day option, and reason.</li>
+        <li>The system checks available quarterly balance before submission.</li>
+      </ul>
+      <h4>Manage Requests</h4>
+      <ul>
+        <li>Admin, HR, and Manager can approve or reject pending leave requests.</li>
+        <li>On approval, used leave balance is deducted.</li>
+        <li>If approved days exceed balance, the extra days are recorded as LOP where applicable.</li>
+      </ul>
+      <h4>Allocate Leave</h4>
+      <ul>
+        <li>Admin and HR allocate leave quota by employee, quarter, year, and leave type.</li>
+        <li>Default leave types can be seeded: Sick Leave, Casual Leave, and Earned Leave.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="payroll-pages">
+      <h3>Payroll <code>/payroll</code>, <code>/payroll-manage</code>, <code>/payroll?action=payslip</code></h3>
+      <p><span class="badge">All users</span><span class="badge">Admin/HR payroll admin</span></p>
+      <div class="screenshot">Screenshot placeholder: My Payslips and Payroll Admin with salary fields, monthly calculation, leave summary, history, payslip print view.</div>
+      <h4>My Payslips</h4>
+      <ul>
+        <li>Employees view payroll history and salary structure.</li>
+        <li>Open payslip to view/print a detailed payslip.</li>
+      </ul>
+      <h4>Payroll Admin</h4>
+      <ul>
+        <li>Admin/HR maintain salary structures.</li>
+        <li>Fields include Basic, HRA, DA, special/other allowances, deductions, PF, tax, monthly CTC, annual CTC, and LOP.</li>
+        <li>Payroll drafts can be saved and monthly payroll history generated or updated.</li>
+        <li>Leave summary can be pulled for payroll calculations.</li>
+        <li>Payroll history can be viewed and deleted by Admin/HR.</li>
+        <li>Payroll CSV export is available.</li>
+      </ul>
+      <p><strong>Security:</strong> Employees can view only their own payslips. Admin and HR can view employee payslips.</p>
+    </article>
+
+    <article class="page-card" id="targets-page">
+      <h3>Sales Targets <code>/targets</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">Manager</span><span class="badge">Executive</span></p>
+      <div class="screenshot">Screenshot placeholder: Target dashboard/list with target type, period, target value, achieved value, start/end date, create and delete actions.</div>
+      <p>Executives view their targets. Admin and Manager manage targets for employees within their scope.</p>
+      <ul>
+        <li>Create target by employee, type, period, target value, start date, and end date.</li>
+        <li>Target types include Visits, Sales Amount, New Clients, and Product Promotion.</li>
+        <li>Periods include Daily, Weekly, and Monthly.</li>
+        <li>Delete target when it is no longer needed.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="allowance-page">
+      <h3>Travel Allowance <code>/allowance</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">Manager</span><span class="badge">Executive</span></p>
+      <div class="screenshot">Screenshot placeholder: Travel allowance page showing date, distance, rate per KM, and allowance earned.</div>
+      <p>This page shows today’s travel distance and allowance. The system calculates distance from attendance and client meeting milestones, then falls back to route logs when needed. Allowance equals distance multiplied by the current travel rate.</p>
+      <p><strong>Limitation:</strong> Distance depends on GPS quality, route logs, check-in/out data, meeting coordinates, and HERE Maps availability.</p>
+    </article>
+
+    <article class="page-card" id="master-pages">
+      <h3>Master Data <code>/hospitals</code>, <code>/doctors</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">Manager</span><span class="badge">HR</span></p>
+      <div class="screenshot">Screenshot placeholder: Hospitals & Offices and Doctors & POC tables with add/edit/delete/export controls.</div>
+      <h4>Hospitals &amp; Offices</h4>
+      <ul>
+        <li>Add facility name, address, location URL, allotted day, and allotted time.</li>
+        <li>Edit existing facility details.</li>
+        <li>Delete facility records.</li>
+        <li>Export as CSV or print/PDF view.</li>
+      </ul>
+      <h4>Doctors &amp; POC</h4>
+      <ul>
+        <li>Add name, phone, allotted day, and allotted time.</li>
+        <li>Edit contact details and schedule.</li>
+        <li>Delete doctor/POC records.</li>
+        <li>Export as CSV or print/PDF view.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="reports-pages">
+      <h3>Reports <code>/reports-daily</code>, <code>/reports-monthly</code>, <code>/reports?action=manage</code>, <code>/reports?action=export</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">Manager</span><span class="badge">HR monthly access</span><span class="badge">Self daily access</span></p>
+      <div class="screenshot">Screenshot placeholder: Daily performance report, monthly performance report, report filters, export menu, approval controls, and print view.</div>
+      <ul>
+        <li><strong>Daily Reports:</strong> attendance, meetings, travel, selected date, selected employee, and location map details.</li>
+        <li><strong>Monthly Reports:</strong> monthly meeting summary, travel summary, team aggregate view, and employee breakdown.</li>
+        <li><strong>Manage Reports:</strong> Admin/Manager review team meeting logs and travel summaries, approve or reject items, and filter by employee/date.</li>
+        <li><strong>Exports:</strong> meeting reports can export CSV and print/PDF style views. Filters include report type, user, date, month, year, and category.</li>
+        <li><strong>Edit Meeting:</strong> Admin can edit meeting records from report workflows.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="users-page">
+      <h3>User Management <code>/users</code>, <code>/users?action=create</code>, <code>/users?action=edit</code></h3>
+      <p><span class="badge">Admin only</span></p>
+      <div class="screenshot">Screenshot placeholder: User Management table with add user modal/form, edit button, active toggle, delete button, and role/manager fields.</div>
+      <p>Admin manages all login accounts here.</p>
+      <ul>
+        <li><strong>Create:</strong> enter role, name, email, password, phone, and manager.</li>
+        <li><strong>Edit:</strong> update role, name, email, phone, manager, bank name, account number, IFSC code, and optionally password.</li>
+        <li><strong>Password reset:</strong> open Edit User, type a new password, and save.</li>
+        <li><strong>Disable/Enable:</strong> toggle active status. Disabled users cannot log in.</li>
+        <li><strong>Delete:</strong> permanently remove the user record. Use carefully because related records may depend on that user.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="employee-codes-page">
+      <h3>Employee QR / Barcode <code>/employee-codes</code>, <code>/verify-employee</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">HR</span><span class="badge">Public verification link</span></p>
+      <div class="screenshot">Screenshot placeholder: Employee QR/Barcode table with search, bulk generate, regenerate, QR download, barcode download, and verification preview.</div>
+      <ul>
+        <li>Search employees by name, employee code, department, or designation.</li>
+        <li>Bulk-generate missing employee codes.</li>
+        <li>Regenerate QR token/barcode data for an employee.</li>
+        <li>Download QR or barcode as PNG or SVG.</li>
+        <li>QR codes link to public employee verification page showing employee identity details.</li>
+      </ul>
+      <p><strong>Employee code format:</strong> generated codes use the pattern <code>RED</code> + two-digit year + three-digit sequence when possible.</p>
+    </article>
+
+    <article class="page-card" id="settings-page">
+      <h3>System Settings <code>/settings</code></h3>
+      <p><span class="badge">Admin only</span></p>
+      <div class="screenshot">Screenshot placeholder: Settings page with travel rate field, rate history, and performance threshold inputs.</div>
+      <ul>
+        <li>Update travel allowance rate per KM.</li>
+        <li>Review travel rate history.</li>
+        <li>Update daily visit performance thresholds: low, average, and excellent.</li>
+      </ul>
+      <p>These settings affect allowance calculations and dashboard performance alerts.</p>
+    </article>
+
+    <article class="page-card" id="profile-page">
+      <h3>Profile <code>/profile</code></h3>
+      <p><span class="badge">All users</span></p>
+      <div class="screenshot">Screenshot placeholder: Profile page with personal fields, password field, bank details, profile photo upload, and save button.</div>
+      <ul>
+        <li>Update name, email, phone, bank name, account number, and IFSC code.</li>
+        <li>Upload profile picture in JPG, JPEG, PNG, or GIF format.</li>
+        <li>Change password by entering a new password before saving.</li>
+      </ul>
+    </article>
+
+    <article class="page-card" id="travel-history-page">
+      <h3>Travel History <code>/travel-history</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">Manager</span><span class="badge">HR</span></p>
+      <div class="screenshot">Screenshot placeholder: Travel history route audit with employee/date filters, route map, and daily distance.</div>
+      <p>This route audit page displays employee route logs and daily distance for a selected date. Managers see their team; Admin/HR can select from all users.</p>
+    </article>
+
+    <article class="page-card" id="cleanup-page">
+      <h3>Cleanup Notifications <code>/cleanup-notify</code>, <code>/cleanup</code></h3>
+      <p><span class="badge">Admin</span><span class="badge">HR notification banner</span></p>
+      <div class="screenshot">Screenshot placeholder: Cleanup warning banner and cleanup status output.</div>
+      <p>The system includes a cleanup service for old attendance and meeting media/data according to the 60-day retention policy. Admin/HR see warnings before scheduled deletion and can dismiss the banner for the day.</p>
+    </article>
+
+    <article class="page-card" id="logout-page">
+      <h3>Logout <code>/logout</code></h3>
+      <p><span class="badge">All users</span></p>
+      <p>Use Logout from the sidebar or profile menu to end the session. After logout, the system redirects to Login.</p>
+    </article>
+  </section>
+
+  <section id="crud">
+    <h2>8. CRUD Operations Summary</h2>
+    <table>
+      <thead><tr><th>Module</th><th>Create</th><th>Read/View</th><th>Update</th><th>Delete</th></tr></thead>
+      <tbody>
+        <tr><td>Users</td><td>Admin creates users.</td><td>Admin views user list.</td><td>Admin edits user/profile/bank/password/active status.</td><td>Admin deletes users.</td></tr>
+        <tr><td>Attendance</td><td>User checks in/out.</td><td>User self history; Admin/HR/Manager scoped history.</td><td>Admin/Manager edit attendance data.</td><td>Admin deletes attendance and media.</td></tr>
+        <tr><td>Site Tasks</td><td>Admin/Manager assign.</td><td>Assignee, Admin, Manager view.</td><td>Assignee updates status/comments; Admin/Manager manage.</td><td>Admin/Manager delete site tasks.</td></tr>
+        <tr><td>In-House Tasks</td><td>Users can create; Admin/Manager manage.</td><td>Assignee, assigner, Admin/Manager view.</td><td>Accept, partial submit, final submit, approve, revision, edit.</td><td>Admin deletes in-house tasks.</td></tr>
+        <tr><td>Meetings</td><td>Users log meetings.</td><td>User self; Admin/Manager all/team.</td><td>Admin/Manager approve, reject, edit names.</td><td>Admin/Manager delete meetings and selfie.</td></tr>
+        <tr><td>Leaves</td><td>User applies; Admin/HR allocate quota.</td><td>User own applications; Admin/HR/Manager pending requests.</td><td>Admin/HR/Manager approve/reject; Admin/HR update allocations.</td><td>No general user-facing delete shown.</td></tr>
+        <tr><td>Payroll</td><td>Admin/HR generate payroll history.</td><td>User own payslip; Admin/HR employee payroll.</td><td>Admin/HR edit structures and drafts.</td><td>Admin/HR delete payroll history.</td></tr>
+        <tr><td>Targets</td><td>Admin/Manager create.</td><td>Executive own; Admin/Manager scoped list.</td><td>Achievement updates depend on backend data/process.</td><td>Admin/Manager delete.</td></tr>
+        <tr><td>Hospitals/Offices</td><td>Admin/Manager/HR add.</td><td>Admin/Manager/HR view/export.</td><td>Admin/Manager/HR edit.</td><td>Admin/Manager/HR delete.</td></tr>
+        <tr><td>Doctors/POC</td><td>Admin/Manager/HR add.</td><td>Admin/Manager/HR view/export.</td><td>Admin/Manager/HR edit.</td><td>Admin/Manager/HR delete.</td></tr>
+        <tr><td>Employee QR/Barcode</td><td>Admin/HR generate codes/tokens.</td><td>Admin/HR list; public verify page by token.</td><td>Admin/HR regenerate.</td><td>No delete action; tied to user record.</td></tr>
+        <tr><td>Settings</td><td>Admin adds new travel rate entries through update.</td><td>Admin views rates and thresholds.</td><td>Admin updates travel rate and performance thresholds.</td><td>No settings delete shown.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="limits">
+    <h2>9. Limitations And Rules</h2>
+    <ul>
+      <li>Passwords cannot be recovered because they are securely hashed. Reset passwords through Admin User Management.</li>
+      <li>Camera and GPS functions require browser permission and a compatible device.</li>
+      <li>Background tracking logs only while the user is checked in and the browser can access location.</li>
+      <li>Location logs with poor accuracy may be skipped. The default maximum accuracy threshold in configuration is 100 meters.</li>
+      <li>Travel allowance depends on check-in/out data, meeting location data, GPS route logs, configured rate per KM, and map service availability.</li>
+      <li>Managers are generally restricted to assigned team members. Admin has full visibility. HR has broad HR/payroll/reporting visibility but not all Admin-only settings.</li>
+      <li>Some exports are CSV downloads; some PDF options are print-friendly HTML pages opened in a new tab.</li>
+      <li>Attendance and meeting media can be permanently deleted by authorized delete actions or retention cleanup.</li>
+      <li>Old attendance and meeting data may be subject to the 60-day cleanup retention policy.</li>
+      <li>Deleting users or master records can affect historical references. Prefer disabling users when history must remain intact.</li>
+      <li>The top search box is a common header element and may not perform global search across all modules.</li>
+    </ul>
+  </section>
+
+  <section id="troubleshooting">
+    <h2>10. Troubleshooting</h2>
+    <table>
+      <thead><tr><th>Problem</th><th>Likely Cause</th><th>What To Do</th></tr></thead>
+      <tbody>
+        <tr><td>Cannot log in.</td><td>Wrong email/password, disabled account, or changed password.</td><td>Check spelling, use eye icon to verify password, contact Admin for reset or activation.</td></tr>
+        <tr><td>Camera does not open.</td><td>Browser permission blocked or device has no camera.</td><td>Allow camera permission, use HTTPS/local trusted environment, retry on mobile if needed.</td></tr>
+        <tr><td>GPS does not capture.</td><td>Location permission blocked, weak signal, browser restrictions.</td><td>Allow location permission, turn on device GPS, move to open area, refresh page.</td></tr>
+        <tr><td>Check-in button remains disabled.</td><td>Required selfie/GPS/odometer data not ready.</td><td>Capture required photos and wait for GPS/address confirmation.</td></tr>
+        <tr><td>Attendance photo upload fails.</td><td>Upload folder not writable.</td><td>Ask Admin/server maintainer to check permissions for <code>uploads/attendance/</code>.</td></tr>
+        <tr><td>Meeting cannot be submitted.</td><td>Required field missing, selfie/GPS missing, or department missing for Standard Meeting.</td><td>Complete all required fields and capture photo/location again.</td></tr>
+        <tr><td>Travel allowance seems wrong.</td><td>Missing GPS logs, missing checkout, missing meeting locations, or rate not updated.</td><td>Check Attendance, Meetings, Tracking, and System Settings travel rate.</td></tr>
+        <tr><td>Employee cannot see a page.</td><td>Role-based access restriction.</td><td>Confirm the user role and manager assignment in User Management.</td></tr>
+        <tr><td>Leave request rejected for balance.</td><td>Insufficient allocated leave in selected quarter.</td><td>Ask HR/Admin to check Leave Allocate page.</td></tr>
+        <tr><td>Payslip not visible.</td><td>Payroll not generated for that month or access denied.</td><td>Ask HR/Admin to generate payroll or check selected employee/month.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="screenshot-checklist">
+    <h2>Screenshot Checklist</h2>
+    <p>To complete the visual version of this manual, log in as each role and capture these screens:</p>
+    <ul>
+      <li>Login page</li>
+      <li>Dashboard for Admin/HR/Manager/Executive</li>
+      <li>Daily Attendance check-in/check-out</li>
+      <li>Attendance Management, Attendance History, Attendance Edit</li>
+      <li>Daily Tasks and Team Task Assignment</li>
+      <li>Client Meetings form and meeting audit modal</li>
+      <li>Contact Directory</li>
+      <li>Live Tracking</li>
+      <li>My Leaves, Manage Requests, Allocate Leave</li>
+      <li>My Payslips, Payroll Admin, Payslip print view</li>
+      <li>Sales Targets</li>
+      <li>Travel Allowance and Travel History</li>
+      <li>Hospitals &amp; Offices, Doctors &amp; POC</li>
+      <li>Daily Reports, Monthly Reports, report export/print view</li>
+      <li>User Management and Edit User</li>
+      <li>Employee QR / Barcode and Verify Employee</li>
+      <li>System Settings, Profile, Notifications, Logout</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>

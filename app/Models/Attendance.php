@@ -138,4 +138,26 @@ class Attendance extends Model {
         $stmt->execute($user_ids);
         return $stmt->fetchAll();
     }
+
+    public function getDailyRecordsByUserIds($date, $user_ids) {
+        if (empty($user_ids)) return [];
+
+        $ids = array_values(array_filter(array_map('intval', (array)$user_ids), function($id) {
+            return $id > 0;
+        }));
+        if (empty($ids)) return [];
+
+        $in = implode(',', array_fill(0, count($ids), '?'));
+        $params = array_merge([$date], $ids);
+
+        $stmt = $this->db->prepare("SELECT a.*, u.name as user_name, u.phone as user_phone, r.name as role_name
+                                    FROM attendance a
+                                    JOIN users u ON a.user_id = u.id
+                                    LEFT JOIN roles r ON u.role_id = r.id
+                                    WHERE DATE(a.check_in_time) = ?
+                                      AND a.user_id IN ($in)
+                                    ORDER BY u.name ASC, a.check_in_time ASC");
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
 }

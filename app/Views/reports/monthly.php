@@ -13,9 +13,9 @@
                         <p class="text-muted mb-0">Strategic overview of field performance and fiscal data.</p>
                     </div>
 
-                    <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                    <div class="d-flex align-items-center flex-wrap report-filter-bar" style="gap: 10px;">
                         <!-- Compact Filter System -->
-                        <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2; width: auto;">
+                        <div class="input-group shadow-sm report-filter-control month-filter-control" style="border-radius: 8px; overflow: visible; height: 36px; border: 1px solid #eef0f2; width: auto;">
                             <div class="input-group-prepend">
                                 <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-calendar text-primary" style="font-size: 0.8rem;"></i></span>
                             </div>
@@ -34,7 +34,7 @@
                         </div>
 
                         <?php if(!empty($users)): ?>
-                        <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden; height: 36px; border: 1px solid #eef0f2; width: auto;">
+                        <div class="input-group shadow-sm report-filter-control employee-filter-control" style="border-radius: 8px; overflow: visible; height: 36px; border: 1px solid #eef0f2; width: auto;">
                             <div class="input-group-prepend">
                                 <span class="input-group-text bg-white border-0 pl-2 pr-1"><i class="fe fe-users text-info" style="font-size: 0.8rem;"></i></span>
                             </div>
@@ -47,7 +47,7 @@
                         </div>
                         <?php endif; ?>
 
-                        <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                        <div class="btn-group shadow-sm report-export-group" style="border-radius: 8px; overflow: hidden;">
                             <a id="export-link-csv" href="#" class="btn btn-white btn-sm border-0 font-weight-600 px-3" style="height: 36px; line-height: 24px;">
                                 <i class="fe fe-download mr-1"></i> CSV
                             </a>
@@ -216,6 +216,46 @@
                         </div>
                     </div>
                 <?php endif; ?>
+
+                <style>
+                @media (max-width: 767.98px) {
+                    .report-filter-bar,
+                    .report-export-group {
+                        width: 100%;
+                    }
+                    .report-filter-bar {
+                        align-items: stretch !important;
+                    }
+                    .report-filter-control {
+                        width: 100% !important;
+                        height: 46px !important;
+                        overflow: visible !important;
+                    }
+                    .report-filter-control .form-control,
+                    .report-filter-control .input-group-text {
+                        height: 44px !important;
+                        font-size: 16px !important;
+                    }
+                    .month-filter-control select {
+                        width: 50% !important;
+                        min-width: 0 !important;
+                    }
+                    .employee-filter-control select {
+                        min-width: 0 !important;
+                        width: 100% !important;
+                        position: relative;
+                        z-index: 5;
+                    }
+                    .report-export-group {
+                        display: flex;
+                    }
+                    .report-export-group .btn {
+                        flex: 1 1 0;
+                        height: 42px !important;
+                        line-height: 30px !important;
+                    }
+                }
+                </style>
 
                 <!-- Individual Interaction Logs (Always shown at bottom for selected month context) -->
                 <div class="card shadow-sm border-0 overflow-hidden mb-4 rounded-lg">
