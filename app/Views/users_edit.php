@@ -14,8 +14,14 @@
                     </nav>
                     <h2 class="h3 mb-0 page-title">Edit User Account</h2>
                 </div>
-                
-                
+
+                <?php if(isset($_SESSION['flash_success'])): ?>
+                    <div class="alert alert-success border-0 shadow-sm mb-3"><?php echo $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
+                <?php endif; ?>
+                <?php if(isset($_SESSION['flash_error'])): ?>
+                    <div class="alert alert-danger border-0 shadow-sm mb-3"><?php echo $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?></div>
+                <?php endif; ?>
+
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white p-4">
                         <h5 class="card-title"><i class="fe fe-user mr-2 text-primary"></i> Profile Information</h5>
@@ -56,7 +62,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label class="font-weight-600">User Role</label>
+                                    <label class="font-weight-600">User Role <small class="text-muted">(System Access)</small></label>
                                     <select name="role_id" class="form-control form-control-lg bg-light border-0">
                                         <?php foreach($roles as $role): ?>
                                             <option value="<?php echo $role['id']; ?>" <?php echo $user['role_id'] == $role['id'] ? 'selected' : ''; ?>>
@@ -64,6 +70,19 @@
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-600">Designation <small class="text-muted">(Job Title / Position)</small></label>
+                                    <input type="text" name="designation" class="form-control form-control-lg bg-light border-0" value="<?php echo htmlspecialchars($user['designation'] ?? ''); ?>" placeholder="e.g. Sales Executive, Area Manager">
+                                    <small class="text-muted d-block mt-1">Displayed on payslips, identity cards, and verification.</small>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-600">Employee Code</label>
+                                    <input type="text" name="employee_code" class="form-control form-control-lg bg-light border-0" value="<?php echo htmlspecialchars($user['employee_code'] ?? ''); ?>" placeholder="e.g. RED26001">
+                                    <small class="text-muted d-block mt-1">Existing employee code. You can edit this code including the prefix (e.g. RED, EMP, etc.).</small>
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label class="font-weight-600">Reporting Manager</label>

@@ -28,7 +28,11 @@
                                         <option value="">-- Choose Employee --</option>
                                         <?php foreach($users as $u): ?>
                                             <option value="<?php echo $u['id']; ?>" data-structure='<?php echo json_encode($u); ?>'>
-                                                <?php echo htmlspecialchars($u['name']); ?> (#EMP<?php echo str_pad($u['id'], 4, '0', STR_PAD_LEFT); ?>)
+                                                <?php 
+                                                    $empDisplay = !empty($u['employee_code']) ? $u['employee_code'] : ('#EMP' . str_pad($u['id'], 4, '0', STR_PAD_LEFT)); 
+                                                    $desigDisplay = !empty($u['designation']) ? ' - ' . htmlspecialchars($u['designation']) : '';
+                                                ?>
+                                                <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($empDisplay); ?>)<?php echo $desigDisplay; ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>

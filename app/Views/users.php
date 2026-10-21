@@ -72,7 +72,7 @@
                                                             <span class="badge badge-secondary ml-1" style="font-size:0.65rem;">Disabled</span>
                                                         <?php endif; ?>
                                                     </div>
-                                                    <small class="text-muted"><?php echo htmlspecialchars($u['email']); ?></small>
+                                                    <small class="text-muted"><?php echo htmlspecialchars($u['email']); ?><?php echo !empty($u['designation']) ? ' • <span class="text-dark font-weight-500">' . htmlspecialchars($u['designation']) . '</span>' : ''; ?><?php echo !empty($u['employee_code']) ? ' • ' . htmlspecialchars($u['employee_code']) : ''; ?></small>
                                                 </div>
                                             </div>
                                         </td>
@@ -205,6 +205,16 @@
                                         <option value="<?php echo $manager['id']; ?>"><?php echo htmlspecialchars($manager['name']); ?></option>
                                     <?php endforeach; ?>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Designation <small class="text-muted">(Job Title)</small></label>
+                                <input type="text" name="designation" class="form-control" placeholder="e.g. Sales Executive">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Employee Code <small class="text-muted">(Optional)</small></label>
+                                <input type="text" name="employee_code" class="form-control" placeholder="Leave blank to auto-generate">
                             </div>
                         </div>
                     </div>

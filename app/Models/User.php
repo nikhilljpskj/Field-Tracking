@@ -30,20 +30,23 @@ class User extends Model {
     }
 
     public function create($data) {
-        $stmt = $this->db->prepare("INSERT INTO users (role_id, name, email, password, phone, manager_id) 
-                                    VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO users (role_id, name, email, password, phone, manager_id, designation, employee_code) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         return $stmt->execute([
             $data['role_id'],
             $data['name'],
             $data['email'],
             password_hash($data['password'], PASSWORD_DEFAULT),
             $data['phone'],
-            !empty($data['manager_id']) ? $data['manager_id'] : null
+            !empty($data['manager_id']) ? $data['manager_id'] : null,
+            !empty(trim($data['designation'] ?? '')) ? trim($data['designation']) : null,
+            !empty(trim($data['employee_code'] ?? '')) ? trim($data['employee_code']) : null
         ]);
     }
 
     public function update($id, $data) {
         $sql = "UPDATE users SET role_id = ?, name = ?, email = ?, phone = ?, manager_id = ?, 
+                        designation = ?, employee_code = ?, 
                         bank_name = ?, account_number = ?, ifsc_code = ?";
         $params = [
             $data['role_id'],
@@ -51,6 +54,8 @@ class User extends Model {
             $data['email'],
             $data['phone'],
             !empty($data['manager_id']) ? $data['manager_id'] : null,
+            !empty(trim($data['designation'] ?? '')) ? trim($data['designation']) : null,
+            !empty(trim($data['employee_code'] ?? '')) ? trim($data['employee_code']) : null,
             $data['bank_name'] ?? null,
             $data['account_number'] ?? null,
             $data['ifsc_code'] ?? null
@@ -187,7 +192,7 @@ class User extends Model {
         return null;
     }
 
-    private function employeeCodeExists($employeeCode, $excludeUserId = 0) {
+    public function employeeCodeExists($employeeCode, $excludeUserId = 0) {
         $stmt = $this->db->prepare("SELECT id FROM users WHERE employee_code = ? AND id <> ? LIMIT 1");
         $stmt->execute([$employeeCode, (int)$excludeUserId]);
         return (bool)$stmt->fetch();

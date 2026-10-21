@@ -25,6 +25,13 @@ class UserController extends Controller {
         $this->checkRole('Admin');
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $userModel = new User();
+            $code = trim($_POST['employee_code'] ?? '');
+            if ($code !== '' && $userModel->employeeCodeExists($code)) {
+                $_SESSION['flash_error'] = "Employee code '{$code}' is already taken by another user.";
+                $this->redirect('users');
+                return;
+            }
+
             $result = $userModel->create($_POST);
             if ($result) {
                 $_SESSION['flash_success'] = "User created successfully!";
@@ -40,6 +47,16 @@ class UserController extends Controller {
         if (isset($_GET['id'])) {
             $userModel = new User();
             $user = $userModel->findById($_GET['id']);
+            if (!$user) {
+                $_SESSION['flash_error'] = "User not found.";
+                $this->redirect('users');
+                return;
+            }
+
+            if (empty($user['employee_code'])) {
+                $user['employee_code'] = $userModel->ensureEmployeeCode($user['id']);
+            }
+
             $roles = $userModel->getRoles();
             $managers = $userModel->getManagers();
             
@@ -59,7 +76,16 @@ class UserController extends Controller {
         $this->checkRole('Admin');
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id'])) {
             $userModel = new User();
-            $result = $userModel->update($_POST['id'], $_POST);
+            $id = (int)$_POST['id'];
+            $code = trim($_POST['employee_code'] ?? '');
+
+            if ($code !== '' && $userModel->employeeCodeExists($code, $id)) {
+                $_SESSION['flash_error'] = "Employee code '{$code}' is already assigned to another user.";
+                $this->redirect('users?action=edit&id=' . $id);
+                return;
+            }
+
+            $result = $userModel->update($id, $_POST);
             if ($result) {
                 $_SESSION['flash_success'] = "User updated successfully!";
             } else {
