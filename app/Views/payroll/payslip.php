@@ -348,9 +348,6 @@ if (!function_exists('number_to_words')) {
                 <?php if (!empty($email)): ?>
                     <div class="info-row"><span class="info-label">Email:</span> <span class="info-value"><?php echo htmlspecialchars($email); ?></span></div>
                 <?php endif; ?>
-                <?php if (!empty($phone)): ?>
-                    <div class="info-row"><span class="info-label">Phone:</span> <span class="info-value"><?php echo htmlspecialchars($phone); ?></span></div>
-                <?php endif; ?>
             </div>
             <?php if ($hasPaymentSummary): ?>
             <div class="info-box">
