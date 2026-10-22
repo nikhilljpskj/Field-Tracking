@@ -118,61 +118,20 @@ if (!function_exists('number_to_words')) {
         .total-box.deductions { background: #fff; border-left: 1px solid #eee; }
         .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
         .total-row.grand { margin-top: 15px; padding-top: 15px; border-top: 2px solid #eee; font-size: 18px; font-weight: bold; color: #222; }
-        .net-salary-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-left: 5px solid #2563eb;
-            border-radius: 6px;
-            padding: 18px 24px;
-            margin-top: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-        .net-salary-info { flex: 1; min-width: 0; }
-        .net-salary-title {
-            display: block;
-            font-size: 11px;
+        .net-salary-row td {
+            font-size: 15px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #64748b;
-            margin-bottom: 6px;
+            color: #111;
+            padding: 14px 12px;
+            border-top: 1px solid #ddd;
+            background: #fafafa;
         }
-        .net-salary-words {
-            font-size: 13.5px;
-            color: #334155;
-            line-height: 1.45;
-        }
-        .net-salary-words strong {
-            color: #0f172a;
-            font-weight: 600;
-        }
-        .net-salary-amount {
-            font-size: 30px;
-            font-weight: 800;
-            color: #0f172a;
-            white-space: nowrap;
-            letter-spacing: -0.5px;
-            font-variant-numeric: tabular-nums;
-        }
-        .currency-symbol {
-            font-size: 22px;
-            font-weight: 600;
-            margin-right: 2px;
-            color: #475569;
-        }
-
-        @media (max-width: 650px) {
-            .net-salary-card {
-                flex-direction: column-reverse;
-                text-align: center;
-                gap: 12px;
-                padding: 16px;
-            }
-            .net-salary-amount { text-align: center; }
-            .net-salary-words { text-align: center; }
+        .net-words-row td {
+            font-size: 13px;
+            color: #555;
+            padding: 10px 12px;
+            border-bottom: 2px solid #eee;
+            background: #fff;
         }
 
         .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }
@@ -188,17 +147,6 @@ if (!function_exists('number_to_words')) {
             body { background: #fff; padding: 0; }
             .payslip-container { box-shadow: none; border: none; width: 100%; max-width: 100%; margin: 0; }
             .header, .info-grid, .info-row, .total-row { min-width: 0; }
-            .company-info, .payslip-title, .info-box, .info-label, .info-value { min-width: 0; overflow-wrap: anywhere; }
-            .net-salary-card {
-                background: #f8fafc !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                border: 1px solid #cbd5e1 !important;
-                border-left: 5px solid #1e293b !important;
-                padding: 14px 20px !important;
-                margin-top: 18px !important;
-            }
-            .net-salary-amount { color: #0f172a !important; font-size: 26px; }
             .footer { margin-top: 35px; }
             .no-print { display: none; }
         }
@@ -401,18 +349,15 @@ if (!function_exists('number_to_words')) {
                     <td>Total Deductions</td>
                     <td style="text-align: right">₹<?php echo number_format($payroll['gross_salary'] - $payroll['net_salary'], 2); ?></td>
                 </tr>
+                <tr class="net-salary-row">
+                    <td colspan="2">Net Salary Payable (In-Hand)</td>
+                    <td colspan="2" style="text-align: right; font-size: 16px;">₹<?php echo number_format($payroll['net_salary'], 2); ?></td>
+                </tr>
+                <tr class="net-words-row">
+                    <td colspan="4">Amount in words: <strong><?php echo number_to_words($payroll['net_salary']); ?> Only</strong></td>
+                </tr>
             </tbody>
         </table>
-
-        <div class="net-salary-card">
-            <div class="net-salary-info">
-                <span class="net-salary-title">Net Salary Payable (In-Hand)</span>
-                <div class="net-salary-words">Amount in words: <strong><?php echo number_to_words($payroll['net_salary']); ?> Only</strong></div>
-            </div>
-            <div class="net-salary-amount">
-                <span class="currency-symbol">₹</span><?php echo number_format($payroll['net_salary'], 2); ?>
-            </div>
-        </div>
 
         <div class="footer">
             <p>This is a computer-generated payslip and does not require a signature.</p>
